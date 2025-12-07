@@ -1,6 +1,6 @@
 ﻿# Trying out a single top-level CMakeLists.txt
 cmake_minimum_required(VERSION 3.28)
-project("sfml3-game-template" LANGUAGES CXX)
+project("breakdown" LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -47,32 +47,32 @@ FetchContent_MakeAvailable(sfml_dependency entt tomlplusplus)
 # Configure project  #
 # ------------------ #
 
-add_executable(sfml3-game-template
-    "sfml3-game-template/src/Main.cpp"
-    "sfml3-game-template/src/Application.cpp"
-    "sfml3-game-template/src/State.cpp"
-    "sfml3-game-template/src/Managers/WindowManager.cpp"
-    "sfml3-game-template/src/Managers/StateManager.cpp"
-    "sfml3-game-template/src/Managers/GlobalEventManager.cpp"
-    "sfml3-game-template/src/Managers/ConfigManager.cpp"
-    "sfml3-game-template/src/Managers/ResourceManager.cpp"
-    "sfml3-game-template/src/ECS/EntityFactory.cpp"
-    "sfml3-game-template/src/ECS/Systems.cpp"
-    "sfml3-game-template/src/Utilities/RandomMachine.cpp"
-    "sfml3-game-template/src/Utilities/Utils.cpp"
+add_executable(breakdown
+    "breakdown/src/Main.cpp"
+    "breakdown/src/Application.cpp"
+    "breakdown/src/State.cpp"
+    "breakdown/src/Managers/WindowManager.cpp"
+    "breakdown/src/Managers/StateManager.cpp"
+    "breakdown/src/Managers/GlobalEventManager.cpp"
+    "breakdown/src/Managers/ConfigManager.cpp"
+    "breakdown/src/Managers/ResourceManager.cpp"
+    "breakdown/src/ECS/EntityFactory.cpp"
+    "breakdown/src/ECS/Systems.cpp"
+    "breakdown/src/Utilities/RandomMachine.cpp"
+    "breakdown/src/Utilities/Utils.cpp"
 )
 
-# This runs every time the sfml3-game-template target is built.
+# This runs every time the breakdown target is built.
 # It will copy the resources to the build directory
 add_custom_command(
-    TARGET sfml3-game-template
+    TARGET breakdown
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_CURRENT_SOURCE_DIR}/sfml3-game-template/resources"
-            "$<TARGET_FILE_DIR:sfml3-game-template>/resources"
+            "${CMAKE_CURRENT_SOURCE_DIR}/breakdown/resources"
+            "$<TARGET_FILE_DIR:breakdown>/resources"
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_CURRENT_SOURCE_DIR}/sfml3-game-template/config"
-            "$<TARGET_FILE_DIR:sfml3-game-template>/config"
+            "${CMAKE_CURRENT_SOURCE_DIR}/breakdown/config"
+            "$<TARGET_FILE_DIR:breakdown>/config"
     COMMENT "Copying resources and config to build directory"
 )
 
@@ -80,23 +80,23 @@ add_custom_command(
 #  compile definitions #
 # -------------------- #
 
-target_compile_definitions(sfml3-game-template PRIVATE TOML_EXCEPTIONS=0)
+target_compile_definitions(breakdown PRIVATE TOML_EXCEPTIONS=0)
 
 # ------------------ #
 # Configure include  #
 # ------------------ #
 
 # manually setting entt because clangd was being weird >:/
-target_include_directories(sfml3-game-template PRIVATE
+target_include_directories(breakdown PRIVATE
     "${entt_SOURCE_DIR}/include"
-    "sfml3-game-template/include"
+    "breakdown/include"
 )
 
 # ------------------ #
 #   Link libraries   #
 # ------------------ #
 
-target_link_libraries(sfml3-game-template PRIVATE
+target_link_libraries(breakdown PRIVATE
     SFML::Graphics
     SFML::Window
     SFML::Audio
@@ -107,7 +107,7 @@ target_link_libraries(sfml3-game-template PRIVATE
 # ---------------------- #
 #   Precompile Headers   #
 # ---------------------- #
-target_precompile_headers(sfml3-game-template PRIVATE 
+target_precompile_headers(breakdown PRIVATE 
     # STL
     <vector>
     <string>
@@ -133,9 +133,9 @@ target_precompile_headers(sfml3-game-template PRIVATE
 
 # This should hopefully mitigate any false 'trojan' flags by Windows Defender
 if(MSVC)
-    target_compile_options(sfml3-game-template PRIVATE "/std:c++latest" /Zi /GL /guard:cf /Gy)
-    target_link_options(sfml3-game-template PRIVATE /LTCG /GUARD:CF /OPT:REF /OPT:ICF)
-    set_property(TARGET sfml3-game-template PROPERTY
+    target_compile_options(breakdown PRIVATE "/std:c++latest" /Zi /GL /guard:cf /Gy)
+    target_link_options(breakdown PRIVATE /LTCG /GUARD:CF /OPT:REF /OPT:ICF)
+    set_property(TARGET breakdown PROPERTY
         MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
     )
 endif()
