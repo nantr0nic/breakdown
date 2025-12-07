@@ -16,6 +16,8 @@ namespace EntityFactory
 
     entt::entity createPlayer(AppContext& context);
 
+    entt::entity createBall(AppContext& context);
+
     entt::entity createButton(AppContext& context,
                             sf::Font& font,
                             const std::string& text,

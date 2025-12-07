@@ -10,7 +10,6 @@ namespace Assets
     }
     namespace Textures
     {
-        constexpr std::string_view Player = "PlayerSpriteSheet";
     }
     namespace SoundBuffers
     {

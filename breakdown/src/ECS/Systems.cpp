@@ -76,11 +76,19 @@ namespace CoreSystems
     void renderSystem(entt::registry& registry, sf::RenderWindow& window, bool showDebug)
     {
         // now renders anything with a sprite
-        auto view = registry.view<RenderableRect>();
+        auto view = registry.view<RenderableTag>();
+
         for (auto entity : view)
         {
-            const auto& rectShape = view.get<RenderableRect>(entity);
-            window.draw(rectShape.shape);
+            if (auto* renderableRects = registry.try_get<RenderableRect>(entity))
+            {
+                window.draw(renderableRects->shape);
+            }
+
+            if (auto* renderableCircles = registry.try_get<RenderableCircle>(entity))
+            {
+                window.draw(renderableCircles->shape);
+            }
         }
     }
 }

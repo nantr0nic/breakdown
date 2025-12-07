@@ -52,6 +52,7 @@ namespace EntityFactory
 
         // Add all components that make a "player"
         registry.emplace<PlayerTag>(playerEntity);  // way to ID the player
+        registry.emplace<RenderableTag>(playerEntity);
         registry.emplace<MovementSpeed>(playerEntity, moveSpeed);
         registry.emplace<Velocity>(playerEntity);
         registry.emplace<RenderableRect>(playerEntity, playerPaddle);
@@ -60,6 +61,39 @@ namespace EntityFactory
         logger::Info("Player paddle created.");
 
         return playerEntity;
+    }
+
+    entt::entity createBall(AppContext& context)
+    {
+        auto& registry = *context.m_Registry;
+        auto ballEntity = registry.create();
+
+        float ballRadius{ 10.0f };
+        sf::Color ballColor{ sf::Color::White };
+        sf::Vector2f ballStartingPosition{ 0.0f, 0.0f };
+
+        // Calculate ballStartingPosition from Player Position
+        auto view = registry.view<PlayerTag>();
+        for (auto entity : view)
+        {
+            const auto& playerShape = registry.get<RenderableRect>(entity).shape;
+            const auto& playerPosition = playerShape.getPosition();
+            float ballStartX = playerPosition.x;
+            float ballStartY = playerPosition.y - playerShape.getSize().y / 2.0f - ballRadius;
+
+            ballStartingPosition = sf::Vector2f(ballStartX, ballStartY);
+        }
+
+        RenderableCircle ballShape(ballRadius, ballColor, ballStartingPosition);
+
+        registry.emplace<RenderableTag>(ballEntity);
+        registry.emplace<RenderableCircle>(ballEntity, ballShape);
+        registry.emplace<Velocity>(ballEntity);
+        registry.emplace<MovementSpeed>(ballEntity, 300.0f);
+
+        logger::Info("Ball created.");
+
+        return ballEntity;
     }
 
     //$ --- UI ---
