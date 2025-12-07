@@ -37,8 +37,8 @@ namespace CoreSystems
     {
         // cache window size
         auto windowSize = window.getSize();
-
         auto view = registry.view<RenderableRect, Velocity>();
+
         for (auto entity : view)
         {
             auto& rectShape = view.get<RenderableRect>(entity);
@@ -49,17 +49,24 @@ namespace CoreSystems
             // Check for 'ConfineToWindow' and limit paddle to window
             if (auto* bounds = registry.try_get<ConfineToWindow>(entity))
             {
-                auto paddleBounds = rectShape.shape.getGlobalBounds();
+                auto rectBounds = rectShape.shape.getGlobalBounds();
 
-                // West wall
-                if (paddleBounds.position.x + velocity.value.x < 0.0f)
+                float currentY = rectShape.shape.getPosition().y;
+                float rectLeft = rectBounds.position.x;
+                float rectRight = rectBounds.position.x + rectBounds.size.x;
+                float halfWidth = rectBounds.size.x / 2.0f;
+
+                // West Wall
+                if (rectLeft < 0.0f)
                 {
-                    rectShape.shape.setPosition({bounds->padLeft, paddleBounds.position.y});
+                    float leftLimitPad = bounds->padLeft + halfWidth;
+                    rectShape.shape.setPosition({ leftLimitPad, currentY });
                 }
-                // East wall
-                if (paddleBounds.position.x + velocity.value.x > windowSize.x)
+                // East Wall
+                if (rectRight > windowSize.x)
                 {
-                    rectShape.shape.setPosition({windowSize.x - bounds->padRight, paddleBounds.position.y});
+                    float rightLimitPad = windowSize.x - (bounds->padRight + halfWidth);
+                    rectShape.shape.setPosition({ rightLimitPad, currentY });
                 }
             }
         }
