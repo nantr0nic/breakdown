@@ -45,6 +45,18 @@ namespace CoreSystems
             const auto& velocity = view.get<Velocity>(entity);
 
             rectShape.shape.move(velocity.value * deltaTime.asSeconds());
+        }
+    }
+
+    void collisionSystem(entt::registry& registry, sf::Time deltaTime, sf::RenderWindow& window)
+    {
+        // cache window size
+        auto windowSize = window.getSize();
+        auto view = registry.view<RenderableRect, Velocity>();
+
+        for (auto entity : view)
+        {
+            auto& rectShape = view.get<RenderableRect>(entity);
 
             // Check for 'ConfineToWindow' and limit paddle to window
             if (auto* bounds = registry.try_get<ConfineToWindow>(entity))
@@ -71,7 +83,6 @@ namespace CoreSystems
             }
         }
     }
-
     
     void renderSystem(entt::registry& registry, sf::RenderWindow& window, bool showDebug)
     {

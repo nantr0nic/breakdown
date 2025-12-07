@@ -91,7 +91,6 @@ PlayState::PlayState(AppContext* appContext)
     EntityFactory::createBall(*m_AppContext);
 
     // Handle music stuff
-
     m_MainMusic = m_AppContext->m_ResourceManager->getResource<sf::Music>(Assets::Musics::MainSong);
 
     // Start music
@@ -148,6 +147,7 @@ void PlayState::update(sf::Time deltaTime)
 {
     // Call game logic systems
     CoreSystems::handlePlayerInput(m_AppContext);
+    CoreSystems::collisionSystem(*m_AppContext->m_Registry, deltaTime, *m_AppContext->m_MainWindow);
     CoreSystems::movementSystem(*m_AppContext->m_Registry, deltaTime, *m_AppContext->m_MainWindow);
 }
 
