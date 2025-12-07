@@ -52,12 +52,14 @@ namespace CoreSystems
     {
         // cache window size
         auto windowSize = window.getSize();
-        auto view = registry.view<RenderableRect, Velocity>();
-
-        for (auto entity : view)
+        
+        // view of renderable rects
+        auto rectView = registry.view<RenderableRect, Velocity>();
+        for (auto entity : rectView)
         {
-            auto& rectShape = view.get<RenderableRect>(entity);
+            auto& rectShape = rectView.get<RenderableRect>(entity);
 
+            // Check 'collision' with player paddle and west/east walls
             // Check for 'ConfineToWindow' and limit paddle to window
             if (auto* bounds = registry.try_get<ConfineToWindow>(entity))
             {
@@ -79,6 +81,69 @@ namespace CoreSystems
                 {
                     float rightLimitPad = windowSize.x - (bounds->padRight + halfWidth);
                     rectShape.shape.setPosition({ rightLimitPad, currentY });
+                }
+            }
+        }
+
+        // Check ball collisions
+        auto ballView = registry.view<RenderableCircle, Velocity>();
+        auto targetView = registry.view<RenderableRect>();
+        for (auto ballEntity : ballView)
+        {
+            // Ball properties
+            auto& ballShape = registry.get<RenderableCircle>(ballEntity);
+            auto& ballVelocity = registry.get<Velocity>(ballEntity);
+            sf::Vector2f ballPosition = ballShape.shape.getPosition(); // Center
+            float r = ballShape.shape.getRadius();
+            sf::FloatRect ballBounds = ballShape.shape.getGlobalBounds(); // treats circle as square 
+
+            //$ ----- Wall collisions ----- //
+            // West Wall
+            if (ballPosition.x - r < 0.0f) 
+            {
+                ballPosition.x = r;                 
+                ballVelocity.value.x *= -1.0f;
+            }
+            // East Wall
+            if (ballPosition.x + r > windowSize.x) 
+            {
+                ballPosition.x = windowSize.x - r;
+                ballVelocity.value.x *= -1.0f;
+            }
+            // North Wall
+            if (ballPosition.y - r < 0.0f) 
+            {
+                ballPosition.y = r;
+                ballVelocity.value.y *= -1.0f;
+            }
+            // South Wall (Game over)
+            if (ballPosition.y + r > windowSize.y) 
+            {
+                // Handle life lost
+            }
+            ballShape.shape.setPosition(ballPosition);
+
+            // Check for collision with rectangles
+            for (auto targetEntity : targetView)
+            {
+                auto& targetShape = registry.get<RenderableRect>(targetEntity);
+                sf::FloatRect targetBounds = targetShape.shape.getGlobalBounds();
+
+                if (auto intersection = ballBounds.findIntersection(targetBounds))
+                {
+                    // Check if hit top or bottom
+                    if (intersection->size.x > intersection->size.y)
+                    {
+                        // reflect along y axis
+                        ballVelocity.value.y = -ballVelocity.value.y;
+                    }
+                    // else we've hit left or right side
+                    else
+                    {
+                        // reflect along x axis
+                        ballVelocity.value.x = -ballVelocity.value.x;
+                    }
+                    
                 }
             }
         }

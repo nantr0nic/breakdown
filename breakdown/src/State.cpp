@@ -147,8 +147,8 @@ void PlayState::update(sf::Time deltaTime)
 {
     // Call game logic systems
     CoreSystems::handlePlayerInput(m_AppContext);
-    CoreSystems::collisionSystem(*m_AppContext->m_Registry, deltaTime, *m_AppContext->m_MainWindow);
     CoreSystems::movementSystem(*m_AppContext->m_Registry, deltaTime, *m_AppContext->m_MainWindow);
+    CoreSystems::collisionSystem(*m_AppContext->m_Registry, deltaTime, *m_AppContext->m_MainWindow);
 }
 
 void PlayState::render()
