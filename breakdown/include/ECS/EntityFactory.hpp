@@ -9,12 +9,12 @@ struct AppContext; // forward declaration
 
 namespace EntityFactory
 {
-    entt::entity createPlayer(AppContext& context, sf::Vector2f position);
-
     entt::entity createRectangle(AppContext& context,
                                 sf::Vector2f size,
                                 sf::Color& color,
                                 sf::Vector2f position);
+
+    entt::entity createPlayer(AppContext& context);
 
     entt::entity createButton(AppContext& context,
                             sf::Font& font,
