@@ -14,72 +14,6 @@
 // functions for the ECS system
 namespace EntityFactory
 {
-    //$ --- Player ---
-    entt::entity createPlayer(AppContext& context, sf::Vector2f position)
-    {
-        auto& registry = *context.m_Registry;
-        auto* texture = context.m_ResourceManager->getResource<sf::Texture>(Assets::Textures::Player);
-
-        if (texture == nullptr)
-        {
-            logger::Error("Couldn't create Player because missing texture.");
-            return entt::null;
-        }
-
-        context.m_ConfigManager->loadConfig("player", "config/Player.toml");
-        float moveSpeed = context.m_ConfigManager->getConfigValue<float>("player", "player", "movementSpeed").value_or(350.0f);
-        float scaleFactor = context.m_ConfigManager->getConfigValue<float>("player", "player", "scaleFactor").value_or(3.0f);
-
-        auto playerEntity = registry.create();
-
-        // Add all components that make a "player"
-        registry.emplace<PlayerTag>(playerEntity);  // way to ID the player
-        registry.emplace<MovementSpeed>(playerEntity, moveSpeed);
-        registry.emplace<Velocity>(playerEntity);
-        registry.emplace<Facing>(playerEntity);
-
-        // Sprite stuff
-        auto& spriteComp = registry.emplace<SpriteComponent>(playerEntity, sf::Sprite(*texture));
-        spriteComp.sprite.setTextureRect({ {0, 0}, {32, 32} }); // assumes 32x32 sprite size
-        spriteComp.sprite.setPosition(position);
-        utils::centerOrigin(spriteComp.sprite);
-
-        // Sprite scaling and padding stuff
-        sf::Vector2f scaleVector = { scaleFactor, scaleFactor };
-
-        registry.emplace<BaseScale>(playerEntity, scaleVector);
-        // Apply scaling BEFORE getSpritePadding()
-        spriteComp.sprite.setScale(scaleVector);
-        SpritePadding padding = utils::getSpritePadding(spriteComp.sprite);
-
-        registry.emplace<ConfineToWindow>(
-            playerEntity,
-            padding.left * scaleFactor,
-            padding.right * scaleFactor,
-            padding.top * scaleFactor,
-            padding.bottom * scaleFactor
-        );
-
-        // Animator stuff
-        auto& animator = registry.emplace<AnimatorComponent>(playerEntity);
-        
-        animator.currentAnimationName = "idle";
-        animator.currentFrame = 0;
-        animator.elapsedTime = sf::Time::Zero;
-        animator.frameSize = { 32, 32 };
-
-        // Define "idle" and "walk" for player
-        // (using Brackey's knight sprite sheet)
-        // the milliseconds will probably have to be adjusted
-        animator.animations["idle"] = { 0, 4, sf::milliseconds(400) };
-        animator.animations["walk"] = { 3, 8, sf::milliseconds(800) };
-
-        //registry.emplace<AnimatorComponent>(playerEntity, std::move(animator));
-        logger::Info("Player created.");
-
-        return playerEntity;
-    }
-
     entt::entity createRectangle(AppContext& context, 
                                 sf::Vector2f size,
                                 sf::Color& color,
@@ -92,6 +26,78 @@ namespace EntityFactory
         registry.emplace<RenderableRect>(rectEntity, size, color, position);
 
         return rectEntity;
+    }
+
+    //$ --- Player ---
+    entt::entity createPlayer(AppContext& context)
+    {
+        auto& registry = *context.m_Registry;
+
+        // Load config values
+        context.m_ConfigManager->loadConfig("player", "config/Player.toml");
+        float moveSpeed = context.m_ConfigManager->getConfigValue<float>("player", "player", "movementSpeed").value_or(350.0f);
+
+        // Create player Entity in the registry
+        auto playerEntity = registry.create();
+
+        // Player paddle properties
+        // Starting position
+        auto windowCenterX = context.m_MainWindow->getSize().x / 2.0f;
+        auto paddleYPosition = context.m_MainWindow->getSize().y - 50.0f;
+        sf::Vector2f playerPosition = sf::Vector2f(windowCenterX, paddleYPosition);
+        // Paddle start size
+        sf::Vector2f paddleSize = sf::Vector2f(100.0f, 20.0f);
+
+        RenderableRect playerPaddle(paddleSize, sf::Color::White, playerPosition);
+
+        // Add all components that make a "player"
+        registry.emplace<PlayerTag>(playerEntity);  // way to ID the player
+        registry.emplace<RenderableTag>(playerEntity);
+        registry.emplace<MovementSpeed>(playerEntity, moveSpeed);
+        registry.emplace<Velocity>(playerEntity);
+        registry.emplace<RenderableRect>(playerEntity, playerPaddle);
+        registry.emplace<ConfineToWindow>(playerEntity, 1.0f, 1.0f);
+
+        logger::Info("Player paddle created.");
+
+        return playerEntity;
+    }
+
+    entt::entity createBall(AppContext& context)
+    {
+        auto& registry = *context.m_Registry;
+        auto ballEntity = registry.create();
+
+        float ballRadius{ 10.0f };
+        sf::Color ballColor{ sf::Color::White };
+        sf::Vector2f ballStartingPosition{ 0.0f, 0.0f };
+        float ballSpeed{ 450.0f };
+
+        // Calculate ballStartingPosition from Player Position
+        auto view = registry.view<PlayerTag, RenderableRect>();
+        for (auto entity : view)
+        {
+            const auto& playerShape = registry.get<RenderableRect>(entity).shape;
+            const auto& playerPosition = playerShape.getPosition();
+            float ballStartX = playerPosition.x;
+            float ballStartY = playerPosition.y - playerShape.getSize().y / 2.0f - ballRadius;
+
+            ballStartingPosition = sf::Vector2f(ballStartX, ballStartY);
+        }
+
+        RenderableCircle ballShape(ballRadius, ballColor, ballStartingPosition);
+
+        registry.emplace<RenderableTag>(ballEntity);
+        registry.emplace<RenderableCircle>(ballEntity, ballShape);
+        auto& velocity = registry.emplace<Velocity>(ballEntity);
+        // shoot the ball at start of game
+        velocity.value = { 0.0f, -ballSpeed };
+        
+        registry.emplace<MovementSpeed>(ballEntity, ballSpeed);
+
+        logger::Info("Ball created.");
+
+        return ballEntity;
     }
 
     //$ --- UI ---

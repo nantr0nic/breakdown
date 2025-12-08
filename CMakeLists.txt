@@ -76,6 +76,16 @@ add_custom_command(
     COMMENT "Copying resources and config to build directory"
 )
 
+# This is to copy compile_commands.json to out directory for clangd to find it easily
+add_custom_target(
+    copy-compile-commands ALL 
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${CMAKE_BINARY_DIR}/compile_commands.json"
+            "${CMAKE_SOURCE_DIR}/out/compile_commands.json"
+    DEPENDS "${CMAKE_BINARY_DIR}/compile_commands.json"
+    COMMENT "Copying compile_commands.json to out directory"
+)
+
 # -------------------- #
 #  compile definitions #
 # -------------------- #

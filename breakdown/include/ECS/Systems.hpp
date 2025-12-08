@@ -14,11 +14,9 @@ namespace CoreSystems
 
     void movementSystem(entt::registry& registry, sf::Time deltaTime, sf::RenderWindow& window);
 
-    void facingSystem(entt::registry& registry);
+    void collisionSystem(entt::registry& registry, sf::Time deltaTime, sf::RenderWindow& window);
 
     void renderSystem(entt::registry& registry, sf::RenderWindow& window, bool showDebug);
-
-    void animationSystem(entt::registry& registry, sf::Time deltaTime);
 }
 
 namespace UISystems

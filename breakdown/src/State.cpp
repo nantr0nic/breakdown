@@ -87,8 +87,10 @@ PlayState::PlayState(AppContext* appContext)
     // We create the player entity here
     sf::Vector2u windowSize = m_AppContext->m_MainWindow->getSize();
     sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
-    EntityFactory::createPlayer(*m_AppContext, { center.x, center.y });
+    EntityFactory::createPlayer(*m_AppContext);
+    EntityFactory::createBall(*m_AppContext);
 
+    // Handle music stuff
     m_MainMusic = m_AppContext->m_ResourceManager->getResource<sf::Music>(Assets::Musics::MainSong);
 
     // Start music
@@ -145,9 +147,8 @@ void PlayState::update(sf::Time deltaTime)
 {
     // Call game logic systems
     CoreSystems::handlePlayerInput(m_AppContext);
-    CoreSystems::facingSystem(*m_AppContext->m_Registry);
-    CoreSystems::animationSystem(*m_AppContext->m_Registry, deltaTime);
     CoreSystems::movementSystem(*m_AppContext->m_Registry, deltaTime, *m_AppContext->m_MainWindow);
+    CoreSystems::collisionSystem(*m_AppContext->m_Registry, deltaTime, *m_AppContext->m_MainWindow);
 }
 
 void PlayState::render()

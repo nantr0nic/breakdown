@@ -5,8 +5,6 @@ path = "resources/fonts/CaesarDressing-Regular.ttf"
 
 # --- Textures ---
 [[textures]]
-id = "PlayerSpriteSheet"
-path = "resources/sprites/knight.png"
 
 # --- SoundBuffers ---
 [[soundbuffers]]
