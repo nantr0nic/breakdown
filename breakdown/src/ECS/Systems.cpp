@@ -37,15 +37,25 @@ namespace CoreSystems
     {
         // cache window size
         auto windowSize = window.getSize();
-        auto view = registry.view<RenderableRect, Velocity>();
 
-        for (auto entity : view)
+        auto rectView = registry.view<RenderableRect, Velocity>();
+        for (auto entity : rectView)
         {
-            auto& rectShape = view.get<RenderableRect>(entity);
-            const auto& velocity = view.get<Velocity>(entity);
+            auto& rectShape = rectView.get<RenderableRect>(entity);
+            const auto& velocity = rectView.get<Velocity>(entity);
 
             rectShape.shape.move(velocity.value * deltaTime.asSeconds());
         }
+
+        auto ballView = registry.view<RenderableCircle, Velocity>();
+        for (auto entity : ballView)
+        {
+            auto& ballShape = ballView.get<RenderableCircle>(entity);
+            const auto& velocity = ballView.get<Velocity>(entity);
+
+            ballShape.shape.move(velocity.value * deltaTime.asSeconds());
+        }
+
     }
 
     void collisionSystem(entt::registry& registry, sf::Time deltaTime, sf::RenderWindow& window)
@@ -86,7 +96,7 @@ namespace CoreSystems
         }
 
         // Check ball collisions
-        auto ballView = registry.view<RenderableCircle, Velocity>();
+        auto ballView = registry.view<RenderableCircle, Velocity, MovementSpeed>();
         auto targetView = registry.view<RenderableRect>();
         for (auto ballEntity : ballView)
         {
@@ -95,7 +105,8 @@ namespace CoreSystems
             auto& ballVelocity = registry.get<Velocity>(ballEntity);
             sf::Vector2f ballPosition = ballShape.shape.getPosition(); // Center
             float r = ballShape.shape.getRadius();
-            sf::FloatRect ballBounds = ballShape.shape.getGlobalBounds(); // treats circle as square 
+            sf::FloatRect ballBounds = ballShape.shape.getGlobalBounds(); // treats circle as square
+            float ballSpeed = registry.get<MovementSpeed>(ballEntity).value; 
 
             //$ ----- Wall collisions ----- //
             // West Wall
@@ -131,19 +142,40 @@ namespace CoreSystems
 
                 if (auto intersection = ballBounds.findIntersection(targetBounds))
                 {
-                    // Check if hit top or bottom
-                    if (intersection->size.x > intersection->size.y)
+                    // if ball hits paddle, angle the reflection
+                    if (registry.any_of<PlayerTag>(targetEntity))
                     {
-                        // reflect along y axis
-                        ballVelocity.value.y = -ballVelocity.value.y;
+                        float targetCenterX = targetShape.shape.getPosition().x;
+                        float ballCenterX = ballPosition.x;
+                        // calculate offset (-1 to 1)
+                        // (ball - center) / half of paddle width
+                        float relativeIntersectX = (ballCenterX - targetCenterX) / 
+                                                   (targetBounds.size.x / 2.0f);
+                        // define angle for reflection
+                        sf::Angle rotation = sf::degrees(relativeIntersectX * 60.0f);
+                        // create the new velocity based on 'straight up'
+                        sf::Vector2f upVelocity = { 0.0f, -1.0f };
+                        // rotate it by our angle
+                        sf::Vector2f rotatedDirection = upVelocity.rotatedBy(rotation);
+                        // apply it!
+                        ballVelocity.value = upVelocity.rotatedBy(rotation) * ballSpeed;
                     }
-                    // else we've hit left or right side
-                    else
+                    // else we've hit a non-paddle rectangle
+                    else  
                     {
-                        // reflect along x axis
-                        ballVelocity.value.x = -ballVelocity.value.x;
+                        // Check if hit top or bottom
+                        if (intersection->size.x > intersection->size.y)
+                        {
+                            // reflect along y axis
+                            ballVelocity.value.y = -ballVelocity.value.y;
+                        }
+                        // else we've hit left or right side
+                        else
+                        {
+                            // reflect along x axis
+                            ballVelocity.value.x = -ballVelocity.value.x;
+                        }
                     }
-                    
                 }
             }
         }

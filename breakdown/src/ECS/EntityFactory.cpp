@@ -71,9 +71,10 @@ namespace EntityFactory
         float ballRadius{ 10.0f };
         sf::Color ballColor{ sf::Color::White };
         sf::Vector2f ballStartingPosition{ 0.0f, 0.0f };
+        float ballSpeed{ 450.0f };
 
         // Calculate ballStartingPosition from Player Position
-        auto view = registry.view<PlayerTag>();
+        auto view = registry.view<PlayerTag, RenderableRect>();
         for (auto entity : view)
         {
             const auto& playerShape = registry.get<RenderableRect>(entity).shape;
@@ -88,8 +89,11 @@ namespace EntityFactory
 
         registry.emplace<RenderableTag>(ballEntity);
         registry.emplace<RenderableCircle>(ballEntity, ballShape);
-        registry.emplace<Velocity>(ballEntity);
-        registry.emplace<MovementSpeed>(ballEntity, 300.0f);
+        auto& velocity = registry.emplace<Velocity>(ballEntity);
+        // shoot the ball at start of game
+        velocity.value = { 0.0f, -ballSpeed };
+        
+        registry.emplace<MovementSpeed>(ballEntity, ballSpeed);
 
         logger::Info("Ball created.");
 
