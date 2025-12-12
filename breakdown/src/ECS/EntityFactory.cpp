@@ -115,14 +115,15 @@ namespace EntityFactory
         auto& window = *context.m_MainWindow;
         auto windowSize = window.getSize();
 
-        sf::Vector2f spawnStartXY{ 10.0f, 10.0f };
+        sf::Vector2f spawnStartXY{ 20.0f, 10.0f };
         sf::Vector2f brickSize{ 60.0f, 20.0f };
         sf::Color brickColor{ sf::Color::White };
         float brickSpacing{ 5.0f };
 
-        float availableWidth = windowSize.x - (spawnStartXY.x * 2.0f);
+        float availableWidth = windowSize.x - spawnStartXY.x;
         float availableHeight = windowSize.y - (spawnStartXY.y * 2.0f);
-        int bricksPerRow = static_cast<int>((availableWidth + brickSpacing) / brickSize.x);
+        int bricksPerRow = static_cast<int>((availableWidth + brickSpacing) 
+                                            / (brickSize.x + brickSpacing));
         int rows = 5;
 
         for (int row = 0; row < rows; ++row)
@@ -131,7 +132,7 @@ namespace EntityFactory
             int bricksInThisRow = bricksPerRow;
 
             // alternate number of bricks per row to give 'staggered' look
-            if (row % 2 == 0)
+            if (row % 2 != 0)
             {
                 rowOffsetX = (brickSize.x + brickSpacing) / 2.0f;
                 bricksInThisRow = bricksPerRow - 1;
