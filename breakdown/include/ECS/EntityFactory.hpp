@@ -9,6 +9,7 @@ struct AppContext; // forward declaration
 
 namespace EntityFactory
 {
+    //$ --- Game Play Entities --- //
     entt::entity createRectangle(AppContext& context,
                                 sf::Vector2f size,
                                 sf::Color& color,
@@ -18,6 +19,9 @@ namespace EntityFactory
 
     entt::entity createBall(AppContext& context);
 
+    void createBricks(AppContext& context);
+
+    //$ --- UI Entities --- //
     entt::entity createButton(AppContext& context,
                             sf::Font& font,
                             const std::string& text,

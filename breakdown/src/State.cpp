@@ -87,8 +87,10 @@ PlayState::PlayState(AppContext* appContext)
     // We create the player entity here
     sf::Vector2u windowSize = m_AppContext->m_MainWindow->getSize();
     sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
+
     EntityFactory::createPlayer(*m_AppContext);
     EntityFactory::createBall(*m_AppContext);
+    EntityFactory::createBricks(*m_AppContext);
 
     // Handle music stuff
     m_MainMusic = m_AppContext->m_ResourceManager->getResource<sf::Music>(Assets::Musics::MainSong);

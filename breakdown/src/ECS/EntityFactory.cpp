@@ -6,7 +6,6 @@
 #include "Utilities/Utils.hpp"
 #include "Utilities/Logger.hpp"
 #include "AppContext.hpp"
-#include "AssetKeys.hpp"
 
 #include <string>
 #include <utility>
@@ -98,6 +97,32 @@ namespace EntityFactory
         logger::Info("Ball created.");
 
         return ballEntity;
+    }
+
+    void createBricks(AppContext& context)
+    {
+        auto& registry = *context.m_Registry;
+        auto& window = *context.m_MainWindow;
+        auto windowSize = window.getSize();
+
+        sf::Vector2f spawnStartXY{ 5.0f, 10.0f };
+        sf::Vector2f brickSize{ 60.0f, 20.0f };
+        sf::Color brickColor{ sf::Color::White };
+
+        float brickSpacing{ 5.0f };
+
+        int bricksPerRow = static_cast<int>(windowSize.x / brickSize.x);
+        int rows = 5;
+
+        for (int i = 0; i < bricksPerRow; ++i)
+        {
+            for (int j = 0; j < rows; ++j)
+            {
+                sf::Vector2f brickPosition{ spawnStartXY.x + (i * brickSize.x) + brickSpacing, 
+                                            spawnStartXY.y + (j * brickSize.y) + brickSpacing };
+                auto brickEntity = createRectangle(context, brickSize, brickColor, brickPosition);
+            }
+        }
     }
 
     //$ --- UI ---

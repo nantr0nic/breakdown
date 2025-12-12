@@ -63,9 +63,9 @@ namespace CoreSystems
 
     void collisionSystem(AppContext* m_AppContext, sf::Time deltaTime)
     {
-        auto &registry = *m_AppContext->m_Registry;
-        auto &window = *m_AppContext->m_MainWindow;
-        auto &stateManager = *m_AppContext->m_StateManager;
+        auto& registry = *m_AppContext->m_Registry;
+        auto& window = *m_AppContext->m_MainWindow;
+        auto& stateManager = *m_AppContext->m_StateManager;
 
         // cache window size
         auto windowSize = window.getSize();
@@ -169,7 +169,7 @@ namespace CoreSystems
                         // apply it!
                         ballVelocity.value = upVelocity.rotatedBy(rotation) * ballSpeed;
                     }
-                    // else we've hit a non-paddle rectangle
+                    // else we've hit a non-paddle rectangle (a brick)
                     else  
                     {
                         // Check if hit top or bottom
@@ -184,6 +184,9 @@ namespace CoreSystems
                             // reflect along x axis
                             ballVelocity.value.x = -ballVelocity.value.x;
                         }
+
+                        // remove the non-paddle rectangle we've collided with
+                        registry.destroy(targetEntity);
                     }
                 }
             }
