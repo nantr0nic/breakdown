@@ -136,7 +136,7 @@ PlayState::~PlayState()
 {
     // Clean up all player entities
     auto& registry = *m_AppContext->m_Registry;
-    auto view = registry.view<PlayerTag>();
+    auto view = registry.view<RenderableTag>();
     registry.destroy(view.begin(), view.end());
     
     // Here you would also clean up enemies, bullets, etc.
@@ -146,9 +146,9 @@ PlayState::~PlayState()
 void PlayState::update(sf::Time deltaTime)
 {
     // Call game logic systems
-    CoreSystems::handlePlayerInput(m_AppContext);
+    CoreSystems::handlePlayerInput(*m_AppContext->m_Registry, *m_AppContext->m_MainWindow);
     CoreSystems::movementSystem(*m_AppContext->m_Registry, deltaTime, *m_AppContext->m_MainWindow);
-    CoreSystems::collisionSystem(*m_AppContext->m_Registry, deltaTime, *m_AppContext->m_MainWindow);
+    CoreSystems::collisionSystem(m_AppContext, deltaTime);
 }
 
 void PlayState::render()
@@ -229,5 +229,102 @@ void PauseState::render()
     if (m_PauseText)
     {
         m_AppContext->m_MainWindow->draw(*m_PauseText);
+    }
+}
+
+GameOverState::GameOverState(AppContext* appContext)
+    : State(appContext)
+{
+    sf::Vector2u windowSize = m_AppContext->m_MainWindow->getSize();
+    sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
+
+    // "Try again" button entity
+    sf::Font* font = m_AppContext->m_ResourceManager->getResource<sf::Font>(Assets::Fonts::MainFont);
+    if (font)
+    {
+        // make the "Try Again" button
+        EntityFactory::createButton(
+            *m_AppContext,
+            *font,
+            "Try Again",
+            center,
+            [this]() {
+                logger::Info("Try Again button pressed.");
+                auto playState = std::make_unique<PlayState>(m_AppContext);
+                m_AppContext->m_StateManager->replaceState(std::move(playState));
+            }
+        );
+
+        // make the "Quit" button
+        EntityFactory::createButton(
+            *m_AppContext,
+            *font,
+            "Quit",
+            {center.x, center.y + 150.0f},
+            [this]() {
+                logger::Info("Quit button pressed.");
+                m_AppContext->m_MainWindow->close();
+            }
+        );
+
+        m_GameOverText.emplace(*font, "Game Over", 100);
+        m_GameOverText->setFillColor(sf::Color::Red);
+
+        utils::centerOrigin(*m_GameOverText);
+        
+        sf::Vector2f aboveButton(center.x, center.y - 150.0f);
+        m_GameOverText->setPosition(aboveButton);
+    }
+    else 
+    {
+        logger::Error("Couldn't load font. Can't make Game Over button or text.");
+    }
+
+    // Handle music stuff
+    auto* music = m_AppContext->m_ResourceManager->getResource<sf::Music>(Assets::Musics::MainSong);
+    bool wasMusicPlaying = (music && music->getStatus() == sf::Music::Status::Playing);
+
+    if (wasMusicPlaying)
+    {
+        music->stop();
+    }
+
+    // Lambdas to handle input
+    m_StateEvents.onMouseButtonPress = [this](const sf::Event::MouseButtonPressed& event)
+    {
+        UISystems::uiClickSystem(*m_AppContext->m_Registry, event);
+    };
+
+    m_StateEvents.onKeyPress = [this](const sf::Event::KeyPressed& event)
+    {
+        if (event.scancode == sf::Keyboard::Scancode::Escape)
+        {
+            m_AppContext->m_MainWindow->close();
+        }
+    };
+
+    logger::Info("GameOverState initialized.");
+}
+
+GameOverState::~GameOverState()
+{
+    auto& registry = *m_AppContext->m_Registry;
+    auto view = registry.view<MenuUITag>();
+    registry.destroy(view.begin(), view.end());
+}
+
+void GameOverState::update(sf::Time deltaTime)
+{
+    UISystems::uiHoverSystem(*m_AppContext->m_Registry, *m_AppContext->m_MainWindow);
+}
+
+void GameOverState::render()
+{
+    // Render button
+    UISystems::uiRenderSystem(*m_AppContext->m_Registry, *m_AppContext->m_MainWindow);
+    // Render the text
+    if (m_GameOverText)
+    {
+        m_AppContext->m_MainWindow->draw(*m_GameOverText);
     }
 }

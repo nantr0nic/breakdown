@@ -114,7 +114,7 @@ namespace EntityFactory
 
         // Shape component
         auto& buttonShape = registry.emplace<UIShape>(buttonEntity);
-        buttonShape.shape.setSize({200.f, 100.f});
+        buttonShape.shape.setSize({250.f, 100.f});
         buttonShape.shape.setFillColor(sf::Color::Blue);
         utils::centerOrigin(buttonShape.shape);
         buttonShape.shape.setPosition(position);

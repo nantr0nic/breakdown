@@ -1,15 +1,18 @@
 #include "ECS/Systems.hpp"
 #include "ECS/Components.hpp"
+#include "Managers/StateManager.hpp"
 #include "AppContext.hpp"
+
+#include <SFML/Graphics.hpp>
+#include <entt/entt.hpp>
+
+#include <memory>
 
 namespace CoreSystems
 {
     //$ "Core" / game systems (maybe rename...)
-    void handlePlayerInput(AppContext* m_AppContext)
+    void handlePlayerInput(entt::registry& registry, const sf::RenderWindow& window)
     {
-        auto &registry = *m_AppContext->m_Registry;
-        auto &window = *m_AppContext->m_MainWindow;
-
         auto view = registry.view<PlayerTag, 
                                 Velocity, 
                                 MovementSpeed>();
@@ -58,8 +61,12 @@ namespace CoreSystems
 
     }
 
-    void collisionSystem(entt::registry& registry, sf::Time deltaTime, sf::RenderWindow& window)
+    void collisionSystem(AppContext* m_AppContext, sf::Time deltaTime)
     {
+        auto &registry = *m_AppContext->m_Registry;
+        auto &window = *m_AppContext->m_MainWindow;
+        auto &stateManager = *m_AppContext->m_StateManager;
+
         // cache window size
         auto windowSize = window.getSize();
         
@@ -130,8 +137,10 @@ namespace CoreSystems
             // South Wall (Game over)
             if (ballPosition.y + r > windowSize.y) 
             {
-                // Handle life lost
+                auto gameoverState = std::make_unique<GameOverState>(m_AppContext);
+                stateManager.replaceState(std::move(gameoverState));
             }
+
             ballShape.shape.setPosition(ballPosition);
 
             // Check for collision with rectangles

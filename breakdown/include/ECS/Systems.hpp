@@ -5,16 +5,17 @@
 
 // forward declarations
 class AppContext;
+class StateManager;
 struct BoundaryHits;
 
 namespace CoreSystems
 {
     //$ ----- Game Systems ----- //
-    void handlePlayerInput(AppContext* m_AppContext);
+    void handlePlayerInput(entt::registry& registry, const sf::RenderWindow& window);
 
     void movementSystem(entt::registry& registry, sf::Time deltaTime, sf::RenderWindow& window);
 
-    void collisionSystem(entt::registry& registry, sf::Time deltaTime, sf::RenderWindow& window);
+    void collisionSystem(AppContext* m_AppContext, sf::Time deltaTime);
 
     void renderSystem(entt::registry& registry, sf::RenderWindow& window, bool showDebug);
 }
