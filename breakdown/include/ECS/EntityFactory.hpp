@@ -19,6 +19,11 @@ namespace EntityFactory
 
     entt::entity createBall(AppContext& context);
 
+    entt::entity createABrick(AppContext& context,
+                                sf::Vector2f size,
+                                sf::Color& color,
+                                sf::Vector2f position);
+
     void createBricks(AppContext& context);
 
     //$ --- UI Entities --- //

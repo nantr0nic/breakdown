@@ -13,10 +13,8 @@
 // functions for the ECS system
 namespace EntityFactory
 {
-    entt::entity createRectangle(AppContext& context, 
-                                sf::Vector2f size,
-                                sf::Color& color,
-                                sf::Vector2f position)
+    entt::entity createRectangle(AppContext& context, sf::Vector2f size,
+                                sf::Color& color, sf::Vector2f position)
     {
         auto& registry = *context.m_Registry;
 
@@ -99,6 +97,18 @@ namespace EntityFactory
         return ballEntity;
     }
 
+    entt::entity createABrick(AppContext& context, sf::Vector2f size, 
+                              sf::Color& color, sf::Vector2f position)
+    {
+        auto& registry = *context.m_Registry;
+        auto brickEntity = registry.create();
+
+        registry.emplace<Brick>(brickEntity, size, color, position);
+        registry.emplace<RenderableTag>(brickEntity);
+
+        return brickEntity;
+    }
+
     void createBricks(AppContext& context)
     {
         auto& registry = *context.m_Registry;
@@ -108,8 +118,9 @@ namespace EntityFactory
         sf::Vector2f spawnStartXY{ 5.0f, 10.0f };
         sf::Vector2f brickSize{ 60.0f, 20.0f };
         sf::Color brickColor{ sf::Color::White };
+        float brickSpacing{ 25.0f };
+        sf::Vector2f brickPosition{ spawnStartXY.x, spawnStartXY.y };
 
-        float brickSpacing{ 5.0f };
 
         int bricksPerRow = static_cast<int>(windowSize.x / brickSize.x);
         int rows = 5;
@@ -118,8 +129,9 @@ namespace EntityFactory
         {
             for (int j = 0; j < rows; ++j)
             {
-                sf::Vector2f brickPosition{ spawnStartXY.x + (i * brickSize.x) + brickSpacing, 
-                                            spawnStartXY.y + (j * brickSize.y) + brickSpacing };
+                brickPosition.x = (spawnStartXY.x + (i * brickSize.x)) + brickSpacing;
+                brickPosition.y = (spawnStartXY.y + (j * brickSize.y)) + brickSpacing;
+
                 auto brickEntity = createRectangle(context, brickSize, brickColor, brickPosition);
             }
         }

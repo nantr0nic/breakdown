@@ -63,6 +63,20 @@ struct RenderableRect
     sf::RectangleShape shape;
 };
 
+// Brick is RenderableRect but without the origin being changed from upper-left corner
+struct Brick
+{
+    Brick(sf::Vector2f size, const sf::Color& color, sf::Vector2f position)
+        : shape()
+    {
+        shape.setSize(size);
+        shape.setFillColor(color);
+        shape.setPosition(position);
+    }
+
+    sf::RectangleShape shape;
+};
+
 
 //$ ----- UI Components -----
 

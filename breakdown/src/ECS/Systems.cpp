@@ -186,6 +186,10 @@ namespace CoreSystems
                         }
 
                         // remove the non-paddle rectangle we've collided with
+                        float brickX = targetShape.shape.getPosition().x;
+                        float brickY = targetShape.shape.getPosition().y;
+
+                        logger::Info(std::format("Brick hit at position: ({},{})", brickX, brickY));
                         registry.destroy(targetEntity);
                     }
                 }
