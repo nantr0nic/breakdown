@@ -1,3 +1,8 @@
+#include <SFML/System.hpp>
+#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+#include <SFML/Window/Event.hpp>
+
 #include "AppContext.hpp"
 #include "State.hpp"
 #include "Managers/StateManager.hpp"

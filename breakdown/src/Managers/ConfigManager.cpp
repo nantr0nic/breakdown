@@ -4,6 +4,7 @@
 #include "Utilities/Logger.hpp"
 
 #include <format>
+#include <string_view>
 
 void ConfigManager::loadConfig(std::string_view configID, std::string_view filepath)
 {

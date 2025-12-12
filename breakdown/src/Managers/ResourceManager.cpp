@@ -4,6 +4,7 @@
 #include "Utilities/Logger.hpp"
 
 #include <string_view>
+#include <string>
 #include <format>
 
 void ResourceManager::loadAssetsFromManifest(std::string_view filepath)

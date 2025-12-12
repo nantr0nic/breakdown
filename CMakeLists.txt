@@ -119,21 +119,32 @@ target_link_libraries(breakdown PRIVATE
 # ---------------------- #
 target_precompile_headers(breakdown PRIVATE 
     # STL
+    <map>
     <vector>
     <string>
     <string_view>
-    <map>
-    <memory>
-    <optional>
     <format>
     <print>
-    <functional>
     <source_location>
+    <memory>
+    <optional>
+    <functional>
+    <random>
+    <utility>
+    <limits>
+    <algorithm>
+    <stdexcept> # goal is to get rid of this
+
+    # C STD
+    <cstdint>
+    <cstdio>
+    <cmath>
 
     # Third party libraries
     <SFML/Graphics.hpp>
     <SFML/Window.hpp>
     <SFML/Audio.hpp>
+    <SFML/System.hpp>
     <entt/entt.hpp>
 )
 

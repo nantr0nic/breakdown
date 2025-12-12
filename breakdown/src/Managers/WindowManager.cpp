@@ -1,8 +1,11 @@
+#include <SFML/Window.hpp>
+
 #include "Managers/WindowManager.hpp"
 #include "Managers/ConfigManager.hpp"
 #include "Utilities/Logger.hpp"
 
 #include <memory>
+#include <stdexcept>
 
 WindowManager::WindowManager(ConfigManager& configManager)
     : m_MainWindow(nullptr)

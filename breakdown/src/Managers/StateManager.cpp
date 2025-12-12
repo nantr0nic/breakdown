@@ -1,6 +1,7 @@
 #include "Managers/StateManager.hpp"
 
 #include <utility>
+#include <memory>
 
 StateManager::StateManager(AppContext* appContext)
     : m_AppContext(*appContext)

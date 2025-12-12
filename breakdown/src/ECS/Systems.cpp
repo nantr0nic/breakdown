@@ -1,12 +1,15 @@
+#include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
+#include <SFML/Window.hpp>
+#include <entt/entt.hpp>
+
 #include "ECS/Systems.hpp"
 #include "ECS/Components.hpp"
 #include "Managers/StateManager.hpp"
 #include "AppContext.hpp"
 
-#include <SFML/Graphics.hpp>
-#include <entt/entt.hpp>
-
 #include <memory>
+#include <format>
 
 namespace CoreSystems
 {

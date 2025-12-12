@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
 #include <entt/entt.hpp>
 
 #include "ECS/EntityFactory.hpp"
@@ -157,6 +158,7 @@ namespace EntityFactory
                 auto brickEntity = createABrick(context, brickSize, brickColor, brickPosition);
             }
         }
+        logger::Info("Bricks created.");
     }
 
     //$ --- UI ---

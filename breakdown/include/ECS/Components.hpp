@@ -1,12 +1,11 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
 
 #include "Utilities/Utils.hpp"
 
 #include <functional>
-#include <map>
-#include <string>
 
 //$ ----- Game Components ----- //
 
