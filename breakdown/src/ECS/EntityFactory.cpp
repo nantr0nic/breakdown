@@ -9,6 +9,7 @@
 
 #include <string>
 #include <utility>
+#include <cstdint>
 
 // functions for the ECS system
 namespace EntityFactory
@@ -117,7 +118,6 @@ namespace EntityFactory
 
         sf::Vector2f spawnStartXY{ 20.0f, 10.0f };
         sf::Vector2f brickSize{ 60.0f, 20.0f };
-        sf::Color brickColor{ sf::Color::White };
         float brickSpacing{ 5.0f };
 
         float availableWidth = windowSize.x - spawnStartXY.x;
@@ -141,6 +141,15 @@ namespace EntityFactory
             for (int brick = 0; brick < bricksInThisRow; ++brick)
             {
                 sf::Vector2f brickPosition;
+                
+                // randomize brick color
+                std::uint8_t randRed = static_cast<std::uint8_t>(
+                                       context.m_RandomMachine->getInt(10, 250));
+                std::uint8_t randGreen = static_cast<std::uint8_t>(
+                                         context.m_RandomMachine->getInt(10, 250));
+                std::uint8_t randBlue = static_cast<std::uint8_t>(
+                                        context.m_RandomMachine->getInt(10, 250));
+                sf::Color brickColor(randRed, randGreen, randBlue);
 
                 brickPosition.x = spawnStartXY.x + rowOffsetX + (brick * (brickSize.x + brickSpacing));
                 brickPosition.y = spawnStartXY.y + (row * (brickSize.y + brickSpacing));
