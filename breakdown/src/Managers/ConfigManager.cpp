@@ -7,6 +7,13 @@
 
 void ConfigManager::loadConfig(std::string_view configID, std::string_view filepath)
 {
+    if (m_ConfigFiles.contains(configID))
+    {
+        // if configID is the same then return (don't re-load)
+        logger::Info(std::format("Config ID \"{}\" already loaded.", configID));
+        return;
+    }
+
     toml::parse_result configFile = toml::parse_file(filepath);
 
     if (!configFile)
