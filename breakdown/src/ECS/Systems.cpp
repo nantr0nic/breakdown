@@ -41,19 +41,19 @@ namespace CoreSystems
         // cache window size
         auto windowSize = window.getSize();
 
-        auto rectView = registry.view<RenderableRect, Velocity>();
+        auto rectView = registry.view<Paddle, Velocity>();
         for (auto entity : rectView)
         {
-            auto& rectShape = rectView.get<RenderableRect>(entity);
+            auto& rectShape = rectView.get<Paddle>(entity);
             const auto& velocity = rectView.get<Velocity>(entity);
 
             rectShape.shape.move(velocity.value * deltaTime.asSeconds());
         }
 
-        auto ballView = registry.view<RenderableCircle, Velocity>();
+        auto ballView = registry.view<Ball, Velocity>();
         for (auto entity : ballView)
         {
-            auto& ballShape = ballView.get<RenderableCircle>(entity);
+            auto& ballShape = ballView.get<Ball>(entity);
             const auto& velocity = ballView.get<Velocity>(entity);
 
             ballShape.shape.move(velocity.value * deltaTime.asSeconds());
@@ -70,128 +70,137 @@ namespace CoreSystems
         // cache window size
         auto windowSize = window.getSize();
         
-        // view of renderable rects
-        auto rectView = registry.view<RenderableRect, Velocity>();
-        for (auto entity : rectView)
+        //$ --- Paddle vs Window Walls --- //
+        // Confine paddle to window (wall collision)
+        auto paddleView = registry.view<Paddle, Velocity>();
+        for (auto entity : paddleView)
         {
-            auto& rectShape = rectView.get<RenderableRect>(entity);
+            auto& paddleShape = paddleView.get<Paddle>(entity);
 
-            // Check 'collision' with player paddle and west/east walls
             // Check for 'ConfineToWindow' and limit paddle to window
             if (auto* bounds = registry.try_get<ConfineToWindow>(entity))
             {
-                auto rectBounds = rectShape.shape.getGlobalBounds();
+                auto paddleBounds = paddleShape.shape.getGlobalBounds();
 
-                float currentY = rectShape.shape.getPosition().y;
-                float rectLeft = rectBounds.position.x;
-                float rectRight = rectBounds.position.x + rectBounds.size.x;
-                float halfWidth = rectBounds.size.x / 2.0f;
+                float currentY = paddleShape.shape.getPosition().y;
+                float paddleLeft = paddleBounds.position.x;
+                float paddleRight = paddleBounds.position.x + paddleBounds.size.x;
+                float halfWidth = paddleBounds.size.x / 2.0f;
 
                 // West Wall
-                if (rectLeft < 0.0f)
+                if (paddleLeft < 0.0f)
                 {
                     float leftLimitPad = bounds->padLeft + halfWidth;
-                    rectShape.shape.setPosition({ leftLimitPad, currentY });
+                    paddleShape.shape.setPosition({ leftLimitPad, currentY });
                 }
                 // East Wall
-                if (rectRight > windowSize.x)
+                if (paddleRight > windowSize.x)
                 {
                     float rightLimitPad = windowSize.x - (bounds->padRight + halfWidth);
-                    rectShape.shape.setPosition({ rightLimitPad, currentY });
+                    paddleShape.shape.setPosition({ rightLimitPad, currentY });
                 }
             }
         }
 
-        // Check ball collisions
-        auto ballView = registry.view<RenderableCircle, Velocity, MovementSpeed>();
-        auto targetView = registry.view<RenderableRect>();
+        //$ ----- Ball Collision Logic ----- //
+        auto ballView = registry.view<Ball, Velocity, MovementSpeed>();
         for (auto ballEntity : ballView)
         {
             // Ball properties
-            auto& ballShape = registry.get<RenderableCircle>(ballEntity);
+            auto& ballComp = registry.get<Ball>(ballEntity);
             auto& ballVelocity = registry.get<Velocity>(ballEntity);
-            sf::Vector2f ballPosition = ballShape.shape.getPosition(); // Center
-            float r = ballShape.shape.getRadius();
-            sf::FloatRect ballBounds = ballShape.shape.getGlobalBounds(); // treats circle as square
             float ballSpeed = registry.get<MovementSpeed>(ballEntity).value; 
 
-            //$ ----- Wall collisions ----- //
+            sf::Vector2f ballPosition = ballComp.shape.getPosition(); // Center
+            float ballRadius = ballComp.shape.getRadius();
+
+            //$ ----- Ball vs Walls ----- //
             // West Wall
-            if (ballPosition.x - r < 0.0f) 
+            if (ballPosition.x - ballRadius < 0.0f) 
             {
-                ballPosition.x = r;                 
+                ballPosition.x = ballRadius;                 
                 ballVelocity.value.x *= -1.0f;
             }
             // East Wall
-            if (ballPosition.x + r > windowSize.x) 
+            if (ballPosition.x + ballRadius > windowSize.x) 
             {
-                ballPosition.x = windowSize.x - r;
+                ballPosition.x = windowSize.x - ballRadius;
                 ballVelocity.value.x *= -1.0f;
             }
             // North Wall
-            if (ballPosition.y - r < 0.0f) 
+            if (ballPosition.y - ballRadius < 0.0f) 
             {
-                ballPosition.y = r;
+                ballPosition.y = ballRadius;
                 ballVelocity.value.y *= -1.0f;
             }
             // South Wall (Game over)
-            if (ballPosition.y + r > windowSize.y) 
+            if (ballPosition.y + ballRadius > windowSize.y) 
             {
                 auto gameoverState = std::make_unique<GameOverState>(m_AppContext);
                 stateManager.replaceState(std::move(gameoverState));
             }
 
-            ballShape.shape.setPosition(ballPosition);
+            // Update position after wall checks
+            ballComp.shape.setPosition(ballPosition);
 
-            // Check for collision with rectangles
-            for (auto targetEntity : targetView)
+            // Update bounds for object collision checks
+            sf::FloatRect ballBounds = ballComp.shape.getGlobalBounds(); // treats circle as square
+        
+
+            //$ ----- Ball vs Paddle ----- //
+            auto paddleView = registry.view<Paddle>();
+            for (auto paddleEntity : paddleView)
             {
-                auto& targetShape = registry.get<RenderableRect>(targetEntity);
-                sf::FloatRect targetBounds = targetShape.shape.getGlobalBounds();
+                auto& paddleShape = registry.get<Paddle>(paddleEntity);
+                sf::FloatRect paddleBounds = paddleShape.shape.getGlobalBounds();
 
-                if (auto intersection = ballBounds.findIntersection(targetBounds))
+                if (ballBounds.findIntersection(paddleBounds))
                 {
-                    // if ball hits paddle, angle the reflection
-                    if (registry.any_of<PlayerTag>(targetEntity))
-                    {
-                        float targetCenterX = targetShape.shape.getPosition().x;
-                        float ballCenterX = ballPosition.x;
-                        // calculate offset (-1 to 1)
-                        // (ball - center) / half of paddle width
-                        float relativeIntersectX = (ballCenterX - targetCenterX) / 
-                                                   (targetBounds.size.x / 2.0f);
-                        // define angle for reflection
-                        sf::Angle rotation = sf::degrees(relativeIntersectX * 60.0f);
-                        // create the new velocity based on 'straight up'
-                        sf::Vector2f upVelocity = { 0.0f, -1.0f };
-                        // rotate it by our angle
-                        sf::Vector2f rotatedDirection = upVelocity.rotatedBy(rotation);
-                        // apply it!
-                        ballVelocity.value = upVelocity.rotatedBy(rotation) * ballSpeed;
-                    }
-                    // else we've hit a non-paddle rectangle (a brick)
-                    else  
-                    {
-                        // Check if hit top or bottom
-                        if (intersection->size.x > intersection->size.y)
-                        {
-                            // reflect along y axis
-                            ballVelocity.value.y = -ballVelocity.value.y;
-                        }
-                        // else we've hit left or right side
-                        else
-                        {
-                            // reflect along x axis
-                            ballVelocity.value.x = -ballVelocity.value.x;
-                        }
+                    float paddleCenterX = paddleShape.shape.getPosition().x;
+                    float ballCenterX = ballPosition.x;
+                    // calculate offset (-1 to 1)
+                    // (ball - center) / half of paddle width
+                    float relativeIntersectX = (ballCenterX - paddleCenterX) / 
+                                                (paddleBounds.size.x / 2.0f);
+                    // define angle for reflection
+                    sf::Angle rotation = sf::degrees(relativeIntersectX * 60.0f);
+                    // create the new velocity based on 'straight up'
+                    sf::Vector2f upVelocity = { 0.0f, -1.0f };
+                    // rotate it by our angle
+                    sf::Vector2f rotatedDirection = upVelocity.rotatedBy(rotation);
+                    // apply it!
+                    ballVelocity.value = upVelocity.rotatedBy(rotation) * ballSpeed;
+                }
+            }
+                    
+            //$ ----- Ball vs Bricks ----- //
+            auto brickView = registry.view<Brick>();
+            for (auto brickEntity : brickView)
+            {
+                auto& brickShape = brickView.get<Brick>(brickEntity);
+                sf::FloatRect brickBounds = brickShape.shape.getGlobalBounds();
 
-                        // remove the non-paddle rectangle we've collided with
-                        float brickX = targetShape.shape.getPosition().x;
-                        float brickY = targetShape.shape.getPosition().y;
-
-                        logger::Info(std::format("Brick hit at position: ({},{})", brickX, brickY));
-                        registry.destroy(targetEntity);
+                if (auto intersection = ballBounds.findIntersection(brickBounds))
+                {
+                    // Check if hit top or bottom
+                    if (intersection->size.x > intersection->size.y)
+                    {
+                        // reflect along y axis
+                        ballVelocity.value.y = -ballVelocity.value.y;
                     }
+                    // else we've hit left or right side
+                    else
+                    {
+                        // reflect along x axis
+                        ballVelocity.value.x = -ballVelocity.value.x;
+                    }
+
+                    float brickY = brickShape.shape.getPosition().y;
+                    float brickX = brickShape.shape.getPosition().x;
+                    logger::Info(std::format("Brick hit at position: ({},{})", brickX, brickY));
+
+                    // remove the non-paddle rectangle we've collided with
+                    registry.destroy(brickEntity);
                 }
             }
         }
@@ -200,18 +209,26 @@ namespace CoreSystems
     void renderSystem(entt::registry& registry, sf::RenderWindow& window, bool showDebug)
     {
         // Draw all Rectangles
-        auto rectView = registry.view<RenderableRect>();
+        auto rectView = registry.view<Paddle>();
         for (auto entity : rectView)
         {
-            auto& rectComp = rectView.get<RenderableRect>(entity);
+            auto& rectComp = rectView.get<Paddle>(entity);
             window.draw(rectComp.shape);
         }
 
+        // Draw all Bricks
+        auto brickView = registry.view<Brick>();
+        for (auto entity : brickView)
+        {
+            auto& brickComp = brickView.get<Brick>(entity);
+            window.draw(brickComp.shape);
+        }
+
         // Draw all Circles
-        auto circleView = registry.view<RenderableCircle>();
+        auto circleView = registry.view<Ball>();
         for (auto entity : circleView)
         {
-            auto& circleComp = circleView.get<RenderableCircle>(entity);
+            auto& circleComp = circleView.get<Ball>(entity);
             window.draw(circleComp.shape);
         }
     }

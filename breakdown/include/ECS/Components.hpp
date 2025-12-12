@@ -35,9 +35,9 @@ struct ConfineToWindow
 
 struct BaseScale { sf::Vector2f value{ 1.0f, 1.0f }; };
 
-struct RenderableCircle 
+struct Ball 
 {
-    RenderableCircle(float radius, const sf::Color& color, sf::Vector2f position)
+    Ball(float radius, const sf::Color& color, sf::Vector2f position)
         : shape()
     {
         shape.setRadius(radius);
@@ -49,9 +49,9 @@ struct RenderableCircle
     sf::CircleShape shape; 
 };
 
-struct RenderableRect
+struct Paddle
 {
-    RenderableRect(sf::Vector2f size, const sf::Color& color, sf::Vector2f position)
+    Paddle(sf::Vector2f size, const sf::Color& color, sf::Vector2f position)
         : shape()
     {
         shape.setSize(size);

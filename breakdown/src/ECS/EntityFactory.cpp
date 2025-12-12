@@ -20,7 +20,7 @@ namespace EntityFactory
 
         auto rectEntity = registry.create();
 
-        registry.emplace<RenderableRect>(rectEntity, size, color, position);
+        registry.emplace<Paddle>(rectEntity, size, color, position);
 
         return rectEntity;
     }
@@ -45,14 +45,14 @@ namespace EntityFactory
         // Paddle start size
         sf::Vector2f paddleSize = sf::Vector2f(100.0f, 20.0f);
 
-        RenderableRect playerPaddle(paddleSize, sf::Color::White, playerPosition);
+        Paddle playerPaddle(paddleSize, sf::Color::White, playerPosition);
 
         // Add all components that make a "player"
         registry.emplace<PlayerTag>(playerEntity);  // way to ID the player
         registry.emplace<RenderableTag>(playerEntity);
         registry.emplace<MovementSpeed>(playerEntity, moveSpeed);
         registry.emplace<Velocity>(playerEntity);
-        registry.emplace<RenderableRect>(playerEntity, playerPaddle);
+        registry.emplace<Paddle>(playerEntity, playerPaddle);
         registry.emplace<ConfineToWindow>(playerEntity, 1.0f, 1.0f);
 
         logger::Info("Player paddle created.");
@@ -71,10 +71,10 @@ namespace EntityFactory
         float ballSpeed{ 450.0f };
 
         // Calculate ballStartingPosition from Player Position
-        auto view = registry.view<PlayerTag, RenderableRect>();
+        auto view = registry.view<PlayerTag, Paddle>();
         for (auto entity : view)
         {
-            const auto& playerShape = registry.get<RenderableRect>(entity).shape;
+            const auto& playerShape = registry.get<Paddle>(entity).shape;
             const auto& playerPosition = playerShape.getPosition();
             float ballStartX = playerPosition.x;
             float ballStartY = playerPosition.y - playerShape.getSize().y / 2.0f - ballRadius;
@@ -82,10 +82,10 @@ namespace EntityFactory
             ballStartingPosition = sf::Vector2f(ballStartX, ballStartY);
         }
 
-        RenderableCircle ballShape(ballRadius, ballColor, ballStartingPosition);
+        Ball ballShape(ballRadius, ballColor, ballStartingPosition);
 
         registry.emplace<RenderableTag>(ballEntity);
-        registry.emplace<RenderableCircle>(ballEntity, ballShape);
+        registry.emplace<Ball>(ballEntity, ballShape);
         auto& velocity = registry.emplace<Velocity>(ballEntity);
         // shoot the ball at start of game
         velocity.value = { 0.0f, -ballSpeed };
@@ -115,24 +115,36 @@ namespace EntityFactory
         auto& window = *context.m_MainWindow;
         auto windowSize = window.getSize();
 
-        sf::Vector2f spawnStartXY{ 5.0f, 10.0f };
+        sf::Vector2f spawnStartXY{ 10.0f, 10.0f };
         sf::Vector2f brickSize{ 60.0f, 20.0f };
         sf::Color brickColor{ sf::Color::White };
-        float brickSpacing{ 25.0f };
-        sf::Vector2f brickPosition{ spawnStartXY.x, spawnStartXY.y };
+        float brickSpacing{ 5.0f };
 
-
-        int bricksPerRow = static_cast<int>(windowSize.x / brickSize.x);
+        float availableWidth = windowSize.x - (spawnStartXY.x * 2.0f);
+        float availableHeight = windowSize.y - (spawnStartXY.y * 2.0f);
+        int bricksPerRow = static_cast<int>((availableWidth + brickSpacing) / brickSize.x);
         int rows = 5;
 
-        for (int i = 0; i < bricksPerRow; ++i)
+        for (int row = 0; row < rows; ++row)
         {
-            for (int j = 0; j < rows; ++j)
-            {
-                brickPosition.x = (spawnStartXY.x + (i * brickSize.x)) + brickSpacing;
-                brickPosition.y = (spawnStartXY.y + (j * brickSize.y)) + brickSpacing;
+            float rowOffsetX = 0.0f;
+            int bricksInThisRow = bricksPerRow;
 
-                auto brickEntity = createRectangle(context, brickSize, brickColor, brickPosition);
+            // alternate number of bricks per row to give 'staggered' look
+            if (row % 2 == 0)
+            {
+                rowOffsetX = (brickSize.x + brickSpacing) / 2.0f;
+                bricksInThisRow = bricksPerRow - 1;
+            }
+
+            for (int brick = 0; brick < bricksInThisRow; ++brick)
+            {
+                sf::Vector2f brickPosition;
+
+                brickPosition.x = spawnStartXY.x + rowOffsetX + (brick * (brickSize.x + brickSpacing));
+                brickPosition.y = spawnStartXY.y + (row * (brickSize.y + brickSpacing));
+
+                auto brickEntity = createABrick(context, brickSize, brickColor, brickPosition);
             }
         }
     }
