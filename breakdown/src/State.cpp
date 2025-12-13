@@ -62,9 +62,9 @@ MenuState::MenuState(AppContext* appContext)
 
 MenuState::~MenuState()
 {
-    // clean up EnTT entities on leaving MenuState
+    // Clean up Menu UI entities
     auto& registry = *m_AppContext->m_Registry;
-    auto view = registry.view<UITag>();
+    auto view = registry.view<MenuUITag>();
     registry.destroy(view.begin(), view.end());
 }
 
@@ -103,9 +103,9 @@ PlayState::PlayState(AppContext* appContext)
     else 
     {
         // Move certain values to a TOML later
-        unsigned int scoreFontSize{ 18 };
+        unsigned int scoreFontSize{ 32 };
         sf::Color scoreFontColor{ sf::Color::White };
-        sf::Vector2f scorePosition(center);
+        sf::Vector2f scorePosition({ center.x, windowSize.y - 20.0f });
 
         EntityFactory::createScoreDisplay(*m_AppContext, *scoreFont, scoreFontSize, 
                                         scoreFontColor, scorePosition);
@@ -156,13 +156,14 @@ PlayState::PlayState(AppContext* appContext)
 
 PlayState::~PlayState()
 {
-    // Clean up all renderable entities
+    // Clean up all game entities
     auto& registry = *m_AppContext->m_Registry;
-    auto view = registry.view<RenderableTag>();
-    registry.destroy(view.begin(), view.end());
-    
-    // Here you would also clean up enemies, bullets, etc.
-    // (e.g., registry.clear<EnemyTag, BulletTag>();)
+    auto gameView = registry.view<RenderableTag>();
+    registry.destroy(gameView.begin(), gameView.end());
+
+    // Clean up all HUD entities
+    auto hudView = registry.view<HUDTag>();
+    registry.destroy(hudView.begin(), hudView.end());
 }
 
 void PlayState::update(sf::Time deltaTime)
@@ -171,12 +172,11 @@ void PlayState::update(sf::Time deltaTime)
     CoreSystems::handlePlayerInput(*m_AppContext->m_Registry, *m_AppContext->m_MainWindow);
     CoreSystems::movementSystem(*m_AppContext->m_Registry, deltaTime, *m_AppContext->m_MainWindow);
     CoreSystems::collisionSystem(m_AppContext, deltaTime);
-
-    UISystems::uiHoverSystem(*m_AppContext->m_Registry, *m_AppContext->m_MainWindow);
 }
 
 void PlayState::render()
 {
+    // Call game rendering systems
     CoreSystems::renderSystem(
         *m_AppContext->m_Registry, 
         *m_AppContext->m_MainWindow,
@@ -335,7 +335,7 @@ GameOverState::GameOverState(AppContext* appContext)
 GameOverState::~GameOverState()
 {
     auto& registry = *m_AppContext->m_Registry;
-    auto view = registry.view<UITag>();
+    auto view = registry.view<MenuUITag>();
     registry.destroy(view.begin(), view.end());
 }
 

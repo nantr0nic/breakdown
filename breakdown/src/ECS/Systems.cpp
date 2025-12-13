@@ -198,9 +198,21 @@ namespace CoreSystems
                         ballVelocity.value.x = -ballVelocity.value.x;
                     }
 
+                    // Log brick collision for debug
                     float brickY = brickShape.shape.getPosition().y;
                     float brickX = brickShape.shape.getPosition().x;
                     logger::Info(std::format("Brick hit at position: ({},{})", brickX, brickY));
+
+                    // increment score
+                    auto scoreView = registry.view<HUDTag, ScoreHUDTag, CurrentScore, UIText>();
+                    for (auto scoreEntity : scoreView)
+                    {
+                        auto& scoreText = scoreView.get<UIText>(scoreEntity);
+                        auto& scoreCurrentValue = scoreView.get<CurrentScore>(scoreEntity);
+
+                        scoreCurrentValue.value += 5;
+                        scoreText.text.setString(std::format("Score: {}", scoreCurrentValue.value));
+                    }
 
                     // remove the non-paddle rectangle we've collided with
                     registry.destroy(brickEntity);

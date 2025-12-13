@@ -73,13 +73,14 @@ struct BrickHealth { int current{ 1 }; int max{ 1 }; };
 struct ShowDamage {};
 
 //$ ----- Game Data ----- //
-struct Score { int value{ 0 }; };
-struct Lives { int value{ 3 }; };
+struct CurrentScore { int value{ 0 }; };
+struct CurrentLives { int value{ 3 }; };
 
 //$ ----- UI Components -----
 
 // Tag to identify UI/HUD entities
-struct UITag {};
+struct MenuUITag {};
+struct HUDTag{};
 struct ScoreHUDTag {};
 struct LivesHUDTag {};
 

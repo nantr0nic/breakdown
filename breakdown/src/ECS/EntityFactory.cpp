@@ -171,7 +171,7 @@ namespace EntityFactory
         auto& registry = *context.m_Registry;
 
         auto buttonEntity = registry.create();
-        registry.emplace<UITag>(buttonEntity); // Tag for easy cleanup
+        registry.emplace<MenuUITag>(buttonEntity); // Tag for easy cleanup
 
         // Shape component
         auto& buttonShape = registry.emplace<UIShape>(buttonEntity);
@@ -205,8 +205,10 @@ namespace EntityFactory
         auto& registry = *context.m_Registry;
         auto scoreEntity = registry.create();
 
-        registry.emplace<UITag>(scoreEntity);
+        registry.emplace<HUDTag>(scoreEntity);
         registry.emplace<ScoreHUDTag>(scoreEntity);
+
+        registry.emplace<CurrentScore>(scoreEntity, 0);
 
         auto& scoreText = registry.emplace<UIText>(scoreEntity, sf::Text(font, "Score: 0", size));
         scoreText.text.setFillColor(color);
