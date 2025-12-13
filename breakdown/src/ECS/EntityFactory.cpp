@@ -10,7 +10,6 @@
 
 #include <string>
 #include <utility>
-#include <cstdint>
 
 // functions for the ECS system
 namespace EntityFactory
@@ -106,30 +105,42 @@ namespace EntityFactory
         auto& registry = *context.m_Registry;
         auto brickEntity = registry.create();
 
-        registry.emplace<Brick>(brickEntity, size, sf::Color::White, position);
         registry.emplace<BrickTag>(brickEntity);
         registry.emplace<RenderableTag>(brickEntity);
+        registry.emplace<BrickType>(brickEntity, type);
+
+        sf::Color color = sf::Color::White;
+        int brickScoreValue = 0;
+        int brickHealthValue = 0;
+        int brickHealthMax = 0;
 
         switch (type)
         {
-        case BrickType::Normal:
-            registry.emplace<BrickScore>(brickEntity, 5);
-            registry.emplace<BrickHealth>(brickEntity, 1, 1);
-            registry.get<Brick>(brickEntity).shape.setFillColor(BrickColors::Normal().color);
-            break;
-        case BrickType::Strong:
-            registry.emplace<BrickScore>(brickEntity, 10);
-            registry.emplace<BrickHealth>(brickEntity, 2, 2);
-            registry.get<Brick>(brickEntity).shape.setFillColor(BrickColors::Strong().color);
-            break;
-        case BrickType::Gold:
-            registry.emplace<BrickScore>(brickEntity, 20);
-            registry.emplace<BrickHealth>(brickEntity, 1, 1);
-            registry.get<Brick>(brickEntity).shape.setFillColor(BrickColors::Gold().color);
-            break;
-        default:
-            break;
+            case BrickType::Normal:
+                brickScoreValue = 5;
+                brickHealthValue = 1;
+                brickHealthMax = 1;
+                color = BrickColors::Normal;
+                break;
+            case BrickType::Strong:
+                brickScoreValue = 10;
+                brickHealthValue = 2;
+                brickHealthMax = 2;
+                color = BrickColors::Strong;
+                break;
+            case BrickType::Gold:
+                brickScoreValue = 20;
+                brickHealthValue = 1;
+                brickHealthMax = 1;
+                color = BrickColors::Gold;
+                break;
+            default:
+                break;
         }
+
+        registry.emplace<Brick>(brickEntity, size, color, position);
+        registry.emplace<BrickScore>(brickEntity, brickScoreValue);
+        registry.emplace<BrickHealth>(brickEntity, brickHealthValue, brickHealthMax);
 
         return brickEntity;
     }

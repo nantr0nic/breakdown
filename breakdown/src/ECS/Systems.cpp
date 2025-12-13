@@ -177,9 +177,10 @@ namespace CoreSystems
             }
                     
             //$ ----- Ball vs Bricks ----- //
-            auto brickView = registry.view<Brick, BrickScore>();
+            auto brickView = registry.view<Brick, BrickScore, BrickHealth, BrickType>();
             for (auto brickEntity : brickView)
             {
+                // Handle collision/bounce
                 auto& brickShape = brickView.get<Brick>(brickEntity);
                 sf::FloatRect brickBounds = brickShape.shape.getGlobalBounds();
 
@@ -198,26 +199,48 @@ namespace CoreSystems
                         ballVelocity.value.x = -ballVelocity.value.x;
                     }
 
-                    // Log brick collision for debug
-                    float brickY = brickShape.shape.getPosition().y;
-                    float brickX = brickShape.shape.getPosition().x;
-                    logger::Info(std::format("Brick hit at position: ({},{})", brickX, brickY));
+                    // // Log brick collision for debug
+                    // float brickY = brickShape.shape.getPosition().y;
+                    // float brickX = brickShape.shape.getPosition().x;
+                    // logger::Info(std::format("Brick hit at position: ({},{})", brickX, brickY));
 
-                    // increment score
-                    auto scoreView = registry.view<HUDTag, ScoreHUDTag, CurrentScore, UIText>();
-                    for (auto scoreEntity : scoreView)
+                    // Handle brick health
+                    bool destroyed = false;
+                    auto& brickHealth = brickView.get<BrickHealth>(brickEntity).current;
+                    brickHealth -= 1;
+                    if (brickHealth <= 0)
                     {
-                        auto& scoreText = scoreView.get<UIText>(scoreEntity);
-                        auto& scoreCurrentValue = scoreView.get<CurrentScore>(scoreEntity);
-                        auto& brickScoreValue = brickView.get<BrickScore>(brickEntity);
-                        
-                        scoreCurrentValue.value += brickScoreValue.value;
-
-                        scoreText.text.setString(std::format("Score: {}", scoreCurrentValue.value));
+                        destroyed = true;
                     }
+                    
+                    if (destroyed)
+                    {
+                        // increment score
+                        auto scoreView = registry.view<HUDTag, ScoreHUDTag, CurrentScore, UIText>();
+                        for (auto scoreEntity : scoreView)
+                        {
+                            auto& scoreText = scoreView.get<UIText>(scoreEntity);
+                            auto& scoreCurrentValue = scoreView.get<CurrentScore>(scoreEntity);
+                            auto& brickScoreValue = brickView.get<BrickScore>(brickEntity);
 
-                    // remove the non-paddle rectangle we've collided with
-                    registry.destroy(brickEntity);
+                            scoreCurrentValue.value += brickScoreValue.value;
+
+                            scoreText.text.setString(std::format("Score: {}", scoreCurrentValue.value));
+                        }
+
+                        // remove the non-paddle rectangle we've collided with
+                        registry.destroy(brickEntity);
+                    }
+                    //! We will need to handle this differently once there are more than one type
+                    //! of "strong" brick
+                    else 
+                    {
+                        BrickType brickType = brickView.get<BrickType>(brickEntity);
+                        if (brickType == BrickType::Strong)
+                        {
+                            brickShape.shape.setFillColor(BrickColors::StrongDamaged);
+                        }
+                    }
                 }
             }
         }

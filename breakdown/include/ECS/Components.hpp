@@ -5,7 +5,6 @@
 
 #include "Utilities/Utils.hpp"
 
-#include <cstdint>
 #include <functional>
 
 //$ ----- Game Components ----- //
@@ -61,28 +60,10 @@ struct ConfineToWindow
 enum class BrickType { Normal, Strong, Gold };
 namespace BrickColors 
 {
-    using uint8 = std::uint8_t;
-    // Perhaps we can get these from a TOML file later?
-    struct Normal 
-    {
-        uint8 r{ 66 }; uint8 g{ 170 }; uint8 b{ 139 };
-        sf::Color color{ r, g, b };
-    };
-    struct Strong 
-    {
-        uint8 r{ 87 }; uint8 g{ 117 }; uint8 b{ 144 };
-        sf::Color color{ r, g, b };
-    };
-    struct StrongDamaged 
-    {
-        uint8 r{ 76 }; uint8 g{ 144 }; uint8 b{ 142 };
-        sf::Color color{ r, g, b };
-    };
-    struct Gold 
-    {
-        uint8 r{ 249 }; uint8 g{ 199 }; uint8 b{ 79 };
-        sf::Color color{ r, g, b };
-    };
+    constexpr sf::Color Normal{ 66, 170, 139 };
+    constexpr sf::Color Strong{ 87, 117, 144 };
+    constexpr sf::Color StrongDamaged{ 76, 144, 142 };
+    constexpr sf::Color Gold{ 249, 199, 79 };
 }
 
 struct Brick
@@ -100,7 +81,6 @@ struct Brick
 
 struct BrickScore { int value{ 5 }; };
 struct BrickHealth { int current{ 1 }; int max{ 1 }; };
-struct ShowDamage {};
 
 //$ ----- Game Data ----- //
 struct CurrentScore { int value{ 0 }; };
