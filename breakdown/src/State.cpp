@@ -27,11 +27,7 @@ MenuState::MenuState(AppContext* appContext)
     sf::Font* font = m_AppContext->m_ResourceManager->getResource<sf::Font>(Assets::Fonts::MainFont);
     if (font)
     {
-        EntityFactory::createButton(
-            *m_AppContext,
-            *font,
-            "Play",
-            center,
+        EntityFactory::createButton(*m_AppContext, *font, "Play", center,
             // lambda for when button is clicked
             [this]() {
                 auto playState = std::make_unique<PlayState>(m_AppContext);
@@ -68,7 +64,7 @@ MenuState::~MenuState()
 {
     // clean up EnTT entities on leaving MenuState
     auto& registry = *m_AppContext->m_Registry;
-    auto view = registry.view<MenuUITag>();
+    auto view = registry.view<UITag>();
     registry.destroy(view.begin(), view.end());
 }
 
@@ -89,13 +85,31 @@ void MenuState::render()
 PlayState::PlayState(AppContext* appContext)
     : State(appContext)
 {
-    // We create the player entity here
     sf::Vector2u windowSize = m_AppContext->m_MainWindow->getSize();
     sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
 
+    // Create game entities
     EntityFactory::createPlayer(*m_AppContext);
     EntityFactory::createBall(*m_AppContext);
     EntityFactory::createBricks(*m_AppContext);
+
+    // Create UI/HUD entities
+    sf::Font* scoreFont = m_AppContext->m_ResourceManager->getResource<sf::Font>(
+                                                           Assets::Fonts::ScoreFont);                                      
+    if (!scoreFont)
+    {
+        logger::Error("Couldn't load ScoreFont! Score Display will not be created.");
+    }
+    else 
+    {
+        // Move certain values to a TOML later
+        unsigned int scoreFontSize{ 18 };
+        sf::Color scoreFontColor{ sf::Color::White };
+        sf::Vector2f scorePosition(center);
+
+        EntityFactory::createScoreDisplay(*m_AppContext, *scoreFont, scoreFontSize, 
+                                        scoreFontColor, scorePosition);
+    }
 
     // Handle music stuff
     m_MainMusic = m_AppContext->m_ResourceManager->getResource<sf::Music>(Assets::Musics::MainSong);
@@ -104,7 +118,8 @@ PlayState::PlayState(AppContext* appContext)
     if (m_MainMusic)
     {
         m_MainMusic->setLooping(true);
-        m_MainMusic->play();
+        //! ----- Turning off the music for now, re-enable it later ----- //
+        //m_MainMusic->play();
     }
     else 
     {
@@ -141,7 +156,7 @@ PlayState::PlayState(AppContext* appContext)
 
 PlayState::~PlayState()
 {
-    // Clean up all player entities
+    // Clean up all renderable entities
     auto& registry = *m_AppContext->m_Registry;
     auto view = registry.view<RenderableTag>();
     registry.destroy(view.begin(), view.end());
@@ -156,6 +171,8 @@ void PlayState::update(sf::Time deltaTime)
     CoreSystems::handlePlayerInput(*m_AppContext->m_Registry, *m_AppContext->m_MainWindow);
     CoreSystems::movementSystem(*m_AppContext->m_Registry, deltaTime, *m_AppContext->m_MainWindow);
     CoreSystems::collisionSystem(m_AppContext, deltaTime);
+
+    UISystems::uiHoverSystem(*m_AppContext->m_Registry, *m_AppContext->m_MainWindow);
 }
 
 void PlayState::render()
@@ -165,6 +182,8 @@ void PlayState::render()
         *m_AppContext->m_MainWindow,
         m_ShowDebug
     );
+
+    UISystems::uiRenderSystem(*m_AppContext->m_Registry, *m_AppContext->m_MainWindow);
 }
 
 
@@ -316,7 +335,7 @@ GameOverState::GameOverState(AppContext* appContext)
 GameOverState::~GameOverState()
 {
     auto& registry = *m_AppContext->m_Registry;
-    auto view = registry.view<MenuUITag>();
+    auto view = registry.view<UITag>();
     registry.destroy(view.begin(), view.end());
 }
 

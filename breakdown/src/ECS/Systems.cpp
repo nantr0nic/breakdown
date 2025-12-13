@@ -264,12 +264,12 @@ namespace UISystems
     {
         // Render shapes
         auto shapeView = registry.view<UIShape>();
-        for (auto entity : shapeView)
+        for (auto shapeEntity : shapeView)
         {
-            auto& uiShape = shapeView.get<UIShape>(entity);
+            auto& uiShape = shapeView.get<UIShape>(shapeEntity);
             
             // Change color on hover
-            if (registry.all_of<Hovered>(entity))
+            if (registry.all_of<Hovered>(shapeEntity))
             {
                 uiShape.shape.setFillColor(sf::Color(100, 100, 255)); // Hover color
             }
@@ -283,18 +283,21 @@ namespace UISystems
 
         // Render text
         auto textView = registry.view<UIText>();
-        for (auto entity : textView)
+        for (auto textEntity : textView)
         {
-            auto& uiText = textView.get<UIText>(entity);
+            auto& uiText = textView.get<UIText>(textEntity);
 
-            // Change text color on hover
-            if (registry.all_of<Hovered>(entity))
+            // Change text color on hover for interactive UI
+            if (registry.any_of<Clickable, Bounds>(textEntity))
             {
-                uiText.text.setFillColor(sf::Color::White); // Hover text color
-            }
-            else
-            {
-                uiText.text.setFillColor(sf::Color(200, 200, 200)); // Normal text color
+                if (registry.all_of<Hovered>(textEntity))
+                {
+                    uiText.text.setFillColor(sf::Color::White); // Hover text color
+                }
+                else
+                {
+                    uiText.text.setFillColor(sf::Color(200, 200, 200)); // Normal text color
+                }
             }
 
             window.draw(uiText.text);

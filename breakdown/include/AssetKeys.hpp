@@ -7,6 +7,7 @@ namespace Assets
     namespace Fonts
     {
         constexpr std::string_view MainFont = "MainFont";
+        constexpr std::string_view ScoreFont = "ScoreFont";
     }
     namespace Textures
     {

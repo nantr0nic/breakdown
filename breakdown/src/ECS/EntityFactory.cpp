@@ -34,7 +34,8 @@ namespace EntityFactory
 
         // Load config values
         context.m_ConfigManager->loadConfig("player", "config/Player.toml");
-        float moveSpeed = context.m_ConfigManager->getConfigValue<float>("player", "player", "movementSpeed").value_or(350.0f);
+        float moveSpeed = context.m_ConfigManager->getConfigValue<float>(
+                          "player", "player", "movementSpeed").value_or(350.0f);
 
         // Create player Entity in the registry
         auto playerEntity = registry.create();
@@ -152,7 +153,8 @@ namespace EntityFactory
                                         context.m_RandomMachine->getInt(10, 250));
                 sf::Color brickColor(randRed, randGreen, randBlue);
 
-                brickPosition.x = spawnStartXY.x + rowOffsetX + (brick * (brickSize.x + brickSpacing));
+                brickPosition.x = spawnStartXY.x + rowOffsetX + 
+                                  (brick * (brickSize.x + brickSpacing));
                 brickPosition.y = spawnStartXY.y + (row * (brickSize.y + brickSpacing));
 
                 auto brickEntity = createABrick(context, brickSize, brickColor, brickPosition);
@@ -161,17 +163,15 @@ namespace EntityFactory
         logger::Info("Bricks created.");
     }
 
-    //$ --- UI ---
-    entt::entity createButton(AppContext& context,
-                            sf::Font& font,
-                            const std::string& text,
-                            sf::Vector2f position,
+    //$ ----- UI/HUD ----- //
+    entt::entity createButton(AppContext& context, sf::Font& font,
+                            const std::string& text, sf::Vector2f position,
                             std::function<void()> action)
     {
         auto& registry = *context.m_Registry;
 
         auto buttonEntity = registry.create();
-        registry.emplace<MenuUITag>(buttonEntity); // Tag for easy cleanup
+        registry.emplace<UITag>(buttonEntity); // Tag for easy cleanup
 
         // Shape component
         auto& buttonShape = registry.emplace<UIShape>(buttonEntity);
@@ -196,5 +196,25 @@ namespace EntityFactory
         registry.emplace<Clickable>(buttonEntity, std::move(action));
         
         return buttonEntity;
+    }
+
+    entt::entity createScoreDisplay(AppContext &context, sf::Font &font, 
+                                    unsigned int size, sf::Color& color, 
+                                    sf::Vector2f position)
+    {
+        auto& registry = *context.m_Registry;
+        auto scoreEntity = registry.create();
+
+        registry.emplace<UITag>(scoreEntity);
+        registry.emplace<ScoreHUDTag>(scoreEntity);
+
+        auto& scoreText = registry.emplace<UIText>(scoreEntity, sf::Text(font, "Score: 0", size));
+        scoreText.text.setFillColor(color);
+        utils::centerOrigin(scoreText.text);
+        scoreText.text.setPosition(position);
+
+        logger::Info("Score Display created.");
+
+        return scoreEntity;
     }
 }

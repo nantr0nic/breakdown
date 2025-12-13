@@ -33,4 +33,11 @@ namespace EntityFactory
                             const std::string& text,
                             sf::Vector2f position,
                             std::function<void()> action);
+
+    entt::entity createScoreDisplay(AppContext& context, 
+                                    sf::Font& font,
+                                    unsigned int size,
+                                    sf::Color& color, 
+                                    sf::Vector2f position);
+
 }

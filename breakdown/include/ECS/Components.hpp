@@ -20,19 +20,11 @@ struct Velocity { sf::Vector2f value{ 0.0f, 0.0f }; };
 
 struct MovementSpeed { float value{ 0.0f }; };
 
-struct BoundaryHits
-{
-    bool west{ false };
-    bool east{ false };
-};
-
 struct ConfineToWindow 
 {
     float padLeft{ 1.0f };
     float padRight{ 1.0f };
 };
-
-struct BaseScale { sf::Vector2f value{ 1.0f, 1.0f }; };
 
 struct Ball 
 {
@@ -62,7 +54,7 @@ struct Paddle
     sf::RectangleShape shape;
 };
 
-// Brick is RenderableRect but without the origin being changed from upper-left corner
+//$ ----- Brick Components ----- //
 struct Brick
 {
     Brick(sf::Vector2f size, const sf::Color& color, sf::Vector2f position)
@@ -76,17 +68,26 @@ struct Brick
     sf::RectangleShape shape;
 };
 
+struct BrickScore { int value{ 5 }; };
+struct BrickHealth { int current{ 1 }; int max{ 1 }; };
+struct ShowDamage {};
+
+//$ ----- Game Data ----- //
+struct Score { int value{ 0 }; };
+struct Lives { int value{ 3 }; };
 
 //$ ----- UI Components -----
 
-// Tag to identify menu UI entities for easy cleanup
-struct MenuUITag {};
+// Tag to identify UI/HUD entities
+struct UITag {};
+struct ScoreHUDTag {};
+struct LivesHUDTag {};
 
 struct UIText { sf::Text text; };
 
 struct UIShape { sf::RectangleShape shape; };
 
-// Defines the clickable/hoverable area
+// Defines the clickable/hoverable area 
 struct Bounds { sf::FloatRect rect; };
 
 struct Clickable { std::function<void()> action; };

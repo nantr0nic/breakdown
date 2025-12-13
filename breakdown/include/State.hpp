@@ -21,14 +21,6 @@ public:
     State(AppContext* appContext) : m_AppContext(appContext) {}
     virtual ~State() = default;
 
-    /* enter() and exit() are left here as a reminder for the future
-    * These can be left empty, but can be used to load context stuff
-    * like music, menu options, reading configs from file for menu layout, etc.
-    * They can be left empty if not needed.
-    */
-    //virtual void enter() = 0;
-    //virtual void exit() = 0;
-
     StateEvents& getEventHandlers() noexcept { return m_StateEvents; }
     const StateEvents& getEventHandlers() const noexcept { return m_StateEvents; }
 
