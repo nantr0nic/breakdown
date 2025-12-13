@@ -45,7 +45,7 @@ namespace EntityFactory
         auto paddleYPosition = context.m_MainWindow->getSize().y - 50.0f;
         sf::Vector2f playerPosition = sf::Vector2f(windowCenterX, paddleYPosition);
         // Paddle start size
-        sf::Vector2f paddleSize = sf::Vector2f(100.0f, 20.0f);
+        sf::Vector2f paddleSize = sf::Vector2f(140.0f, 20.0f);
 
         Paddle playerPaddle(paddleSize, sf::Color::White, playerPosition);
 
@@ -152,14 +152,14 @@ namespace EntityFactory
         auto windowSize = window.getSize();
 
         sf::Vector2f spawnStartXY{ 20.0f, 10.0f };
-        sf::Vector2f brickSize{ 60.0f, 20.0f };
+        sf::Vector2f brickSize{ 120.0f, 40.0f };
         float brickSpacing{ 5.0f };
 
         float availableWidth = windowSize.x - spawnStartXY.x;
         float availableHeight = windowSize.y - (spawnStartXY.y * 2.0f);
         int bricksPerRow = static_cast<int>((availableWidth + brickSpacing) 
                                             / (brickSize.x + brickSpacing));
-        int rows = 5;
+        int rows = 3;
 
         for (int row = 0; row < rows; ++row)
         {
@@ -180,8 +180,21 @@ namespace EntityFactory
                 brickPosition.x = spawnStartXY.x + rowOffsetX + 
                                   (brick * (brickSize.x + brickSpacing));
                 brickPosition.y = spawnStartXY.y + (row * (brickSize.y + brickSpacing));
-
-                auto brickEntity = createABrick(context, brickSize, brickPosition);
+                if (brick % 3 == 0)
+                {
+                    auto brickEntity = createABrick(context, brickSize, 
+                                                    brickPosition, BrickType::Strong);
+                }
+                else if (brick % 5 == 0)
+                {
+                    auto brickEntity = createABrick(context, brickSize, 
+                                                    brickPosition, BrickType::Gold);
+                }
+                else
+                {
+                    auto brickEntity = createABrick(context, brickSize, 
+                                                    brickPosition, BrickType::Normal);
+                }
             }
         }
         logger::Info("Bricks created.");
