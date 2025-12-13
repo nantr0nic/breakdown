@@ -11,7 +11,8 @@ void ConfigManager::loadConfig(std::string_view configID, std::string_view filep
     if (m_ConfigFiles.contains(configID))
     {
         // if configID is the same then return (don't re-load)
-        logger::Info(std::format("Config ID \"{}\" already loaded.", configID));
+        // not really a "warning" but I wanted to see something yellow in the log window lol
+        logger::Warn(std::format("Config ID \"{}\" already loaded.", configID));
         return;
     }
 

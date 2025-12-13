@@ -4,10 +4,10 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Window/Event.hpp>
 
+#include "AppContext.hpp"
+
 #include <functional>
 #include <optional>
-
-class AppContext;
 
 struct StateEvents
 {

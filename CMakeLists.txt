@@ -146,6 +146,7 @@ target_precompile_headers(breakdown PRIVATE
     <SFML/Audio.hpp>
     <SFML/System.hpp>
     <entt/entt.hpp>
+    <toml++/toml.hpp>
 )
 
 # ------------------ #

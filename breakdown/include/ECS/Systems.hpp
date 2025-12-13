@@ -5,10 +5,9 @@
 #include <SFML/Window.hpp>
 #include <entt/entt.hpp>
 
-// forward declarations
-class AppContext;
-class StateManager;
-struct BoundaryHits;
+#include <AppContext.hpp>
+#include <Managers/StateManager.hpp>
+#include <ECS/Components.hpp>
 
 namespace CoreSystems
 {

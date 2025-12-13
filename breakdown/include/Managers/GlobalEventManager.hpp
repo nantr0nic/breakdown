@@ -7,7 +7,7 @@
 
 #include <functional>
 
-struct AppContext; // foward declaration
+class AppContext; // forward declaration
 
 struct ApplicationEvents
 {

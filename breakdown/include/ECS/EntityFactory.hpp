@@ -4,9 +4,9 @@
 #include <SFML/System.hpp>
 #include <entt/entt.hpp>
 
-#include <functional>
+#include <AppContext.hpp>
 
-struct AppContext; // forward declaration
+#include <functional>
 
 namespace EntityFactory
 {
