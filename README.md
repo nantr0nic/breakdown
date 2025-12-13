@@ -1,3 +1,5 @@
+![Preview gif of WIP](screenshots/breakdowngif.gif)
+
 # Breakdown
 A breakout game but the bricks begin to descend.
 
@@ -5,6 +7,7 @@ A breakout game but the bricks begin to descend.
 First prototype of an SFML game made with [SFML 3 Game Template](https://www.github.com/nantr0nic/sfml3-game-template/).
 Work in progress!
 
+Move with A and D.
 
 ## Build & Dependencies
 
