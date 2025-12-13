@@ -1,0 +1,13 @@
+# N = normal brick
+# G = gold brick
+# S = strong brick
+# . = empty space
+
+[level_1]
+brickWidth = 120.0
+brickHeight = 40.0
+layout = [
+    "NNNNGGNNNN", #10
+    ".NGN.NGNN.", #10
+    "NNNNGGNNNN" #10
+]
