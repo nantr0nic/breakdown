@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
 #include <entt/entt.hpp>
 
 #include "ECS/EntityFactory.hpp"
@@ -6,24 +7,22 @@
 #include "Utilities/Utils.hpp"
 #include "Utilities/Logger.hpp"
 #include "AppContext.hpp"
-#include "AssetKeys.hpp"
 
 #include <string>
 #include <utility>
+#include <cstdint>
 
 // functions for the ECS system
 namespace EntityFactory
 {
-    entt::entity createRectangle(AppContext& context, 
-                                sf::Vector2f size,
-                                sf::Color& color,
-                                sf::Vector2f position)
+    entt::entity createRectangle(AppContext& context, sf::Vector2f size,
+                                sf::Color& color, sf::Vector2f position)
     {
         auto& registry = *context.m_Registry;
 
         auto rectEntity = registry.create();
 
-        registry.emplace<RenderableRect>(rectEntity, size, color, position);
+        registry.emplace<Paddle>(rectEntity, size, color, position);
 
         return rectEntity;
     }
@@ -48,14 +47,14 @@ namespace EntityFactory
         // Paddle start size
         sf::Vector2f paddleSize = sf::Vector2f(100.0f, 20.0f);
 
-        RenderableRect playerPaddle(paddleSize, sf::Color::White, playerPosition);
+        Paddle playerPaddle(paddleSize, sf::Color::White, playerPosition);
 
         // Add all components that make a "player"
         registry.emplace<PlayerTag>(playerEntity);  // way to ID the player
         registry.emplace<RenderableTag>(playerEntity);
         registry.emplace<MovementSpeed>(playerEntity, moveSpeed);
         registry.emplace<Velocity>(playerEntity);
-        registry.emplace<RenderableRect>(playerEntity, playerPaddle);
+        registry.emplace<Paddle>(playerEntity, playerPaddle);
         registry.emplace<ConfineToWindow>(playerEntity, 1.0f, 1.0f);
 
         logger::Info("Player paddle created.");
@@ -74,10 +73,10 @@ namespace EntityFactory
         float ballSpeed{ 450.0f };
 
         // Calculate ballStartingPosition from Player Position
-        auto view = registry.view<PlayerTag, RenderableRect>();
+        auto view = registry.view<PlayerTag, Paddle>();
         for (auto entity : view)
         {
-            const auto& playerShape = registry.get<RenderableRect>(entity).shape;
+            const auto& playerShape = registry.get<Paddle>(entity).shape;
             const auto& playerPosition = playerShape.getPosition();
             float ballStartX = playerPosition.x;
             float ballStartY = playerPosition.y - playerShape.getSize().y / 2.0f - ballRadius;
@@ -85,10 +84,10 @@ namespace EntityFactory
             ballStartingPosition = sf::Vector2f(ballStartX, ballStartY);
         }
 
-        RenderableCircle ballShape(ballRadius, ballColor, ballStartingPosition);
+        Ball ballShape(ballRadius, ballColor, ballStartingPosition);
 
         registry.emplace<RenderableTag>(ballEntity);
-        registry.emplace<RenderableCircle>(ballEntity, ballShape);
+        registry.emplace<Ball>(ballEntity, ballShape);
         auto& velocity = registry.emplace<Velocity>(ballEntity);
         // shoot the ball at start of game
         velocity.value = { 0.0f, -ballSpeed };
@@ -98,6 +97,68 @@ namespace EntityFactory
         logger::Info("Ball created.");
 
         return ballEntity;
+    }
+
+    entt::entity createABrick(AppContext& context, sf::Vector2f size, 
+                              sf::Color& color, sf::Vector2f position)
+    {
+        auto& registry = *context.m_Registry;
+        auto brickEntity = registry.create();
+
+        registry.emplace<Brick>(brickEntity, size, color, position);
+        registry.emplace<RenderableTag>(brickEntity);
+
+        return brickEntity;
+    }
+
+    void createBricks(AppContext& context)
+    {
+        auto& registry = *context.m_Registry;
+        auto& window = *context.m_MainWindow;
+        auto windowSize = window.getSize();
+
+        sf::Vector2f spawnStartXY{ 20.0f, 10.0f };
+        sf::Vector2f brickSize{ 60.0f, 20.0f };
+        float brickSpacing{ 5.0f };
+
+        float availableWidth = windowSize.x - spawnStartXY.x;
+        float availableHeight = windowSize.y - (spawnStartXY.y * 2.0f);
+        int bricksPerRow = static_cast<int>((availableWidth + brickSpacing) 
+                                            / (brickSize.x + brickSpacing));
+        int rows = 5;
+
+        for (int row = 0; row < rows; ++row)
+        {
+            float rowOffsetX = 0.0f;
+            int bricksInThisRow = bricksPerRow;
+
+            // alternate number of bricks per row to give 'staggered' look
+            if (row % 2 != 0)
+            {
+                rowOffsetX = (brickSize.x + brickSpacing) / 2.0f;
+                bricksInThisRow = bricksPerRow - 1;
+            }
+
+            for (int brick = 0; brick < bricksInThisRow; ++brick)
+            {
+                sf::Vector2f brickPosition;
+                
+                // randomize brick color
+                std::uint8_t randRed = static_cast<std::uint8_t>(
+                                       context.m_RandomMachine->getInt(10, 250));
+                std::uint8_t randGreen = static_cast<std::uint8_t>(
+                                         context.m_RandomMachine->getInt(10, 250));
+                std::uint8_t randBlue = static_cast<std::uint8_t>(
+                                        context.m_RandomMachine->getInt(10, 250));
+                sf::Color brickColor(randRed, randGreen, randBlue);
+
+                brickPosition.x = spawnStartXY.x + rowOffsetX + (brick * (brickSize.x + brickSpacing));
+                brickPosition.y = spawnStartXY.y + (row * (brickSize.y + brickSpacing));
+
+                auto brickEntity = createABrick(context, brickSize, brickColor, brickPosition);
+            }
+        }
+        logger::Info("Bricks created.");
     }
 
     //$ --- UI ---
@@ -114,7 +175,7 @@ namespace EntityFactory
 
         // Shape component
         auto& buttonShape = registry.emplace<UIShape>(buttonEntity);
-        buttonShape.shape.setSize({200.f, 100.f});
+        buttonShape.shape.setSize({250.f, 100.f});
         buttonShape.shape.setFillColor(sf::Color::Blue);
         utils::centerOrigin(buttonShape.shape);
         buttonShape.shape.setPosition(position);

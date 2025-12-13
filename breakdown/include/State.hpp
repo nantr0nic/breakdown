@@ -2,11 +2,12 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+#include <SFML/Window/Event.hpp>
+
+#include "AppContext.hpp"
 
 #include <functional>
 #include <optional>
-
-class AppContext;
 
 struct StateEvents
 {
@@ -49,7 +50,7 @@ public:
     virtual void render() override;
 
 private:
-    // Empty -- replaced previous data members with ECS components
+    // Empty
 };
 
 class PlayState : public State
@@ -77,4 +78,17 @@ public:
 
 private:
     std::optional<sf::Text> m_PauseText;
+};
+
+class GameOverState : public State
+{
+public:
+    GameOverState(AppContext* appContext);
+    virtual ~GameOverState() override;
+
+    virtual void update(sf::Time deltaTime) override;
+    virtual void render() override;
+
+private:
+    std::optional<sf::Text> m_GameOverText;
 };

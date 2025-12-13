@@ -1,3 +1,5 @@
+#include <SFML/System.hpp>
+
 #include "AppContext.hpp"
 #include "Managers/StateManager.hpp"
 

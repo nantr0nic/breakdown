@@ -12,8 +12,6 @@ struct SpritePadding
 
 namespace utils
 {
-    // For now this only works with rectangles, I'll extend it to other
-    // types if needed later
     template <typename T>
     void centerOrigin(T& item)
     {

@@ -2,10 +2,10 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "Managers/ConfigManager.hpp"
+
 #include <memory>
 #include <string>
-
-class ConfigManager; // forward-declaration
 
 class WindowManager
 {

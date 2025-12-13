@@ -1,20 +1,22 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
+#include <SFML/Window.hpp>
 #include <entt/entt.hpp>
 
-// forward declarations
-class AppContext;
-struct BoundaryHits;
+#include <AppContext.hpp>
+#include <Managers/StateManager.hpp>
+#include <ECS/Components.hpp>
 
 namespace CoreSystems
 {
     //$ ----- Game Systems ----- //
-    void handlePlayerInput(AppContext* m_AppContext);
+    void handlePlayerInput(entt::registry& registry, const sf::RenderWindow& window);
 
     void movementSystem(entt::registry& registry, sf::Time deltaTime, sf::RenderWindow& window);
 
-    void collisionSystem(entt::registry& registry, sf::Time deltaTime, sf::RenderWindow& window);
+    void collisionSystem(AppContext* m_AppContext, sf::Time deltaTime);
 
     void renderSystem(entt::registry& registry, sf::RenderWindow& window, bool showDebug);
 }

@@ -1,3 +1,7 @@
+#include <SFML/System.hpp>
+#include <SFML/Graphics.hpp>
+#include <SFML/Window/Event.hpp>
+
 #include "Application.hpp"
 #include "Utilities/Logger.hpp"
 

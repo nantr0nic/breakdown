@@ -7,6 +7,7 @@
 #include "Managers/WindowManager.hpp"
 #include "Managers/GlobalEventManager.hpp"
 #include "Managers/ResourceManager.hpp"
+#include "Utilities/RandomMachine.hpp"
 
 #include <memory>
 
@@ -25,6 +26,7 @@ struct AppContext
         m_GlobalEventManager = std::make_unique<GlobalEventManager>(this);
         m_MainClock = std::make_unique<sf::Clock>();
         m_Registry = std::make_unique<entt::registry>();
+        m_RandomMachine = std::make_unique<utils::RandomMachine>();
     }
 
     AppContext(const AppContext&) = delete;
@@ -39,6 +41,8 @@ struct AppContext
     std::unique_ptr<ResourceManager> m_ResourceManager{ nullptr };
     std::unique_ptr<sf::Clock> m_MainClock{ nullptr };
     std::unique_ptr<entt::registry> m_Registry{ nullptr };
+    std::unique_ptr<utils::RandomMachine> m_RandomMachine{ nullptr };
+
 
     // Pointers to Application-level objects
     sf::RenderWindow* m_MainWindow{ nullptr };

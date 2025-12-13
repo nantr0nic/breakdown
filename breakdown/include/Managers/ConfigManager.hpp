@@ -2,14 +2,14 @@
 
 #include <toml++/toml.hpp>
 
+#include "Utilities/Logger.hpp"
+
 #include <optional>
 #include <string_view>
 #include <string>
 #include <map>
 #include <format>
 #include <source_location>
-
-#include "Utilities/Logger.hpp"
 
 class ConfigManager
 {

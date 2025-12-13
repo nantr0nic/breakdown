@@ -4,6 +4,8 @@
 #include <SFML/Audio.hpp>
 #include <toml++/toml.hpp>
 
+#include "Utilities/Logger.hpp"
+
 #include <map>
 #include <memory>
 #include <string>
@@ -12,8 +14,6 @@
 #include <stdexcept>
 #include <functional>
 #include <format>
-
-#include "Utilities/Logger.hpp"
 
 class ResourceManager 
 {
