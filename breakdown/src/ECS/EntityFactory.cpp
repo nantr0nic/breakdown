@@ -51,7 +51,7 @@ namespace EntityFactory
         Paddle playerPaddle(paddleSize, sf::Color::White, playerPosition);
 
         // Add all components that make a "player"
-        registry.emplace<PlayerTag>(playerEntity);  // way to ID the player
+        registry.emplace<PaddleTag>(playerEntity);  // way to ID the player
         registry.emplace<RenderableTag>(playerEntity);
         registry.emplace<MovementSpeed>(playerEntity, moveSpeed);
         registry.emplace<Velocity>(playerEntity);
@@ -74,7 +74,7 @@ namespace EntityFactory
         float ballSpeed{ 450.0f };
 
         // Calculate ballStartingPosition from Player Position
-        auto view = registry.view<PlayerTag, Paddle>();
+        auto view = registry.view<PaddleTag, Paddle>();
         for (auto entity : view)
         {
             const auto& playerShape = registry.get<Paddle>(entity).shape;
@@ -101,13 +101,35 @@ namespace EntityFactory
     }
 
     entt::entity createABrick(AppContext& context, sf::Vector2f size, 
-                              sf::Color& color, sf::Vector2f position)
+                              sf::Vector2f position, BrickType type)
     {
         auto& registry = *context.m_Registry;
         auto brickEntity = registry.create();
 
-        registry.emplace<Brick>(brickEntity, size, color, position);
+        registry.emplace<Brick>(brickEntity, size, sf::Color::White, position);
+        registry.emplace<BrickTag>(brickEntity);
         registry.emplace<RenderableTag>(brickEntity);
+
+        switch (type)
+        {
+        case BrickType::Normal:
+            registry.emplace<BrickScore>(brickEntity, 5);
+            registry.emplace<BrickHealth>(brickEntity, 1, 1);
+            registry.get<Brick>(brickEntity).shape.setFillColor(BrickColors::Normal().color);
+            break;
+        case BrickType::Strong:
+            registry.emplace<BrickScore>(brickEntity, 10);
+            registry.emplace<BrickHealth>(brickEntity, 2, 2);
+            registry.get<Brick>(brickEntity).shape.setFillColor(BrickColors::Strong().color);
+            break;
+        case BrickType::Gold:
+            registry.emplace<BrickScore>(brickEntity, 20);
+            registry.emplace<BrickHealth>(brickEntity, 1, 1);
+            registry.get<Brick>(brickEntity).shape.setFillColor(BrickColors::Gold().color);
+            break;
+        default:
+            break;
+        }
 
         return brickEntity;
     }
@@ -143,21 +165,12 @@ namespace EntityFactory
             for (int brick = 0; brick < bricksInThisRow; ++brick)
             {
                 sf::Vector2f brickPosition;
-                
-                // randomize brick color
-                std::uint8_t randRed = static_cast<std::uint8_t>(
-                                       context.m_RandomMachine->getInt(10, 250));
-                std::uint8_t randGreen = static_cast<std::uint8_t>(
-                                         context.m_RandomMachine->getInt(10, 250));
-                std::uint8_t randBlue = static_cast<std::uint8_t>(
-                                        context.m_RandomMachine->getInt(10, 250));
-                sf::Color brickColor(randRed, randGreen, randBlue);
 
                 brickPosition.x = spawnStartXY.x + rowOffsetX + 
                                   (brick * (brickSize.x + brickSpacing));
                 brickPosition.y = spawnStartXY.y + (row * (brickSize.y + brickSpacing));
 
-                auto brickEntity = createABrick(context, brickSize, brickColor, brickPosition);
+                auto brickEntity = createABrick(context, brickSize, brickPosition);
             }
         }
         logger::Info("Bricks created.");

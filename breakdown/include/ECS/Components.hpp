@@ -5,27 +5,23 @@
 
 #include "Utilities/Utils.hpp"
 
+#include <cstdint>
 #include <functional>
 
 //$ ----- Game Components ----- //
 
-//$ Tags
+//$ Game object entity tags
+struct PaddleTag {};
+struct BrickTag {};
+struct BallTag {};
+struct RenderableTag {};
 
-struct PlayerTag {}; // Tag to identify the player entity
-struct RenderableTag {}; // Tag to identify renderable entities
-
-//$ Components
-
+//$ Generic Components
 struct Velocity { sf::Vector2f value{ 0.0f, 0.0f }; };
 
 struct MovementSpeed { float value{ 0.0f }; };
 
-struct ConfineToWindow 
-{
-    float padLeft{ 1.0f };
-    float padRight{ 1.0f };
-};
-
+//$ Ball component
 struct Ball 
 {
     Ball(float radius, const sf::Color& color, sf::Vector2f position)
@@ -40,6 +36,7 @@ struct Ball
     sf::CircleShape shape; 
 };
 
+//$ Paddle component
 struct Paddle
 {
     Paddle(sf::Vector2f size, const sf::Color& color, sf::Vector2f position)
@@ -54,7 +51,40 @@ struct Paddle
     sf::RectangleShape shape;
 };
 
+struct ConfineToWindow 
+{
+    float padLeft{ 1.0f };
+    float padRight{ 1.0f };
+};
+
 //$ ----- Brick Components ----- //
+enum class BrickType { Normal, Strong, Gold };
+namespace BrickColors 
+{
+    using uint8 = std::uint8_t;
+    // Perhaps we can get these from a TOML file later?
+    struct Normal 
+    {
+        uint8 r{ 66 }; uint8 g{ 170 }; uint8 b{ 139 };
+        sf::Color color{ r, g, b };
+    };
+    struct Strong 
+    {
+        uint8 r{ 87 }; uint8 g{ 117 }; uint8 b{ 144 };
+        sf::Color color{ r, g, b };
+    };
+    struct StrongDamaged 
+    {
+        uint8 r{ 76 }; uint8 g{ 144 }; uint8 b{ 142 };
+        sf::Color color{ r, g, b };
+    };
+    struct Gold 
+    {
+        uint8 r{ 249 }; uint8 g{ 199 }; uint8 b{ 79 };
+        sf::Color color{ r, g, b };
+    };
+}
+
 struct Brick
 {
     Brick(sf::Vector2f size, const sf::Color& color, sf::Vector2f position)

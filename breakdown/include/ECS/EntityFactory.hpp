@@ -4,7 +4,8 @@
 #include <SFML/System.hpp>
 #include <entt/entt.hpp>
 
-#include <AppContext.hpp>
+#include "AppContext.hpp"
+#include "Components.hpp"
 
 #include <functional>
 
@@ -22,8 +23,8 @@ namespace EntityFactory
 
     entt::entity createABrick(AppContext& context,
                                 sf::Vector2f size,
-                                sf::Color& color,
-                                sf::Vector2f position);
+                                sf::Vector2f position,
+                                BrickType type = BrickType::Normal);
 
     void createBricks(AppContext& context);
 

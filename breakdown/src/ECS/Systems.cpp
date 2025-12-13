@@ -16,7 +16,7 @@ namespace CoreSystems
     //$ "Core" / game systems (maybe rename...)
     void handlePlayerInput(entt::registry& registry, const sf::RenderWindow& window)
     {
-        auto view = registry.view<PlayerTag, 
+        auto view = registry.view<PaddleTag, 
                                 Velocity, 
                                 MovementSpeed>();
 
@@ -177,7 +177,7 @@ namespace CoreSystems
             }
                     
             //$ ----- Ball vs Bricks ----- //
-            auto brickView = registry.view<Brick>();
+            auto brickView = registry.view<Brick, BrickScore>();
             for (auto brickEntity : brickView)
             {
                 auto& brickShape = brickView.get<Brick>(brickEntity);
@@ -209,8 +209,10 @@ namespace CoreSystems
                     {
                         auto& scoreText = scoreView.get<UIText>(scoreEntity);
                         auto& scoreCurrentValue = scoreView.get<CurrentScore>(scoreEntity);
+                        auto& brickScoreValue = brickView.get<BrickScore>(brickEntity);
+                        
+                        scoreCurrentValue.value += brickScoreValue.value;
 
-                        scoreCurrentValue.value += 5;
                         scoreText.text.setString(std::format("Score: {}", scoreCurrentValue.value));
                     }
 
