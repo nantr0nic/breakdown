@@ -6,6 +6,8 @@
 #include "ECS/Systems.hpp"
 #include "ECS/Components.hpp"
 #include "Managers/StateManager.hpp"
+#include "SFML/System/Vector2.hpp"
+#include "State.hpp"
 #include "AppContext.hpp"
 
 #include <memory>
@@ -14,16 +16,17 @@
 namespace CoreSystems
 {
     //$ "Core" / game systems (maybe rename...)
-    void handlePlayerInput(entt::registry& registry, const sf::RenderWindow& window)
+    void handlePlayerInput(AppContext* context)
     {
-        auto view = registry.view<PaddleTag, 
-                                Velocity, 
-                                MovementSpeed>();
+        auto& registry = *context->m_Registry;
+        bool levelStarted = context->m_LevelStarted;
 
-        for (auto entity : view)
+        auto paddleView = registry.view<PaddleTag, Velocity, MovementSpeed>();
+
+        for (auto paddleEntity : paddleView)
         {
-            auto& velocity = view.get<Velocity>(entity);
-            const auto& speed = view.get<MovementSpeed>(entity);
+            auto& velocity = paddleView.get<Velocity>(paddleEntity);
+            const auto& speed = paddleView.get<MovementSpeed>(paddleEntity);
 
             // Reset velocity
             velocity.value = { 0.0f, 0.0f };
@@ -36,39 +39,82 @@ namespace CoreSystems
             {
                 velocity.value.x += speed.value;
             }
+
+            if (!levelStarted && sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Space))
+            {
+                context->m_LevelStarted = true;
+                logger::Info("Level started.");
+
+                auto ballView = registry.view<Ball, Velocity, MovementSpeed>();
+                for (auto ballEntity : ballView)
+                {
+                    auto& ballVelocity = ballView.get<Velocity>(ballEntity);
+                    auto& ballSpeed = ballView.get<MovementSpeed>(ballEntity);
+                    ballVelocity.value = { velocity.value.x, -ballSpeed.value };
+                }
+            }
         }
     }
 
-    void movementSystem(entt::registry& registry, sf::Time deltaTime, sf::RenderWindow& window)
+    void movementSystem(AppContext* context, sf::Time deltaTime)
     {
-        // cache window size
-        auto windowSize = window.getSize();
+        auto& registry = *context->m_Registry;
+        bool levelStarted = context->m_LevelStarted;
 
-        auto rectView = registry.view<Paddle, Velocity>();
-        for (auto entity : rectView)
+        auto paddleView = registry.view<Paddle, Velocity>();
+        for (auto paddleEntity : paddleView)
         {
-            auto& rectShape = rectView.get<Paddle>(entity);
-            const auto& velocity = rectView.get<Velocity>(entity);
+            auto& paddleComp = paddleView.get<Paddle>(paddleEntity);
+            const auto& velocity = paddleView.get<Velocity>(paddleEntity);
 
-            rectShape.shape.move(velocity.value * deltaTime.asSeconds());
+            paddleComp.shape.move(velocity.value * deltaTime.asSeconds());
         }
 
-        auto ballView = registry.view<Ball, Velocity>();
-        for (auto entity : ballView)
+        if (levelStarted)
         {
-            auto& ballShape = ballView.get<Ball>(entity);
-            const auto& velocity = ballView.get<Velocity>(entity);
+            auto ballView = registry.view<Ball, Velocity>();
+            for (auto ballEntity : ballView)
+            {
+                auto& ballShape = ballView.get<Ball>(ballEntity);
+                const auto& velocity = ballView.get<Velocity>(ballEntity);
 
-            ballShape.shape.move(velocity.value * deltaTime.asSeconds());
+                ballShape.shape.move(velocity.value * deltaTime.asSeconds());
+            }
+        }
+        else
+        {
+            auto paddleView = registry.view<Paddle>();
+            sf::Vector2f paddlePosition{};
+            sf::Vector2f paddleSize{};
+
+            for (auto paddleEntity : paddleView)
+            {
+                auto& paddleComp = paddleView.get<Paddle>(paddleEntity);
+                paddlePosition = paddleComp.shape.getPosition();
+                paddleSize = paddleComp.shape.getSize();
+                break;
+            }
+
+            auto ballView = registry.view<Ball>();
+            for (auto ballEntity : ballView)
+            {
+                auto& ballComp = ballView.get<Ball>(ballEntity);
+                float ballRadius = ballComp.shape.getRadius();
+
+                float x = paddlePosition.x;
+                float y = paddlePosition.y - paddleSize.y / 2.0f - ballRadius;
+
+                ballComp.shape.setPosition({ x, y });
+            }
         }
 
     }
 
-    void collisionSystem(AppContext* m_AppContext, sf::Time deltaTime)
+    void collisionSystem(AppContext* context, sf::Time deltaTime)
     {
-        auto& registry = *m_AppContext->m_Registry;
-        auto& window = *m_AppContext->m_MainWindow;
-        auto& stateManager = *m_AppContext->m_StateManager;
+        auto& registry = *context->m_Registry;
+        auto& window = *context->m_MainWindow;
+        auto& stateManager = *context->m_StateManager;
 
         // cache window size
         auto windowSize = window.getSize();
@@ -139,7 +185,7 @@ namespace CoreSystems
             // South Wall (Game over)
             if (ballPosition.y + ballRadius > windowSize.y) 
             {
-                auto gameoverState = std::make_unique<GameOverState>(m_AppContext);
+                auto gameoverState = std::make_unique<GameOverState>(context);
                 stateManager.replaceState(std::move(gameoverState));
             }
 
@@ -148,9 +194,7 @@ namespace CoreSystems
 
             // Update bounds for object collision checks
             sf::FloatRect ballBounds = ballComp.shape.getGlobalBounds(); // treats circle as square
-        
-
-            //$ ----- Ball vs Paddle ----- //
+    
             auto paddleView = registry.view<Paddle>();
             for (auto paddleEntity : paddleView)
             {

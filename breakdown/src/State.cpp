@@ -170,8 +170,8 @@ PlayState::~PlayState()
 void PlayState::update(sf::Time deltaTime)
 {
     // Call game logic systems
-    CoreSystems::handlePlayerInput(*m_AppContext->m_Registry, *m_AppContext->m_MainWindow);
-    CoreSystems::movementSystem(*m_AppContext->m_Registry, deltaTime, *m_AppContext->m_MainWindow);
+    CoreSystems::handlePlayerInput(m_AppContext);
+    CoreSystems::movementSystem(m_AppContext, deltaTime);
     CoreSystems::collisionSystem(m_AppContext, deltaTime);
 }
 
@@ -275,8 +275,9 @@ GameOverState::GameOverState(AppContext* appContext)
             *font,
             "Try Again",
             center,
-            [this]() {
+            [this, appContext]() {
                 logger::Info("Try Again button pressed.");
+                appContext->m_LevelStarted = false;
                 auto playState = std::make_unique<PlayState>(m_AppContext);
                 m_AppContext->m_StateManager->replaceState(std::move(playState));
             }

@@ -54,8 +54,12 @@ public:
     virtual void update(sf::Time deltaTime) override;
     virtual void render() override;
 
+    bool getLevelStarted() { return m_LevelStarted; }
+    void setLevelStarted(bool value) { m_LevelStarted = value; }
+
 private:
     sf::Music* m_MainMusic{ nullptr };
+    bool m_LevelStarted{ false };
     bool m_ShowDebug{ false };
 };
 

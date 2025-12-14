@@ -90,7 +90,7 @@ namespace EntityFactory
         registry.emplace<Ball>(ballEntity, ballShape);
         auto& velocity = registry.emplace<Velocity>(ballEntity);
         // shoot the ball at start of game
-        velocity.value = { 0.0f, -ballSpeed };
+        // velocity.value = { 0.0f, -ballSpeed };
         
         registry.emplace<MovementSpeed>(ballEntity, ballSpeed);
 
