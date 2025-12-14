@@ -91,7 +91,8 @@ PlayState::PlayState(AppContext* appContext)
     // Create game entities
     EntityFactory::createPlayer(*m_AppContext);
     EntityFactory::createBall(*m_AppContext);
-    EntityFactory::createBricks(*m_AppContext);
+    //EntityFactory::createBricks(*m_AppContext);
+    EntityFactory::loadLevel(*m_AppContext, 2);
 
     // Create UI/HUD entities
     sf::Font* scoreFont = m_AppContext->m_ResourceManager->getResource<sf::Font>(

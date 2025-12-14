@@ -10,6 +10,7 @@
 #include <map>
 #include <format>
 #include <source_location>
+#include <vector>
 
 class ConfigManager
 {
@@ -20,6 +21,12 @@ public:
     ~ConfigManager() noexcept = default;
 
     void loadConfig(std::string_view configID, std::string_view filepath);
+
+    std::vector<std::string> getStringArray(
+        std::string_view configID, std::string_view section,
+        std::string_view key, 
+        const std::source_location& loc = std::source_location::current()) const;
+
 
     // getConfigValue requires (configID, key) or (configID, section, key)
     template<typename T>

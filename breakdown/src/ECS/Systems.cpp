@@ -230,6 +230,11 @@ namespace CoreSystems
 
                         // remove the non-paddle rectangle we've collided with
                         registry.destroy(brickEntity);
+
+                        if (registry.view<Brick>().empty())
+                        {
+                            logger::Info("Level complete!");
+                        }
                     }
                     //! We will need to handle this differently once there are more than one type
                     //! of "strong" brick

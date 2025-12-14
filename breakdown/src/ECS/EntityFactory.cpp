@@ -200,6 +200,76 @@ namespace EntityFactory
         logger::Info("Bricks created.");
     }
 
+    void loadLevel(AppContext& context, int levelNumber)
+    {
+        context.m_ConfigManager->loadConfig("levels", "config/Levels.toml");
+
+        std::string sectionName = std::format("level_{}", levelNumber);
+
+        std::vector<std::string> layout = context.m_ConfigManager->getStringArray(
+            "levels", sectionName, "layout"
+        );
+
+        if (layout.empty())
+        {
+            logger::Error("Failed to load level layout: " + sectionName);
+            return;
+        }
+
+        sf::Vector2f startPos{ 10.0f, 10.0f };
+
+        float brickWidth = context.m_ConfigManager->getConfigValue<float>(
+            "levels", sectionName, "brickWidth"
+        ).value_or(120.0f);
+        float brickHeight = context.m_ConfigManager->getConfigValue<float>(
+            "levels", sectionName, "brickHeight"
+        ).value_or(40.0f);
+
+        sf::Vector2f brickSize{ brickWidth, brickHeight };
+        float padding = 5.0f;
+
+        for (size_t row = 0; row < layout.size(); ++row)
+        {
+            const std::string& rowStr = layout[row];
+            for (size_t col = 0; col < rowStr.size(); ++col)
+            {
+                char typeChar = rowStr[col];
+
+                // . and ' ' are empty spaces
+                if (typeChar == '.' || typeChar == ' ')
+                { 
+                    continue;
+                }
+
+                sf::Vector2f pos{};
+                pos.x = startPos.x + col * (brickSize.x + padding);
+                pos.y = startPos.y + row * (brickSize.y + padding);
+
+                // build bricks
+                BrickType type = BrickType::Normal;
+                switch (typeChar)
+                {
+                    case 'S': 
+                        type = BrickType::Strong; 
+                        break;
+                    case 'G': 
+                        type = BrickType::Gold;   
+                        break;
+                    case 'N': 
+                        type = BrickType::Normal; 
+                        break;
+                    default:  
+                        type = BrickType::Normal; 
+                        break;
+                }
+
+                createABrick(context, brickSize, pos, type);
+            }
+        }
+        
+        logger::Info(std::format("Level {} loaded successfully.", levelNumber));
+    }
+
     //$ ----- UI/HUD ----- //
     entt::entity createButton(AppContext& context, sf::Font& font,
                             const std::string& text, sf::Vector2f position,
