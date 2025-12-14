@@ -5,22 +5,25 @@
 
 # 120 x 40 bricks = 10 bricks per row
 # 60 x 20 bricks = 19 bricks per row
+totalLevels = 3
 
 [level_1]
 brickWidth = 120.0
 brickHeight = 40.0
 layout = [
-    "NNNNGGNNNN", #10
-    ".NGN.NGNN.", #10
-    "NNNNGGNNNN" #10
+    "....NN...." #10
 ]
 
 [level_2]
+brickWidth = 120.0
+brickHeight = 40.0
+layout = [
+    "....GG...."
+]
+
+[level_3]
 brickWidth = 60.0
 brickHeight = 20.0
 layout = [
-    ".......NNNNN.......", 
-    "...G...G...G...G...", 
-    "SS.SSNNS...SNNSS.SS",
-    ".......NNNNN......." 
+    ".........S........."
 ]

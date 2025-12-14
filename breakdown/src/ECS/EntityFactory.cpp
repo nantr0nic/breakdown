@@ -67,7 +67,7 @@ namespace EntityFactory
         auto& registry = *context.m_Registry;
         auto ballEntity = registry.create();
 
-        float ballRadius{ 10.0f };
+        float ballRadius{ 25.0f };
         sf::Color ballColor{ sf::Color::White };
         sf::Vector2f ballStartingPosition{ 0.0f, 0.0f };
         float ballSpeed{ 450.0f };
@@ -202,8 +202,6 @@ namespace EntityFactory
 
     void loadLevel(AppContext& context, int levelNumber)
     {
-        context.m_ConfigManager->loadConfig("levels", "config/Levels.toml");
-
         std::string sectionName = std::format("level_{}", levelNumber);
 
         std::vector<std::string> layout = context.m_ConfigManager->getStringArray(

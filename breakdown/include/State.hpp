@@ -88,3 +88,29 @@ public:
 private:
     std::optional<sf::Text> m_GameOverText;
 };
+
+class WinState: public State
+{
+public:
+    WinState(AppContext* appContext);
+    virtual ~WinState() override;
+
+    virtual void update(sf::Time deltaTime) override;
+    virtual void render() override;
+
+private:
+    std::optional<sf::Text> m_WinText;
+};
+
+class GameCompleteState : public State
+{
+public:
+    GameCompleteState(AppContext* appContext);
+    virtual ~GameCompleteState() override;
+
+    virtual void update(sf::Time deltaTime) override;
+    virtual void render() override;
+
+private:
+    std::optional<sf::Text> m_GameCompleteText;
+};

@@ -277,7 +277,20 @@ namespace CoreSystems
 
                         if (registry.view<Brick>().empty())
                         {
+                            if (context->m_LevelNumber >= context->m_TotalLevels)
+                            {
+                                logger::Info("Game complete!");
+
+                                auto gameCompleteState = std::make_unique<GameCompleteState>(context);
+                                stateManager.replaceState(std::move(gameCompleteState));
+                            }
+                            else
+                            {
                             logger::Info("Level complete!");
+                            
+                            auto winState = std::make_unique<WinState>(context);
+                            stateManager.replaceState(std::move(winState));
+                            }
                         }
                     }
                     //! We will need to handle this differently once there are more than one type
