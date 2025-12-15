@@ -7,14 +7,19 @@
 
 # 120 x 40 bricks = 10 bricks per row
 # 60 x 20 bricks = 19 bricks per row
+# I haven't tried out different brick sizes besides these two.
+# You can play around with it and you encounter bugs let me know :)
+
+# The total number of levels
 totalLevels = 4
 
+# If you add levels, the section MUST be named level_NUMBER
 [level_1]
 brickWidth = 120.0
 brickHeight = 40.0
 layout = [
-    "....GG....",
-    "....SS...." #10
+    "....GG....", # Don't forget the comma if there is more than one row!
+    "....SS...." 
 ]
 
 [level_2]
@@ -23,16 +28,16 @@ brickHeight = 40.0
 layout = [
     "..N.N.N...",
     "...G.G.G..",
-    "..N.N.N..."
+    "..N.N.N..."  # But do NOT add a comma on the last row
 ]
 
 [level_3]
 brickWidth = 60.0
 brickHeight = 20.0
 layout = [
-    ".........Y.........",
+    ".........Y.........", 
     "........YYY........",
-    ".......YYYYY.......",
+    ".......YYYYY.......", # Look at those commas!
     "........YYY........",
     ".........Y........."
 ]
@@ -45,5 +50,5 @@ layout = [
     "..Y......S......Y..",
     "...Y.....G.....Y...",
     "....Y....G....Y....",
-    ".....Y...S...Y....."
+    ".....Y...S...Y....."   # <-- look at there NOT being a comma!
 ]
