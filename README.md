@@ -1,5 +1,7 @@
 ![Preview gif of WIP](screenshots/breakdowngif.gif)
 
+`` Note: `` The number of bricks and size of the ball were made abnormal for purposes of illustration
+
 # Breakdown
 A breakout game but the bricks begin to descend.
 
