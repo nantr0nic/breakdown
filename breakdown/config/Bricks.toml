@@ -1,27 +1,32 @@
+# Bricks Cofiguration File
+
+# scoreValue and healthMax must be positive numbers.
+# RGB values must be between 0 and 255.
+
 [normal] # Code 'N' in Levels
-scoreValue = 5 # Must be a positive number.
-healthMax = 1 # Must be a positive number.
-normalRGB = [66, 170, 139] # MUST BE between 0, 0 ,0 and 255, 255, 255
+scoreValue = 5 
+healthMax = 1 
+normalRGB = [66, 170, 139] 
 
 [strong] # Code 'S' in Levels
-scoreValue = 10 # Must be a positive number.
-healthMax = 2 # Must be a positive number.
-strongRGB = [87, 117, 144] # MUST BE between 0, 0 ,0 and 255, 255, 255
+scoreValue = 10 
+healthMax = 2 
+strongRGB = [87, 117, 144] 
 
 [strongDamaged] # Just for changing the color of strong when hit
-strongDamagedRGB = [76, 144, 142] # MUST BE between 0, 0 ,0 and 255, 255, 255
+strongDamagedRGB = [76, 144, 142] 
 
 [gold] # Code 'G' in Levels
-scoreValue = 20 # Must be a positive number.
-healthMax = 1 # Must be a positive number.
-goldRGB = [249, 199, 79] # MUST BE between 0, 0 ,0 and 255, 255, 255
+scoreValue = 20 
+healthMax = 1 
+goldRGB = [249, 199, 79] 
 
 [custom_1] # Code 'X' in Levels
-scoreValue = 0 # Must be a positive number.
-healthMax = 0 # Must be a positive number.
-custom_1RGB = [255, 255, 255] # MUST BE between 0, 0 ,0 and 255, 255, 255
+scoreValue = 67 
+healthMax = 0 
+custom_1RGB = [50, 250, 250] 
 
 [custom_2] # Code 'Y' in Levels
-scoreValue = 0 # Must be a positive number.
-healthMax = 0 # Must be a positive number.
-custom_2RGB = [255, 255, 255] # MUST BE between 0, 0 ,0 and 255, 255, 255
+scoreValue = 100 
+healthMax = 3 
+custom_2RGB = [150, 10, 155] 

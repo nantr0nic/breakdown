@@ -1,3 +1,5 @@
+# Window Configuration File
+
 [mainWindow]
 Title = "Breakdown"
 X = 1280

@@ -1,3 +1,5 @@
+# Levels Configuration File
+
 # N = normal brick
 # G = gold brick
 # S = strong brick
@@ -8,7 +10,13 @@
 # 120 x 40 bricks = 10 bricks per row
 # 60 x 20 bricks = 19 bricks per row
 # I haven't tried out different brick sizes besides these two.
-# You can play around with it and you encounter bugs let me know :)
+# You can play around with it and if you encounter bugs let me know :)
+# Make sure the layout rows are all the same length for each level!
+#     e.g. levels with 120x40 bricks should have rows of length 10, 
+#          60x20 bricks should have rows of length 19.
+
+# brickWidth and brickHeight are in pixels, must be positive numbers and 
+# should end in .0
 
 # The total number of levels
 totalLevels = 4
