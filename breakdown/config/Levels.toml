@@ -1,29 +1,49 @@
 # N = normal brick
 # G = gold brick
 # S = strong brick
+# X = custom_1 brick
+# Y = custom_2 brick
 # . = empty space
 
 # 120 x 40 bricks = 10 bricks per row
 # 60 x 20 bricks = 19 bricks per row
-totalLevels = 3
+totalLevels = 4
 
 [level_1]
 brickWidth = 120.0
 brickHeight = 40.0
 layout = [
-    "....NN...." #10
+    "....GG....",
+    "....SS...." #10
 ]
 
 [level_2]
 brickWidth = 120.0
 brickHeight = 40.0
 layout = [
-    "....GG...."
+    "..N.N.N...",
+    "...G.G.G..",
+    "..N.N.N..."
 ]
 
 [level_3]
 brickWidth = 60.0
 brickHeight = 20.0
 layout = [
-    ".........S........."
+    ".........Y.........",
+    "........YYY........",
+    ".......YYYYY.......",
+    "........YYY........",
+    ".........Y........."
+]
+
+[level_4]
+brickWidth = 60.0
+brickHeight = 20.0
+layout = [
+    "YY.......G.......YY",
+    "..Y......S......Y..",
+    "...Y.....G.....Y...",
+    "....Y....G....Y....",
+    ".....Y...S...Y....."
 ]

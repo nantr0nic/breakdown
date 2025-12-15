@@ -1,5 +1,5 @@
 [player]
-movementSpeed = 350.0
-paddleWidth = 140.0
+movementSpeed = 400.0
+paddleWidth = 120.0
 paddleHeight = 20.0
 paddleRGB = [250, 250, 250]
