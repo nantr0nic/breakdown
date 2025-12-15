@@ -18,8 +18,15 @@ So far the coolest feature is **the user is able to customize** levels, bricks, 
 * Using ECS system to construct game and UI entities
 
 ## Keymap
-Shoot the ball with the spacebar.
-Move the paddle with A and D.
+* Shoot the ball with the ``spacebar``.
+* Move the paddle with ``A`` and ``D``.
+* Turn music on/off with ``M``.
+* Terminate the game with ``Escape``.
+
+## Next features
+* The descending mechanic
+* Some appropriate sounds
+* A settings menu.
 
 ## Config files
 * ``Ball.toml`` Set ball properties and color.
