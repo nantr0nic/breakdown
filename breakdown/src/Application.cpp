@@ -4,6 +4,7 @@
 
 #include "Application.hpp"
 #include "Utilities/Logger.hpp"
+#include "AssetKeys.hpp"
 
 #include <format>
 #include <memory>
@@ -51,6 +52,15 @@ void Application::initMainWindow()
 void Application::initResources()
 {
     m_AppContext.m_ResourceManager->loadAssetsFromManifest("config/AssetsManifest.toml");
+    m_AppContext.m_ConfigManager->loadConfig(Assets::Configs::Levels, "config/Levels.toml");
+
+    // Set total number of levels for game
+    int totalLevels = m_AppContext.m_ConfigManager->getConfigValue<int>(
+                                Assets::Configs::Levels, "totalLevels").value_or(1);
+    m_AppContext.m_TotalLevels = totalLevels;
+    
+    logger::Info(std::format("Total number of levels available: {}", totalLevels));
+    logger::Info("Resources initialized.");
 }
 
 void Application::run()

@@ -1,0 +1,4 @@
+[ball]
+ballRadius = 15.0 # Suggested range: 1 - 25
+ballSpeed = 450.0 # Suggested range: 1 - 650
+ballRGB = [250, 250, 250] # MUST BE between 0, 0 ,0 and 255, 255, 255
