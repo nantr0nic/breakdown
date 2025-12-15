@@ -22,11 +22,12 @@ public:
 
     void loadConfig(std::string_view configID, std::string_view filepath);
 
+    [[nodiscard]] const toml::table* getConfigTable(std::string_view configID) const;
+
     std::vector<std::string> getStringArray(
         std::string_view configID, std::string_view section,
         std::string_view key, 
         const std::source_location& loc = std::source_location::current()) const;
-
 
     // getConfigValue requires (configID, key) or (configID, section, key)
     template<typename T>
@@ -38,6 +39,8 @@ public:
     [[nodiscard]] std::optional<T> getConfigValue(
         std::string_view configID, std::string_view section, std::string_view key,
         const std::source_location& loc = std::source_location::current()) const;
+
+    std::map<std::string, toml::table, std::less<>> getConfigFiles() const { return m_ConfigFiles; }
 
 private:
     std::map<std::string, toml::table, std::less<>> m_ConfigFiles;

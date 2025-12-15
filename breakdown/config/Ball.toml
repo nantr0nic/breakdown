@@ -1,0 +1,4 @@
+[ball]
+ballRadius = 25.0
+ballSpeed = 450.0
+ballRGB = [250, 250, 250]

@@ -9,6 +9,9 @@
 #include "SFML/System/Vector2.hpp"
 #include "State.hpp"
 #include "AppContext.hpp"
+#include "AssetKeys.hpp"
+#include "Utilities/Logger.hpp"
+#include "Utilities/Utils.hpp"
 
 #include <memory>
 #include <format>
@@ -300,7 +303,9 @@ namespace CoreSystems
                         BrickType brickType = brickView.get<BrickType>(brickEntity);
                         if (brickType == BrickType::Strong)
                         {
-                            brickShape.shape.setFillColor(BrickColors::StrongDamaged);
+                            brickShape.shape.setFillColor(utils::loadColorFromConfig(
+                                *context->m_ConfigManager, Assets::Configs::Bricks,
+                                "strongDamaged", "strongDamagedRGB"));
                         }
                     }
                 }

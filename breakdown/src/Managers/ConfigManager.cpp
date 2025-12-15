@@ -33,6 +33,18 @@ void ConfigManager::loadConfig(std::string_view configID, std::string_view filep
     logger::Info(std::format("Config ID \"{}\" loaded from: {}", configID, filepath));
 }
 
+const toml::table* ConfigManager::getConfigTable(std::string_view configID) const
+{
+    auto it = m_ConfigFiles.find(configID);
+    if (it == m_ConfigFiles.end())
+    {
+        logger::Error(std::format("Config file ID [{}] not found.", configID));
+        return nullptr;
+    }
+
+    return &it->second;
+}
+
 std::vector<std::string> ConfigManager::getStringArray(
     std::string_view configID, std::string_view section, std::string_view key, 
     const std::source_location& loc) const

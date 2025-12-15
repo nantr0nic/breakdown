@@ -57,7 +57,7 @@ struct ConfineToWindow
 };
 
 //$ ----- Brick Components ----- //
-enum class BrickType { Normal, Strong, Gold };
+enum class BrickType { Normal, Strong, Gold, Custom_1, Custom_2 };
 namespace BrickColors 
 {
     constexpr sf::Color Normal{ 66, 170, 139 };

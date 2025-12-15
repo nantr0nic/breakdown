@@ -19,4 +19,11 @@ namespace Assets
     {
         constexpr std::string_view MainSong = "MainSong";
     }
+    namespace Configs
+    {
+        constexpr std::string_view Player = "Player";
+        constexpr std::string_view Ball = "Ball";
+        constexpr std::string_view Bricks = "Bricks";
+        constexpr std::string_view Levels = "Levels";
+    }
 }

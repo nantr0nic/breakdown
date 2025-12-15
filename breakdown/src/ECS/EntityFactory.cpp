@@ -7,9 +7,11 @@
 #include "Utilities/Utils.hpp"
 #include "Utilities/Logger.hpp"
 #include "AppContext.hpp"
+#include "AssetKeys.hpp"
 
 #include <string>
 #include <utility>
+
 
 // functions for the ECS system
 namespace EntityFactory
@@ -27,27 +29,33 @@ namespace EntityFactory
     }
 
     //$ --- Player ---
+    // the player is a paddle, of course
     entt::entity createPlayer(AppContext& context)
     {
         auto& registry = *context.m_Registry;
+        auto playerEntity = registry.create();
 
         // Load config values
-        context.m_ConfigManager->loadConfig("player", "config/Player.toml");
-        float moveSpeed = context.m_ConfigManager->getConfigValue<float>(
-                          "player", "player", "movementSpeed").value_or(350.0f);
+        context.m_ConfigManager->loadConfig(Assets::Configs::Player, "config/Player.toml");
 
-        // Create player Entity in the registry
-        auto playerEntity = registry.create();
+        float moveSpeed = context.m_ConfigManager->getConfigValue<float>(
+                          Assets::Configs::Player, "player", "movementSpeed").value_or(350.0f);
+        float paddleWidth = context.m_ConfigManager->getConfigValue<float>(
+                            Assets::Configs::Player, "player", "paddleWidth").value_or(140.0f);
+        float paddleHeight = context.m_ConfigManager->getConfigValue<float>(
+                            Assets::Configs::Player, "player", "paddleHeight").value_or(20.0f);
 
         // Player paddle properties
         // Starting position
         auto windowCenterX = context.m_MainWindow->getSize().x / 2.0f;
         auto paddleYPosition = context.m_MainWindow->getSize().y - 50.0f;
         sf::Vector2f playerPosition = sf::Vector2f(windowCenterX, paddleYPosition);
-        // Paddle start size
-        sf::Vector2f paddleSize = sf::Vector2f(140.0f, 20.0f);
 
-        Paddle playerPaddle(paddleSize, sf::Color::White, playerPosition);
+        sf::Vector2f paddleSize = sf::Vector2f(paddleWidth, paddleHeight);
+        sf::Color paddleColor = utils::loadColorFromConfig(*context.m_ConfigManager,
+                                Assets::Configs::Player, "player", "paddleRGB");
+
+        Paddle playerPaddle(paddleSize, paddleColor, playerPosition);
 
         // Add all components that make a "player"
         registry.emplace<PaddleTag>(playerEntity);  // way to ID the player
@@ -67,12 +75,20 @@ namespace EntityFactory
         auto& registry = *context.m_Registry;
         auto ballEntity = registry.create();
 
-        float ballRadius{ 25.0f };
-        sf::Color ballColor{ sf::Color::White };
-        sf::Vector2f ballStartingPosition{ 0.0f, 0.0f };
-        float ballSpeed{ 450.0f };
+        // Load config values
+        context.m_ConfigManager->loadConfig(Assets::Configs::Ball, "config/Ball.toml");
+
+        float ballRadius = context.m_ConfigManager->getConfigValue<float>(
+                           Assets::Configs::Ball, "ball", "ballRadius").value_or(25.0f);
+        float ballSpeed = context.m_ConfigManager->getConfigValue<float>(
+                          Assets::Configs::Ball, "ball", "ballSpeed").value_or(450.0f);
+
+        sf::Color ballColor = utils::loadColorFromConfig(*context.m_ConfigManager,
+                                Assets::Configs::Ball, "ball", "ballRGB");
+
 
         // Calculate ballStartingPosition from Player Position
+        sf::Vector2f ballStartingPosition{ 0.0f, 0.0f };
         auto view = registry.view<PaddleTag, Paddle>();
         for (auto entity : view)
         {
@@ -88,10 +104,7 @@ namespace EntityFactory
 
         registry.emplace<RenderableTag>(ballEntity);
         registry.emplace<Ball>(ballEntity, ballShape);
-        auto& velocity = registry.emplace<Velocity>(ballEntity);
-        // shoot the ball at start of game
-        // velocity.value = { 0.0f, -ballSpeed };
-        
+        registry.emplace<Velocity>(ballEntity);
         registry.emplace<MovementSpeed>(ballEntity, ballSpeed);
 
         logger::Info("Ball created.");
@@ -105,10 +118,14 @@ namespace EntityFactory
         auto& registry = *context.m_Registry;
         auto brickEntity = registry.create();
 
+        // Load config file
+        context.m_ConfigManager->loadConfig(Assets::Configs::Bricks, "config/Bricks.toml");
+
         registry.emplace<BrickTag>(brickEntity);
         registry.emplace<RenderableTag>(brickEntity);
         registry.emplace<BrickType>(brickEntity, type);
 
+        // Placeholder values
         sf::Color color = sf::Color::White;
         int brickScoreValue = 0;
         int brickHealthValue = 0;
@@ -117,26 +134,50 @@ namespace EntityFactory
         switch (type)
         {
             case BrickType::Normal:
-                brickScoreValue = 5;
-                brickHealthValue = 1;
-                brickHealthMax = 1;
-                color = BrickColors::Normal;
+                brickScoreValue = context.m_ConfigManager->getConfigValue<int>(
+                                  Assets::Configs::Bricks, "normal", "scoreValue").value_or(5);
+                brickHealthMax = context.m_ConfigManager->getConfigValue<int>(
+                                  Assets::Configs::Bricks, "normal", "healthMax").value_or(1);
+                color = utils::loadColorFromConfig(*context.m_ConfigManager, 
+                        Assets::Configs::Bricks, "normal", "normalRGB");
                 break;
             case BrickType::Strong:
-                brickScoreValue = 10;
-                brickHealthValue = 2;
-                brickHealthMax = 2;
-                color = BrickColors::Strong;
+                brickScoreValue = context.m_ConfigManager->getConfigValue<int>(
+                                  Assets::Configs::Bricks, "strong", "scoreValue").value_or(10);
+                brickHealthMax = context.m_ConfigManager->getConfigValue<int>(
+                                  Assets::Configs::Bricks, "strong", "healthMax").value_or(2);
+                color = utils::loadColorFromConfig(*context.m_ConfigManager, 
+                        Assets::Configs::Bricks, "strong", "strongRGB");
                 break;
             case BrickType::Gold:
-                brickScoreValue = 20;
-                brickHealthValue = 1;
-                brickHealthMax = 1;
-                color = BrickColors::Gold;
+                brickScoreValue = context.m_ConfigManager->getConfigValue<int>(
+                                  Assets::Configs::Bricks, "gold", "scoreValue").value_or(20);
+                brickHealthMax = context.m_ConfigManager->getConfigValue<int>(
+                                  Assets::Configs::Bricks, "gold", "healthMax").value_or(1);
+                color = utils::loadColorFromConfig(*context.m_ConfigManager, 
+                        Assets::Configs::Bricks, "gold", "goldRGB");
+                break;
+            case BrickType::Custom_1:
+                brickScoreValue = context.m_ConfigManager->getConfigValue<int>(
+                                  Assets::Configs::Bricks, "custom_1", "scoreValue").value_or(0);
+                brickHealthMax = context.m_ConfigManager->getConfigValue<int>(
+                                  Assets::Configs::Bricks, "custom_1", "healthMax").value_or(0);
+                color = utils::loadColorFromConfig(*context.m_ConfigManager, 
+                        Assets::Configs::Bricks, "custom_1", "custom_1RGB");
+                break;
+            case BrickType::Custom_2:
+                brickScoreValue = context.m_ConfigManager->getConfigValue<int>(
+                                  Assets::Configs::Bricks, "custom_2", "scoreValue").value_or(0);
+                brickHealthMax = context.m_ConfigManager->getConfigValue<int>(
+                                  Assets::Configs::Bricks, "custom_2", "healthMax").value_or(0);
+                color = utils::loadColorFromConfig(*context.m_ConfigManager, 
+                        Assets::Configs::Bricks, "custom_2", "custom_2RGB");
                 break;
             default:
                 break;
         }
+
+        brickHealthValue = brickHealthMax;
 
         registry.emplace<Brick>(brickEntity, size, color, position);
         registry.emplace<BrickScore>(brickEntity, brickScoreValue);
@@ -205,7 +246,7 @@ namespace EntityFactory
         std::string sectionName = std::format("level_{}", levelNumber);
 
         std::vector<std::string> layout = context.m_ConfigManager->getStringArray(
-            "levels", sectionName, "layout"
+            Assets::Configs::Levels, sectionName, "layout"
         );
 
         if (layout.empty())
@@ -217,10 +258,10 @@ namespace EntityFactory
         sf::Vector2f startPos{ 10.0f, 10.0f };
 
         float brickWidth = context.m_ConfigManager->getConfigValue<float>(
-            "levels", sectionName, "brickWidth"
+            Assets::Configs::Levels, sectionName, "brickWidth"
         ).value_or(120.0f);
         float brickHeight = context.m_ConfigManager->getConfigValue<float>(
-            "levels", sectionName, "brickHeight"
+            Assets::Configs::Levels, sectionName, "brickHeight"
         ).value_or(40.0f);
 
         sf::Vector2f brickSize{ brickWidth, brickHeight };
@@ -255,6 +296,12 @@ namespace EntityFactory
                         break;
                     case 'N': 
                         type = BrickType::Normal; 
+                        break;
+                    case 'X':
+                        type = BrickType::Custom_1;
+                        break;
+                    case 'Y':
+                        type = BrickType::Custom_2;
                         break;
                     default:  
                         type = BrickType::Normal; 

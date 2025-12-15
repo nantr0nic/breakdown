@@ -1,0 +1,27 @@
+[normal] # 'N'
+scoreValue = 5
+healthMax = 1
+normalRGB = [66, 170, 139]
+
+[strong] # 'S'
+scoreValue = 10
+healthMax = 2
+strongRGB = [87, 117, 144]
+
+[strongDamaged]
+strongDamagedRGB = [76, 144, 142]
+
+[gold] # 'G'
+scoreValue = 20
+healthMax = 1
+goldRGB = [249, 199, 79]
+
+[custom_1] # 'X' in level map
+scoreValue = 0
+healthMax = 0
+custom_1RGB = [255, 255, 255]
+
+[custom_2] # 'Y' in level map
+scoreValue = 0
+healthMax = 0
+custom_2RGB = [255, 255, 255]
