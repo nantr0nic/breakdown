@@ -1,13 +1,8 @@
 #include <SFML/Graphics.hpp>
 
 #include "Utilities/Utils.hpp"
-#include "Utilities/Logger.hpp"
-#include "Managers/ConfigManager.hpp"
 
 #include <algorithm>
-#include <string_view>
-#include <format>
-#include <cstdint>
 
 SpritePadding utils::getSpritePadding(const sf::Sprite& sprite)
 {
@@ -81,32 +76,3 @@ SpritePadding utils::getSpritePadding(const sf::Sprite& sprite)
         static_cast<float>(endY - maxY - 1)     // Bottom
     };
 }
-
-sf::Color utils::loadColorFromConfig(const ConfigManager& configManager, std::string_view configID, 
-                                     std::string_view section, std::string_view colorKey)
-    {
-        auto* configTable = configManager.getConfigTable(configID);
-
-        if (!configTable)
-        {
-            logger::Error(std::format("Config table [{}] not found", configID));
-            return sf::Color::Magenta;
-        }
-
-        auto* valueColorArray = (*configTable)[section][colorKey].as_array();
-
-        if (valueColorArray && valueColorArray->size() == 3)
-        {
-            std::uint8_t red = static_cast<uint8_t>(valueColorArray->at(0).value_or(255));
-            std::uint8_t green = static_cast<uint8_t>(valueColorArray->at(1).value_or(0));
-            std::uint8_t blue = static_cast<uint8_t>(valueColorArray->at(2).value_or(255));
-            return sf::Color(red, green, blue);
-        }
-        else
-        {
-            logger::Error(std::format(
-                "Color key [{}]  in [{}] is invalid. Must have 3 values! Using magenta instead.",
-                                        section, colorKey));
-            return sf::Color::Magenta;
-        }
-    }

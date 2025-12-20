@@ -7,11 +7,10 @@
 #include "Utilities/Utils.hpp"
 #include "Utilities/Logger.hpp"
 #include "AppContext.hpp"
-#include "AssetKeys.hpp"
 
 #include <string>
 #include <utility>
-
+#include <cstdint>
 
 // functions for the ECS system
 namespace EntityFactory
@@ -29,36 +28,29 @@ namespace EntityFactory
     }
 
     //$ --- Player ---
-    // the player is a paddle, of course
     entt::entity createPlayer(AppContext& context)
     {
         auto& registry = *context.m_Registry;
-        auto playerEntity = registry.create();
 
         // Load config values
-        context.m_ConfigManager->loadConfig(Assets::Configs::Player, "config/Player.toml");
+        context.m_ConfigManager->loadConfig("player", "config/Player.toml");
+        float moveSpeed = context.m_ConfigManager->getConfigValue<float>("player", "player", "movementSpeed").value_or(350.0f);
 
-        float moveSpeed = context.m_ConfigManager->getConfigValue<float>(
-                          Assets::Configs::Player, "player", "movementSpeed").value_or(350.0f);
-        float paddleWidth = context.m_ConfigManager->getConfigValue<float>(
-                            Assets::Configs::Player, "player", "paddleWidth").value_or(140.0f);
-        float paddleHeight = context.m_ConfigManager->getConfigValue<float>(
-                            Assets::Configs::Player, "player", "paddleHeight").value_or(20.0f);
+        // Create player Entity in the registry
+        auto playerEntity = registry.create();
 
         // Player paddle properties
         // Starting position
         auto windowCenterX = context.m_MainWindow->getSize().x / 2.0f;
         auto paddleYPosition = context.m_MainWindow->getSize().y - 50.0f;
         sf::Vector2f playerPosition = sf::Vector2f(windowCenterX, paddleYPosition);
+        // Paddle start size
+        sf::Vector2f paddleSize = sf::Vector2f(100.0f, 20.0f);
 
-        sf::Vector2f paddleSize = sf::Vector2f(paddleWidth, paddleHeight);
-        sf::Color paddleColor = utils::loadColorFromConfig(*context.m_ConfigManager,
-                                Assets::Configs::Player, "player", "paddleRGB");
-
-        Paddle playerPaddle(paddleSize, paddleColor, playerPosition);
+        Paddle playerPaddle(paddleSize, sf::Color::White, playerPosition);
 
         // Add all components that make a "player"
-        registry.emplace<PaddleTag>(playerEntity);  // way to ID the player
+        registry.emplace<PlayerTag>(playerEntity);  // way to ID the player
         registry.emplace<RenderableTag>(playerEntity);
         registry.emplace<MovementSpeed>(playerEntity, moveSpeed);
         registry.emplace<Velocity>(playerEntity);
@@ -75,21 +67,13 @@ namespace EntityFactory
         auto& registry = *context.m_Registry;
         auto ballEntity = registry.create();
 
-        // Load config values
-        context.m_ConfigManager->loadConfig(Assets::Configs::Ball, "config/Ball.toml");
-
-        float ballRadius = context.m_ConfigManager->getConfigValue<float>(
-                           Assets::Configs::Ball, "ball", "ballRadius").value_or(25.0f);
-        float ballSpeed = context.m_ConfigManager->getConfigValue<float>(
-                          Assets::Configs::Ball, "ball", "ballSpeed").value_or(450.0f);
-
-        sf::Color ballColor = utils::loadColorFromConfig(*context.m_ConfigManager,
-                                Assets::Configs::Ball, "ball", "ballRGB");
-
+        float ballRadius{ 10.0f };
+        sf::Color ballColor{ sf::Color::White };
+        sf::Vector2f ballStartingPosition{ 0.0f, 0.0f };
+        float ballSpeed{ 450.0f };
 
         // Calculate ballStartingPosition from Player Position
-        sf::Vector2f ballStartingPosition{ 0.0f, 0.0f };
-        auto view = registry.view<PaddleTag, Paddle>();
+        auto view = registry.view<PlayerTag, Paddle>();
         for (auto entity : view)
         {
             const auto& playerShape = registry.get<Paddle>(entity).shape;
@@ -104,7 +88,10 @@ namespace EntityFactory
 
         registry.emplace<RenderableTag>(ballEntity);
         registry.emplace<Ball>(ballEntity, ballShape);
-        registry.emplace<Velocity>(ballEntity);
+        auto& velocity = registry.emplace<Velocity>(ballEntity);
+        // shoot the ball at start of game
+        velocity.value = { 0.0f, -ballSpeed };
+        
         registry.emplace<MovementSpeed>(ballEntity, ballSpeed);
 
         logger::Info("Ball created.");
@@ -113,75 +100,13 @@ namespace EntityFactory
     }
 
     entt::entity createABrick(AppContext& context, sf::Vector2f size, 
-                              sf::Vector2f position, BrickType type)
+                              sf::Color& color, sf::Vector2f position)
     {
         auto& registry = *context.m_Registry;
         auto brickEntity = registry.create();
 
-        // Load config file
-        context.m_ConfigManager->loadConfig(Assets::Configs::Bricks, "config/Bricks.toml");
-
-        registry.emplace<BrickTag>(brickEntity);
-        registry.emplace<RenderableTag>(brickEntity);
-        registry.emplace<BrickType>(brickEntity, type);
-
-        // Placeholder values
-        sf::Color color = sf::Color::White;
-        int brickScoreValue = 0;
-        int brickHealthValue = 0;
-        int brickHealthMax = 0;
-
-        switch (type)
-        {
-            case BrickType::Normal:
-                brickScoreValue = context.m_ConfigManager->getConfigValue<int>(
-                                  Assets::Configs::Bricks, "normal", "scoreValue").value_or(5);
-                brickHealthMax = context.m_ConfigManager->getConfigValue<int>(
-                                  Assets::Configs::Bricks, "normal", "healthMax").value_or(1);
-                color = utils::loadColorFromConfig(*context.m_ConfigManager, 
-                        Assets::Configs::Bricks, "normal", "normalRGB");
-                break;
-            case BrickType::Strong:
-                brickScoreValue = context.m_ConfigManager->getConfigValue<int>(
-                                  Assets::Configs::Bricks, "strong", "scoreValue").value_or(10);
-                brickHealthMax = context.m_ConfigManager->getConfigValue<int>(
-                                  Assets::Configs::Bricks, "strong", "healthMax").value_or(2);
-                color = utils::loadColorFromConfig(*context.m_ConfigManager, 
-                        Assets::Configs::Bricks, "strong", "strongRGB");
-                break;
-            case BrickType::Gold:
-                brickScoreValue = context.m_ConfigManager->getConfigValue<int>(
-                                  Assets::Configs::Bricks, "gold", "scoreValue").value_or(20);
-                brickHealthMax = context.m_ConfigManager->getConfigValue<int>(
-                                  Assets::Configs::Bricks, "gold", "healthMax").value_or(1);
-                color = utils::loadColorFromConfig(*context.m_ConfigManager, 
-                        Assets::Configs::Bricks, "gold", "goldRGB");
-                break;
-            case BrickType::Custom_1:
-                brickScoreValue = context.m_ConfigManager->getConfigValue<int>(
-                                  Assets::Configs::Bricks, "custom_1", "scoreValue").value_or(0);
-                brickHealthMax = context.m_ConfigManager->getConfigValue<int>(
-                                  Assets::Configs::Bricks, "custom_1", "healthMax").value_or(0);
-                color = utils::loadColorFromConfig(*context.m_ConfigManager, 
-                        Assets::Configs::Bricks, "custom_1", "custom_1RGB");
-                break;
-            case BrickType::Custom_2:
-                brickScoreValue = context.m_ConfigManager->getConfigValue<int>(
-                                  Assets::Configs::Bricks, "custom_2", "scoreValue").value_or(0);
-                brickHealthMax = context.m_ConfigManager->getConfigValue<int>(
-                                  Assets::Configs::Bricks, "custom_2", "healthMax").value_or(0);
-                color = utils::loadColorFromConfig(*context.m_ConfigManager, 
-                        Assets::Configs::Bricks, "custom_2", "custom_2RGB");
-                break;
-            default:
-                break;
-        }
-
-        brickHealthValue = brickHealthMax;
-
         registry.emplace<Brick>(brickEntity, size, color, position);
-        registry.emplace<BrickScore>(brickEntity, brickScoreValue);
-        registry.emplace<BrickHealth>(brickEntity, brickHealthValue, brickHealthMax);
+        registry.emplace<RenderableTag>(brickEntity);
 
         return brickEntity;
     }
@@ -193,14 +118,14 @@ namespace EntityFactory
         auto windowSize = window.getSize();
 
         sf::Vector2f spawnStartXY{ 20.0f, 10.0f };
-        sf::Vector2f brickSize{ 120.0f, 40.0f };
+        sf::Vector2f brickSize{ 60.0f, 20.0f };
         float brickSpacing{ 5.0f };
 
         float availableWidth = windowSize.x - spawnStartXY.x;
         float availableHeight = windowSize.y - (spawnStartXY.y * 2.0f);
         int bricksPerRow = static_cast<int>((availableWidth + brickSpacing) 
                                             / (brickSize.x + brickSpacing));
-        int rows = 3;
+        int rows = 5;
 
         for (int row = 0; row < rows; ++row)
         {
@@ -217,107 +142,30 @@ namespace EntityFactory
             for (int brick = 0; brick < bricksInThisRow; ++brick)
             {
                 sf::Vector2f brickPosition;
+                
+                // randomize brick color
+                std::uint8_t randRed = static_cast<std::uint8_t>(
+                                       context.m_RandomMachine->getInt(10, 250));
+                std::uint8_t randGreen = static_cast<std::uint8_t>(
+                                         context.m_RandomMachine->getInt(10, 250));
+                std::uint8_t randBlue = static_cast<std::uint8_t>(
+                                        context.m_RandomMachine->getInt(10, 250));
+                sf::Color brickColor(randRed, randGreen, randBlue);
 
-                brickPosition.x = spawnStartXY.x + rowOffsetX + 
-                                  (brick * (brickSize.x + brickSpacing));
+                brickPosition.x = spawnStartXY.x + rowOffsetX + (brick * (brickSize.x + brickSpacing));
                 brickPosition.y = spawnStartXY.y + (row * (brickSize.y + brickSpacing));
-                if (brick % 3 == 0)
-                {
-                    auto brickEntity = createABrick(context, brickSize, 
-                                                    brickPosition, BrickType::Strong);
-                }
-                else if (brick % 5 == 0)
-                {
-                    auto brickEntity = createABrick(context, brickSize, 
-                                                    brickPosition, BrickType::Gold);
-                }
-                else
-                {
-                    auto brickEntity = createABrick(context, brickSize, 
-                                                    brickPosition, BrickType::Normal);
-                }
+
+                auto brickEntity = createABrick(context, brickSize, brickColor, brickPosition);
             }
         }
         logger::Info("Bricks created.");
     }
 
-    void loadLevel(AppContext& context, int levelNumber)
-    {
-        std::string sectionName = std::format("level_{}", levelNumber);
-
-        std::vector<std::string> layout = context.m_ConfigManager->getStringArray(
-            Assets::Configs::Levels, sectionName, "layout"
-        );
-
-        if (layout.empty())
-        {
-            logger::Error("Failed to load level layout: " + sectionName);
-            return;
-        }
-
-        sf::Vector2f startPos{ 10.0f, 10.0f };
-
-        float brickWidth = context.m_ConfigManager->getConfigValue<float>(
-            Assets::Configs::Levels, sectionName, "brickWidth"
-        ).value_or(120.0f);
-        float brickHeight = context.m_ConfigManager->getConfigValue<float>(
-            Assets::Configs::Levels, sectionName, "brickHeight"
-        ).value_or(40.0f);
-
-        sf::Vector2f brickSize{ brickWidth, brickHeight };
-        float padding = 5.0f;
-
-        for (size_t row = 0; row < layout.size(); ++row)
-        {
-            const std::string& rowStr = layout[row];
-            for (size_t col = 0; col < rowStr.size(); ++col)
-            {
-                char typeChar = rowStr[col];
-
-                // . and ' ' are empty spaces
-                if (typeChar == '.' || typeChar == ' ')
-                { 
-                    continue;
-                }
-
-                sf::Vector2f pos{};
-                pos.x = startPos.x + col * (brickSize.x + padding);
-                pos.y = startPos.y + row * (brickSize.y + padding);
-
-                // build bricks
-                BrickType type = BrickType::Normal;
-                switch (typeChar)
-                {
-                    case 'S': 
-                        type = BrickType::Strong; 
-                        break;
-                    case 'G': 
-                        type = BrickType::Gold;   
-                        break;
-                    case 'N': 
-                        type = BrickType::Normal; 
-                        break;
-                    case 'X':
-                        type = BrickType::Custom_1;
-                        break;
-                    case 'Y':
-                        type = BrickType::Custom_2;
-                        break;
-                    default:  
-                        type = BrickType::Normal; 
-                        break;
-                }
-
-                createABrick(context, brickSize, pos, type);
-            }
-        }
-        
-        logger::Info(std::format("Level {} loaded successfully.", levelNumber));
-    }
-
-    //$ ----- UI/HUD ----- //
-    entt::entity createButton(AppContext& context, sf::Font& font,
-                            const std::string& text, sf::Vector2f position,
+    //$ --- UI ---
+    entt::entity createButton(AppContext& context,
+                            sf::Font& font,
+                            const std::string& text,
+                            sf::Vector2f position,
                             std::function<void()> action)
     {
         auto& registry = *context.m_Registry;
@@ -348,27 +196,5 @@ namespace EntityFactory
         registry.emplace<Clickable>(buttonEntity, std::move(action));
         
         return buttonEntity;
-    }
-
-    entt::entity createScoreDisplay(AppContext &context, sf::Font &font, 
-                                    unsigned int size, sf::Color& color, 
-                                    sf::Vector2f position)
-    {
-        auto& registry = *context.m_Registry;
-        auto scoreEntity = registry.create();
-
-        registry.emplace<HUDTag>(scoreEntity);
-        registry.emplace<ScoreHUDTag>(scoreEntity);
-
-        registry.emplace<CurrentScore>(scoreEntity, 0);
-
-        auto& scoreText = registry.emplace<UIText>(scoreEntity, sf::Text(font, "Score: 0", size));
-        scoreText.text.setFillColor(color);
-        utils::centerOrigin(scoreText.text);
-        scoreText.text.setPosition(position);
-
-        logger::Info("Score Display created.");
-
-        return scoreEntity;
     }
 }

@@ -21,6 +21,14 @@ public:
     State(AppContext* appContext) : m_AppContext(appContext) {}
     virtual ~State() = default;
 
+    /* enter() and exit() are left here as a reminder for the future
+    * These can be left empty, but can be used to load context stuff
+    * like music, menu options, reading configs from file for menu layout, etc.
+    * They can be left empty if not needed.
+    */
+    //virtual void enter() = 0;
+    //virtual void exit() = 0;
+
     StateEvents& getEventHandlers() noexcept { return m_StateEvents; }
     const StateEvents& getEventHandlers() const noexcept { return m_StateEvents; }
 
@@ -54,12 +62,8 @@ public:
     virtual void update(sf::Time deltaTime) override;
     virtual void render() override;
 
-    bool getLevelStarted() { return m_LevelStarted; }
-    void setLevelStarted(bool value) { m_LevelStarted = value; }
-
 private:
     sf::Music* m_MainMusic{ nullptr };
-    bool m_LevelStarted{ false };
     bool m_ShowDebug{ false };
 };
 
@@ -87,30 +91,4 @@ public:
 
 private:
     std::optional<sf::Text> m_GameOverText;
-};
-
-class WinState: public State
-{
-public:
-    WinState(AppContext* appContext);
-    virtual ~WinState() override;
-
-    virtual void update(sf::Time deltaTime) override;
-    virtual void render() override;
-
-private:
-    std::optional<sf::Text> m_WinText;
-};
-
-class GameCompleteState : public State
-{
-public:
-    GameCompleteState(AppContext* appContext);
-    virtual ~GameCompleteState() override;
-
-    virtual void update(sf::Time deltaTime) override;
-    virtual void render() override;
-
-private:
-    std::optional<sf::Text> m_GameCompleteText;
 };

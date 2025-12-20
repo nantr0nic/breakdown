@@ -6,12 +6,7 @@
 #include "ECS/Systems.hpp"
 #include "ECS/Components.hpp"
 #include "Managers/StateManager.hpp"
-#include "SFML/System/Vector2.hpp"
-#include "State.hpp"
 #include "AppContext.hpp"
-#include "AssetKeys.hpp"
-#include "Utilities/Logger.hpp"
-#include "Utilities/Utils.hpp"
 
 #include <memory>
 #include <format>
@@ -19,17 +14,16 @@
 namespace CoreSystems
 {
     //$ "Core" / game systems (maybe rename...)
-    void handlePlayerInput(AppContext* context)
+    void handlePlayerInput(entt::registry& registry, const sf::RenderWindow& window)
     {
-        auto& registry = *context->m_Registry;
-        bool levelStarted = context->m_LevelStarted;
+        auto view = registry.view<PlayerTag, 
+                                Velocity, 
+                                MovementSpeed>();
 
-        auto paddleView = registry.view<PaddleTag, Velocity, MovementSpeed>();
-
-        for (auto paddleEntity : paddleView)
+        for (auto entity : view)
         {
-            auto& velocity = paddleView.get<Velocity>(paddleEntity);
-            const auto& speed = paddleView.get<MovementSpeed>(paddleEntity);
+            auto& velocity = view.get<Velocity>(entity);
+            const auto& speed = view.get<MovementSpeed>(entity);
 
             // Reset velocity
             velocity.value = { 0.0f, 0.0f };
@@ -42,82 +36,39 @@ namespace CoreSystems
             {
                 velocity.value.x += speed.value;
             }
-
-            if (!levelStarted && sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Space))
-            {
-                context->m_LevelStarted = true;
-                logger::Info("Level started.");
-
-                auto ballView = registry.view<Ball, Velocity, MovementSpeed>();
-                for (auto ballEntity : ballView)
-                {
-                    auto& ballVelocity = ballView.get<Velocity>(ballEntity);
-                    auto& ballSpeed = ballView.get<MovementSpeed>(ballEntity);
-                    ballVelocity.value = { velocity.value.x, -ballSpeed.value };
-                }
-            }
         }
     }
 
-    void movementSystem(AppContext* context, sf::Time deltaTime)
+    void movementSystem(entt::registry& registry, sf::Time deltaTime, sf::RenderWindow& window)
     {
-        auto& registry = *context->m_Registry;
-        bool levelStarted = context->m_LevelStarted;
+        // cache window size
+        auto windowSize = window.getSize();
 
-        auto paddleView = registry.view<Paddle, Velocity>();
-        for (auto paddleEntity : paddleView)
+        auto rectView = registry.view<Paddle, Velocity>();
+        for (auto entity : rectView)
         {
-            auto& paddleComp = paddleView.get<Paddle>(paddleEntity);
-            const auto& velocity = paddleView.get<Velocity>(paddleEntity);
+            auto& rectShape = rectView.get<Paddle>(entity);
+            const auto& velocity = rectView.get<Velocity>(entity);
 
-            paddleComp.shape.move(velocity.value * deltaTime.asSeconds());
+            rectShape.shape.move(velocity.value * deltaTime.asSeconds());
         }
 
-        if (levelStarted)
+        auto ballView = registry.view<Ball, Velocity>();
+        for (auto entity : ballView)
         {
-            auto ballView = registry.view<Ball, Velocity>();
-            for (auto ballEntity : ballView)
-            {
-                auto& ballShape = ballView.get<Ball>(ballEntity);
-                const auto& velocity = ballView.get<Velocity>(ballEntity);
+            auto& ballShape = ballView.get<Ball>(entity);
+            const auto& velocity = ballView.get<Velocity>(entity);
 
-                ballShape.shape.move(velocity.value * deltaTime.asSeconds());
-            }
-        }
-        else
-        {
-            auto paddleView = registry.view<Paddle>();
-            sf::Vector2f paddlePosition{};
-            sf::Vector2f paddleSize{};
-
-            for (auto paddleEntity : paddleView)
-            {
-                auto& paddleComp = paddleView.get<Paddle>(paddleEntity);
-                paddlePosition = paddleComp.shape.getPosition();
-                paddleSize = paddleComp.shape.getSize();
-                break;
-            }
-
-            auto ballView = registry.view<Ball>();
-            for (auto ballEntity : ballView)
-            {
-                auto& ballComp = ballView.get<Ball>(ballEntity);
-                float ballRadius = ballComp.shape.getRadius();
-
-                float x = paddlePosition.x;
-                float y = paddlePosition.y - paddleSize.y / 2.0f - ballRadius;
-
-                ballComp.shape.setPosition({ x, y });
-            }
+            ballShape.shape.move(velocity.value * deltaTime.asSeconds());
         }
 
     }
 
-    void collisionSystem(AppContext* context, sf::Time deltaTime)
+    void collisionSystem(AppContext* m_AppContext, sf::Time deltaTime)
     {
-        auto& registry = *context->m_Registry;
-        auto& window = *context->m_MainWindow;
-        auto& stateManager = *context->m_StateManager;
+        auto& registry = *m_AppContext->m_Registry;
+        auto& window = *m_AppContext->m_MainWindow;
+        auto& stateManager = *m_AppContext->m_StateManager;
 
         // cache window size
         auto windowSize = window.getSize();
@@ -188,7 +139,7 @@ namespace CoreSystems
             // South Wall (Game over)
             if (ballPosition.y + ballRadius > windowSize.y) 
             {
-                auto gameoverState = std::make_unique<GameOverState>(context);
+                auto gameoverState = std::make_unique<GameOverState>(m_AppContext);
                 stateManager.replaceState(std::move(gameoverState));
             }
 
@@ -197,7 +148,9 @@ namespace CoreSystems
 
             // Update bounds for object collision checks
             sf::FloatRect ballBounds = ballComp.shape.getGlobalBounds(); // treats circle as square
-    
+        
+
+            //$ ----- Ball vs Paddle ----- //
             auto paddleView = registry.view<Paddle>();
             for (auto paddleEntity : paddleView)
             {
@@ -224,10 +177,9 @@ namespace CoreSystems
             }
                     
             //$ ----- Ball vs Bricks ----- //
-            auto brickView = registry.view<Brick, BrickScore, BrickHealth, BrickType>();
+            auto brickView = registry.view<Brick>();
             for (auto brickEntity : brickView)
             {
-                // Handle collision/bounce
                 auto& brickShape = brickView.get<Brick>(brickEntity);
                 sf::FloatRect brickBounds = brickShape.shape.getGlobalBounds();
 
@@ -246,68 +198,12 @@ namespace CoreSystems
                         ballVelocity.value.x = -ballVelocity.value.x;
                     }
 
-                    // // Log brick collision for debug
-                    // float brickY = brickShape.shape.getPosition().y;
-                    // float brickX = brickShape.shape.getPosition().x;
-                    // logger::Info(std::format("Brick hit at position: ({},{})", brickX, brickY));
+                    float brickY = brickShape.shape.getPosition().y;
+                    float brickX = brickShape.shape.getPosition().x;
+                    logger::Info(std::format("Brick hit at position: ({},{})", brickX, brickY));
 
-                    // Handle brick health
-                    bool destroyed = false;
-                    auto& brickHealth = brickView.get<BrickHealth>(brickEntity).current;
-                    brickHealth -= 1;
-                    if (brickHealth <= 0)
-                    {
-                        destroyed = true;
-                    }
-                    
-                    if (destroyed)
-                    {
-                        // increment score
-                        auto scoreView = registry.view<HUDTag, ScoreHUDTag, CurrentScore, UIText>();
-                        for (auto scoreEntity : scoreView)
-                        {
-                            auto& scoreText = scoreView.get<UIText>(scoreEntity);
-                            auto& scoreCurrentValue = scoreView.get<CurrentScore>(scoreEntity);
-                            auto& brickScoreValue = brickView.get<BrickScore>(brickEntity);
-
-                            scoreCurrentValue.value += brickScoreValue.value;
-
-                            scoreText.text.setString(std::format("Score: {}", scoreCurrentValue.value));
-                        }
-
-                        // remove the non-paddle rectangle we've collided with
-                        registry.destroy(brickEntity);
-
-                        if (registry.view<Brick>().empty())
-                        {
-                            if (context->m_LevelNumber >= context->m_TotalLevels)
-                            {
-                                logger::Info("Game complete!");
-
-                                auto gameCompleteState = std::make_unique<GameCompleteState>(context);
-                                stateManager.replaceState(std::move(gameCompleteState));
-                            }
-                            else
-                            {
-                            logger::Info("Level complete!");
-                            
-                            auto winState = std::make_unique<WinState>(context);
-                            stateManager.replaceState(std::move(winState));
-                            }
-                        }
-                    }
-                    //! We will need to handle this differently once there are more than one type
-                    //! of "strong" brick
-                    else 
-                    {
-                        BrickType brickType = brickView.get<BrickType>(brickEntity);
-                        if (brickType == BrickType::Strong)
-                        {
-                            brickShape.shape.setFillColor(utils::loadColorFromConfig(
-                                *context->m_ConfigManager, Assets::Configs::Bricks,
-                                "strongDamaged", "strongDamagedRGB"));
-                        }
-                    }
+                    // remove the non-paddle rectangle we've collided with
+                    registry.destroy(brickEntity);
                 }
             }
         }
@@ -368,12 +264,12 @@ namespace UISystems
     {
         // Render shapes
         auto shapeView = registry.view<UIShape>();
-        for (auto shapeEntity : shapeView)
+        for (auto entity : shapeView)
         {
-            auto& uiShape = shapeView.get<UIShape>(shapeEntity);
+            auto& uiShape = shapeView.get<UIShape>(entity);
             
             // Change color on hover
-            if (registry.all_of<Hovered>(shapeEntity))
+            if (registry.all_of<Hovered>(entity))
             {
                 uiShape.shape.setFillColor(sf::Color(100, 100, 255)); // Hover color
             }
@@ -387,21 +283,18 @@ namespace UISystems
 
         // Render text
         auto textView = registry.view<UIText>();
-        for (auto textEntity : textView)
+        for (auto entity : textView)
         {
-            auto& uiText = textView.get<UIText>(textEntity);
+            auto& uiText = textView.get<UIText>(entity);
 
-            // Change text color on hover for interactive UI
-            if (registry.any_of<Clickable, Bounds>(textEntity))
+            // Change text color on hover
+            if (registry.all_of<Hovered>(entity))
             {
-                if (registry.all_of<Hovered>(textEntity))
-                {
-                    uiText.text.setFillColor(sf::Color::White); // Hover text color
-                }
-                else
-                {
-                    uiText.text.setFillColor(sf::Color(200, 200, 200)); // Normal text color
-                }
+                uiText.text.setFillColor(sf::Color::White); // Hover text color
+            }
+            else
+            {
+                uiText.text.setFillColor(sf::Color(200, 200, 200)); // Normal text color
             }
 
             window.draw(uiText.text);
