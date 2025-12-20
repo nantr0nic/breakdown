@@ -47,9 +47,4 @@ struct AppContext
     // Pointers to Application-level objects
     sf::RenderWindow* m_MainWindow{ nullptr };
     StateManager* m_StateManager{ nullptr };
-
-    // Some game data
-    bool m_LevelStarted{ false };
-    int m_LevelNumber{ 1 };
-    int m_TotalLevels{ 1 };
 };
