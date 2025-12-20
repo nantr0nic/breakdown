@@ -1,0 +1,27 @@
+[normal] # Code 'N' in Levels
+scoreValue = 5 # Must be a positive number.
+healthMax = 1 # Must be a positive number.
+normalRGB = [66, 170, 139] # MUST BE between 0, 0 ,0 and 255, 255, 255
+
+[strong] # Code 'S' in Levels
+scoreValue = 10 # Must be a positive number.
+healthMax = 2 # Must be a positive number.
+strongRGB = [87, 117, 144] # MUST BE between 0, 0 ,0 and 255, 255, 255
+
+[strongDamaged] # Just for changing the color of strong when hit
+strongDamagedRGB = [76, 144, 142] # MUST BE between 0, 0 ,0 and 255, 255, 255
+
+[gold] # Code 'G' in Levels
+scoreValue = 20 # Must be a positive number.
+healthMax = 1 # Must be a positive number.
+goldRGB = [249, 199, 79] # MUST BE between 0, 0 ,0 and 255, 255, 255
+
+[custom_1] # Code 'X' in Levels
+scoreValue = 0 # Must be a positive number.
+healthMax = 0 # Must be a positive number.
+custom_1RGB = [255, 255, 255] # MUST BE between 0, 0 ,0 and 255, 255, 255
+
+[custom_2] # Code 'Y' in Levels
+scoreValue = 0 # Must be a positive number.
+healthMax = 0 # Must be a positive number.
+custom_2RGB = [255, 255, 255] # MUST BE between 0, 0 ,0 and 255, 255, 255
