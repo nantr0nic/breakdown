@@ -2,6 +2,10 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "Managers/ConfigManager.hpp"
+
+#include <string_view>
+
 struct SpritePadding
 {
     float left{ 0.0f };
@@ -20,4 +24,8 @@ namespace utils
     }
 
     SpritePadding getSpritePadding(const sf::Sprite& sprite);
+
+    [[nodiscard]] sf::Color loadColorFromConfig(const ConfigManager& configManager,
+                            std::string_view configID, std::string_view section, 
+                            std::string_view colorKey);
 }
