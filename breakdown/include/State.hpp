@@ -8,6 +8,7 @@
 
 #include <functional>
 #include <optional>
+#include <cstdint>
 
 struct StateEvents
 {
@@ -61,6 +62,9 @@ private:
     sf::Music* m_MainMusic{ nullptr };
     bool m_LevelStarted{ false };
     bool m_ShowDebug{ false };
+
+    // Descent mechanic data
+    float m_DescentSpeed{ 0.1f };
 };
 
 class PauseState : public State

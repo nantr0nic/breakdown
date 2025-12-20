@@ -76,6 +76,7 @@ void Application::run()
     while (m_AppContext.m_MainWindow->isOpen())
     {
         sf::Time deltaTime = mainClock.restart();
+        m_StateManager.processPending();
         processEvents();
         update(deltaTime);
         render();

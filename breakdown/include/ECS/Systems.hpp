@@ -23,6 +23,8 @@ namespace CoreSystems
     void renderSystem(entt::registry& registry, sf::RenderWindow& window, bool showDebug);
 
     void playSound(AppContext& context, std::string_view soundID);
+
+    void moveBricksDown(entt::registry& registry, float amount);
 }
 
 namespace UISystems

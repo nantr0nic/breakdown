@@ -406,6 +406,16 @@ namespace CoreSystems
         context.m_ActiveSounds.emplace_back(*sound);
         context.m_ActiveSounds.back().play();
     }
+
+    void moveBricksDown(entt::registry& registry, float amount)
+    {
+        auto brickView = registry.view<Brick>();
+        for (auto bricks : brickView)
+        {
+            auto& brick = brickView.get<Brick>(bricks);
+            brick.shape.move({ 0.0f, amount });
+        }
+    }
 }
 
 namespace UISystems

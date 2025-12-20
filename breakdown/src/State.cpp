@@ -170,6 +170,14 @@ void PlayState::update(sf::Time deltaTime)
     CoreSystems::handlePlayerInput(m_AppContext);
     CoreSystems::movementSystem(m_AppContext, deltaTime);
     CoreSystems::collisionSystem(m_AppContext, deltaTime);
+
+    // Descent mechanic
+    if (m_AppContext.m_LevelStarted)
+    {
+        float moveAmount = m_DescentSpeed * deltaTime.asSeconds();
+        CoreSystems::moveBricksDown(*m_AppContext.m_Registry, m_DescentSpeed);
+    }
+
 }
 
 void PlayState::render()
