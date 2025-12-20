@@ -9,7 +9,7 @@
 class StateManager
 {
 public:
-    StateManager(AppContext* appContext);
+    explicit StateManager(AppContext& context);
     StateManager(const StateManager&) = delete;
     StateManager& operator=(const StateManager&) = delete;
     ~StateManager();

@@ -11,7 +11,7 @@
 
 Application::Application()
     : m_AppContext()
-    , m_StateManager(&m_AppContext)
+    , m_StateManager(m_AppContext)
 {
     // Initialize Application Window and data
     initMainWindow();
@@ -21,7 +21,7 @@ Application::Application()
     m_AppContext.m_StateManager = &m_StateManager;
 
     // Push the initial application state
-    auto menuState = std::make_unique<MenuState>(&m_AppContext);
+    auto menuState = std::make_unique<MenuState>(m_AppContext);
     m_StateManager.pushState(std::move(menuState));
 
     // Debug

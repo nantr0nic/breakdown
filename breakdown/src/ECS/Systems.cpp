@@ -19,12 +19,12 @@
 namespace CoreSystems
 {
     //$ "Core" / game systems (maybe rename...)
-    void handlePlayerInput(AppContext* context)
+    void handlePlayerInput(AppContext& context)
     {
-        auto& registry = *context->m_Registry;
-        bool levelStarted = context->m_LevelStarted;
+        auto& registry = context.m_Registry;
+        bool levelStarted = context.m_LevelStarted;
 
-        auto paddleView = registry.view<PaddleTag, Velocity, MovementSpeed>();
+        auto paddleView = registry->view<PaddleTag, Velocity, MovementSpeed>();
 
         for (auto paddleEntity : paddleView)
         {
@@ -45,10 +45,10 @@ namespace CoreSystems
 
             if (!levelStarted && sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Space))
             {
-                context->m_LevelStarted = true;
+                context.m_LevelStarted = true;
                 logger::Info("Level started.");
 
-                auto ballView = registry.view<Ball, Velocity, MovementSpeed>();
+                auto ballView = registry->view<Ball, Velocity, MovementSpeed>();
                 for (auto ballEntity : ballView)
                 {
                     auto& ballVelocity = ballView.get<Velocity>(ballEntity);
@@ -59,12 +59,12 @@ namespace CoreSystems
         }
     }
 
-    void movementSystem(AppContext* context, sf::Time deltaTime)
+    void movementSystem(AppContext& context, sf::Time deltaTime)
     {
-        auto& registry = *context->m_Registry;
-        bool levelStarted = context->m_LevelStarted;
+        auto& registry = context.m_Registry;
+        bool levelStarted = context.m_LevelStarted;
 
-        auto paddleView = registry.view<Paddle, Velocity>();
+        auto paddleView = registry->view<Paddle, Velocity>();
         for (auto paddleEntity : paddleView)
         {
             auto& paddleComp = paddleView.get<Paddle>(paddleEntity);
@@ -75,7 +75,7 @@ namespace CoreSystems
 
         if (levelStarted)
         {
-            auto ballView = registry.view<Ball, Velocity>();
+            auto ballView = registry->view<Ball, Velocity>();
             for (auto ballEntity : ballView)
             {
                 auto& ballShape = ballView.get<Ball>(ballEntity);
@@ -86,7 +86,7 @@ namespace CoreSystems
         }
         else
         {
-            auto paddleView = registry.view<Paddle>();
+            auto paddleView = registry->view<Paddle>();
             sf::Vector2f paddlePosition{};
             sf::Vector2f paddleSize{};
 
@@ -98,7 +98,7 @@ namespace CoreSystems
                 break;
             }
 
-            auto ballView = registry.view<Ball>();
+            auto ballView = registry->view<Ball>();
             for (auto ballEntity : ballView)
             {
                 auto& ballComp = ballView.get<Ball>(ballEntity);
@@ -113,24 +113,24 @@ namespace CoreSystems
 
     }
 
-    void collisionSystem(AppContext* context, sf::Time deltaTime)
+    void collisionSystem(AppContext& context, sf::Time deltaTime)
     {
-        auto& registry = *context->m_Registry;
-        auto& window = *context->m_MainWindow;
-        auto& stateManager = *context->m_StateManager;
+        auto& registry = context.m_Registry;
+        auto& window = context.m_MainWindow;
+        auto& stateManager = context.m_StateManager;
 
         // cache window size
-        auto windowSize = window.getSize();
+        auto windowSize = window->getSize();
         
         //$ --- Paddle vs Window Walls --- //
         // Confine paddle to window (wall collision)
-        auto paddleView = registry.view<Paddle, Velocity>();
+        auto paddleView = registry->view<Paddle, Velocity>();
         for (auto entity : paddleView)
         {
             auto& paddleShape = paddleView.get<Paddle>(entity);
 
             // Check for 'ConfineToWindow' and limit paddle to window
-            if (auto* bounds = registry.try_get<ConfineToWindow>(entity))
+            if (auto* bounds = registry->try_get<ConfineToWindow>(entity))
             {
                 auto paddleBounds = paddleShape.shape.getGlobalBounds();
 
@@ -155,13 +155,13 @@ namespace CoreSystems
         }
 
         //$ ----- Ball Collision Logic ----- //
-        auto ballView = registry.view<Ball, Velocity, MovementSpeed>();
+        auto ballView = registry->view<Ball, Velocity, MovementSpeed>();
         for (auto ballEntity : ballView)
         {
             // Ball properties
-            auto& ballComp = registry.get<Ball>(ballEntity);
-            auto& ballVelocity = registry.get<Velocity>(ballEntity);
-            float ballSpeed = registry.get<MovementSpeed>(ballEntity).value; 
+            auto& ballComp = registry->get<Ball>(ballEntity);
+            auto& ballVelocity = registry->get<Velocity>(ballEntity);
+            float ballSpeed = registry->get<MovementSpeed>(ballEntity).value; 
 
             sf::Vector2f ballPosition = ballComp.shape.getPosition(); // Center
             float ballRadius = ballComp.shape.getRadius();
@@ -189,7 +189,7 @@ namespace CoreSystems
             if (ballPosition.y + ballRadius > windowSize.y) 
             {
                 auto gameoverState = std::make_unique<GameOverState>(context);
-                stateManager.replaceState(std::move(gameoverState));
+                stateManager->replaceState(std::move(gameoverState));
             }
 
             // Update position after wall checks
@@ -198,10 +198,10 @@ namespace CoreSystems
             // Update bounds for object collision checks
             sf::FloatRect ballBounds = ballComp.shape.getGlobalBounds(); // treats circle as square
     
-            auto paddleView = registry.view<Paddle>();
+            auto paddleView = registry->view<Paddle>();
             for (auto paddleEntity : paddleView)
             {
-                auto& paddleShape = registry.get<Paddle>(paddleEntity);
+                auto& paddleShape = registry->get<Paddle>(paddleEntity);
                 sf::FloatRect paddleBounds = paddleShape.shape.getGlobalBounds();
 
                 if (ballBounds.findIntersection(paddleBounds))
@@ -224,7 +224,7 @@ namespace CoreSystems
             }
                     
             //$ ----- Ball vs Bricks ----- //
-            auto brickView = registry.view<Brick, BrickScore, BrickHealth, BrickType>();
+            auto brickView = registry->view<Brick, BrickScore, BrickHealth, BrickType>();
             for (auto brickEntity : brickView)
             {
                 // Handle collision/bounce
@@ -263,7 +263,7 @@ namespace CoreSystems
                     if (destroyed)
                     {
                         // increment score
-                        auto scoreView = registry.view<HUDTag, ScoreHUDTag, CurrentScore, UIText>();
+                        auto scoreView = registry->view<HUDTag, ScoreHUDTag, CurrentScore, UIText>();
                         for (auto scoreEntity : scoreView)
                         {
                             auto& scoreText = scoreView.get<UIText>(scoreEntity);
@@ -276,23 +276,23 @@ namespace CoreSystems
                         }
 
                         // remove the non-paddle rectangle we've collided with
-                        registry.destroy(brickEntity);
+                        registry->destroy(brickEntity);
 
-                        if (registry.view<Brick>().empty())
+                        if (registry->view<Brick>().empty())
                         {
-                            if (context->m_LevelNumber >= context->m_TotalLevels)
+                            if (context.m_LevelNumber >= context.m_TotalLevels)
                             {
                                 logger::Info("Game complete!");
 
                                 auto gameCompleteState = std::make_unique<GameCompleteState>(context);
-                                stateManager.replaceState(std::move(gameCompleteState));
+                                stateManager->replaceState(std::move(gameCompleteState));
                             }
                             else
                             {
                             logger::Info("Level complete!");
                             
                             auto winState = std::make_unique<WinState>(context);
-                            stateManager.replaceState(std::move(winState));
+                            stateManager->replaceState(std::move(winState));
                             }
                         }
                     }
@@ -304,7 +304,7 @@ namespace CoreSystems
                         if (brickType == BrickType::Strong)
                         {
                             brickShape.shape.setFillColor(utils::loadColorFromConfig(
-                                *context->m_ConfigManager, Assets::Configs::Bricks,
+                                *context.m_ConfigManager, Assets::Configs::Bricks,
                                 "strongDamaged", "strongDamagedRGB"));
                         }
                     }

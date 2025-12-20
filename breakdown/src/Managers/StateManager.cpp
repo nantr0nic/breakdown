@@ -3,8 +3,8 @@
 #include <utility>
 #include <memory>
 
-StateManager::StateManager(AppContext* appContext)
-    : m_AppContext(*appContext)
+StateManager::StateManager(AppContext& context)
+    : m_AppContext(context)
 {
 }
 

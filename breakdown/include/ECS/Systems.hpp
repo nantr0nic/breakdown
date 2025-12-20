@@ -12,11 +12,11 @@
 namespace CoreSystems
 {
     //$ ----- Game Systems ----- //
-    void handlePlayerInput(AppContext* context);
+    void handlePlayerInput(AppContext& context);
 
-    void movementSystem(AppContext* context, sf::Time deltaTime);
+    void movementSystem(AppContext& context, sf::Time deltaTime);
 
-    void collisionSystem(AppContext* context, sf::Time deltaTime);
+    void collisionSystem(AppContext& context, sf::Time deltaTime);
 
     void renderSystem(entt::registry& registry, sf::RenderWindow& window, bool showDebug);
 }

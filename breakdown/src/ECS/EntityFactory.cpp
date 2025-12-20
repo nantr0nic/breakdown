@@ -16,18 +16,6 @@
 // functions for the ECS system
 namespace EntityFactory
 {
-    entt::entity createRectangle(AppContext& context, sf::Vector2f size,
-                                sf::Color& color, sf::Vector2f position)
-    {
-        auto& registry = *context.m_Registry;
-
-        auto rectEntity = registry.create();
-
-        registry.emplace<Paddle>(rectEntity, size, color, position);
-
-        return rectEntity;
-    }
-
     //$ --- Player ---
     // the player is a paddle, of course
     entt::entity createPlayer(AppContext& context)
@@ -223,18 +211,15 @@ namespace EntityFactory
                 brickPosition.y = spawnStartXY.y + (row * (brickSize.y + brickSpacing));
                 if (brick % 3 == 0)
                 {
-                    auto brickEntity = createABrick(context, brickSize, 
-                                                    brickPosition, BrickType::Strong);
+                    createABrick(context, brickSize, brickPosition, BrickType::Strong);
                 }
                 else if (brick % 5 == 0)
                 {
-                    auto brickEntity = createABrick(context, brickSize, 
-                                                    brickPosition, BrickType::Gold);
+                    createABrick(context, brickSize, brickPosition, BrickType::Gold);
                 }
                 else
                 {
-                    auto brickEntity = createABrick(context, brickSize, 
-                                                    brickPosition, BrickType::Normal);
+                    createABrick(context, brickSize, brickPosition, BrickType::Normal);
                 }
             }
         }
@@ -351,7 +336,7 @@ namespace EntityFactory
     }
 
     entt::entity createScoreDisplay(AppContext &context, sf::Font &font, 
-                                    unsigned int size, sf::Color& color, 
+                                    unsigned int size, const sf::Color& color, 
                                     sf::Vector2f position)
     {
         auto& registry = *context.m_Registry;
