@@ -106,7 +106,7 @@ sf::Color utils::loadColorFromConfig(const ConfigManager& configManager, std::st
         {
             logger::Error(std::format(
                 "Color key [{}]  in [{}] is invalid. Must have 3 values! Using magenta instead.",
-                                        section, colorKey));
+                                        colorKey, section));
             return sf::Color::Magenta;
         }
     }

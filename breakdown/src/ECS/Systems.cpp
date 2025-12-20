@@ -86,13 +86,13 @@ namespace CoreSystems
         }
         else
         {
-            auto paddleView = registry->view<Paddle>();
+            auto paddleOnlyView = registry->view<Paddle>();
             sf::Vector2f paddlePosition{};
             sf::Vector2f paddleSize{};
 
-            for (auto paddleEntity : paddleView)
+            for (auto paddleEntity : paddleOnlyView)
             {
-                auto& paddleComp = paddleView.get<Paddle>(paddleEntity);
+                auto& paddleComp = paddleOnlyView.get<Paddle>(paddleEntity);
                 paddlePosition = paddleComp.shape.getPosition();
                 paddleSize = paddleComp.shape.getSize();
                 break;
@@ -236,12 +236,32 @@ namespace CoreSystems
                     // Check if hit top or bottom
                     if (intersection->size.x > intersection->size.y)
                     {
+                        // Check overlap
+                        // If ball is above brick, move up. If below, move down.
+                        if (ballBounds.position.y < brickBounds.position.y)
+                        {
+                            ballComp.shape.move({0.f, -intersection->size.y});
+                        }
+                        else
+                        {
+                            ballComp.shape.move({0.f, intersection->size.y});
+                        }
                         // reflect along y axis
                         ballVelocity.value.y = -ballVelocity.value.y;
                     }
                     // else we've hit left or right side
                     else
                     {
+                        // Check overlap
+                        // If ball is to right/left of brick, move accordingly
+                        if (ballBounds.position.x < brickBounds.position.x)
+                        {
+                            ballComp.shape.move({-intersection->size.x, 0.f});
+                        }
+                        else
+                        {
+                            ballComp.shape.move({intersection->size.x, 0.f});
+                        }
                         // reflect along x axis
                         ballVelocity.value.x = -ballVelocity.value.x;
                     }
@@ -289,10 +309,10 @@ namespace CoreSystems
                             }
                             else
                             {
-                            logger::Info("Level complete!");
-                            
-                            auto winState = std::make_unique<WinState>(context);
-                            stateManager->replaceState(std::move(winState));
+                                logger::Info("Level complete!");
+                                
+                                auto winState = std::make_unique<WinState>(context);
+                                stateManager->replaceState(std::move(winState));
                             }
                         }
                     }

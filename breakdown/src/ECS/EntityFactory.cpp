@@ -106,9 +106,6 @@ namespace EntityFactory
         auto& registry = *context.m_Registry;
         auto brickEntity = registry.create();
 
-        // Load config file
-        context.m_ConfigManager->loadConfig(Assets::Configs::Bricks, "config/Bricks.toml");
-
         registry.emplace<BrickTag>(brickEntity);
         registry.emplace<RenderableTag>(brickEntity);
         registry.emplace<BrickType>(brickEntity, type);

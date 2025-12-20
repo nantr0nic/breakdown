@@ -353,6 +353,8 @@ WinState::WinState(AppContext& context)
 {
     sf::Vector2u windowSize = m_AppContext.m_MainWindow->getSize();
     sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
+    
+    bool nextLevelExists = (m_AppContext.m_LevelNumber < m_AppContext.m_TotalLevels ? true : false);
 
     // "Next Level" button entity
     sf::Font* font = m_AppContext.m_ResourceManager->getResource<sf::Font>(Assets::Fonts::MainFont);
@@ -364,10 +366,10 @@ WinState::WinState(AppContext& context)
             *font,
             "Next Level",
             center,
-            [this]() {
+            [this, nextLevelExists]() {
                 logger::Info("Next Level button pressed.");
                 m_AppContext.m_LevelStarted = false;
-                m_AppContext.m_LevelNumber++;
+                (nextLevelExists ? m_AppContext.m_LevelNumber++ : m_AppContext.m_LevelNumber);
                 auto playState = std::make_unique<PlayState>(m_AppContext);
                 m_AppContext.m_StateManager->replaceState(std::move(playState));
             }
