@@ -15,6 +15,7 @@
 
 #include <memory>
 #include <format>
+#include <string_view>
 
 namespace CoreSystems
 {
@@ -170,18 +171,21 @@ namespace CoreSystems
             // West Wall
             if (ballPosition.x - ballRadius < 0.0f) 
             {
+                playSound(context, Assets::SoundBuffers::WallHit);
                 ballPosition.x = ballRadius;                 
                 ballVelocity.value.x *= -1.0f;
             }
             // East Wall
             if (ballPosition.x + ballRadius > windowSize.x) 
             {
+                playSound(context, Assets::SoundBuffers::WallHit);
                 ballPosition.x = windowSize.x - ballRadius;
                 ballVelocity.value.x *= -1.0f;
             }
             // North Wall
             if (ballPosition.y - ballRadius < 0.0f) 
             {
+                playSound(context, Assets::SoundBuffers::WallHit);
                 ballPosition.y = ballRadius;
                 ballVelocity.value.y *= -1.0f;
             }
@@ -197,7 +201,8 @@ namespace CoreSystems
 
             // Update bounds for object collision checks
             sf::FloatRect ballBounds = ballComp.shape.getGlobalBounds(); // treats circle as square
-    
+            
+            //$ ----- Ball vs Paddle ----- //
             auto paddleView = registry->view<Paddle>();
             for (auto paddleEntity : paddleView)
             {
@@ -206,6 +211,7 @@ namespace CoreSystems
 
                 if (ballBounds.findIntersection(paddleBounds))
                 {
+                    playSound(context, Assets::SoundBuffers::PaddleHit);
                     float paddleCenterX = paddleShape.shape.getPosition().x;
                     float ballCenterX = ballPosition.x;
                     // calculate offset (-1 to 1)
@@ -233,6 +239,7 @@ namespace CoreSystems
 
                 if (auto intersection = ballBounds.findIntersection(brickBounds))
                 {
+                    playSound(context, Assets::SoundBuffers::BrickHit);
                     // Check if hit top or bottom
                     if (intersection->size.x > intersection->size.y)
                     {
@@ -282,6 +289,24 @@ namespace CoreSystems
                     
                     if (destroyed)
                     {
+                        // play appropriate brick destruction sound
+                        BrickType brickType = brickView.get<BrickType>(brickEntity);
+                        if (brickType == BrickType::Normal)
+                        {
+                            playSound(context, Assets::SoundBuffers::NormBrickBreak);
+                        }
+                        else if (brickType == BrickType::Strong)
+                        {
+                            playSound(context, Assets::SoundBuffers::StrongBrickBreak);
+                        }
+                        else if (brickType == BrickType::Gold)
+                        {
+                            playSound(context, Assets::SoundBuffers::GoldBrickBreak);
+                        }
+                        else
+                        {
+                            playSound(context, Assets::SoundBuffers::NormBrickBreak);
+                        }
                         // increment score
                         auto scoreView = registry->view<HUDTag, ScoreHUDTag, CurrentScore, UIText>();
                         for (auto scoreEntity : scoreView)
@@ -358,6 +383,26 @@ namespace CoreSystems
             auto& circleComp = circleView.get<Ball>(entity);
             window.draw(circleComp.shape);
         }
+    }
+
+    void playSound(AppContext& context, std::string_view soundID)
+    {
+        // remove sounds that are done playing
+        context.m_ActiveSounds.remove_if([](const sf::Sound& sound) {
+            return sound.getStatus() == sf::Sound::Status::Stopped;
+            });
+
+        // fetch sound data (SoundBuffer)
+        auto* sound = context.m_ResourceManager->getResource<sf::SoundBuffer>(soundID);
+        if (!sound)
+        {
+            logger::Warn(std::format("Sound ID \"{}\" not found!", soundID));
+            return;
+        }
+
+        // Add it to the list and play it
+        context.m_ActiveSounds.emplace_back(*sound);
+        context.m_ActiveSounds.back().play();
     }
 }
 

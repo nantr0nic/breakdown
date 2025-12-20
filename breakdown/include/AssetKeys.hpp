@@ -14,6 +14,12 @@ namespace Assets
     }
     namespace SoundBuffers
     {
+        constexpr std::string_view BrickHit = "BrickHit";
+        constexpr std::string_view PaddleHit = "PaddleHit";
+        constexpr std::string_view WallHit = "WallHit";
+        constexpr std::string_view NormBrickBreak = "NormBrickBreak";
+        constexpr std::string_view GoldBrickBreak = "GoldBrickBreak";
+        constexpr std::string_view StrongBrickBreak = "StrongBrickBreak";
     }
     namespace Musics
     {

@@ -9,6 +9,8 @@
 #include <Managers/StateManager.hpp>
 #include <ECS/Components.hpp>
 
+#include <string_view>
+
 namespace CoreSystems
 {
     //$ ----- Game Systems ----- //
@@ -19,6 +21,8 @@ namespace CoreSystems
     void collisionSystem(AppContext& context, sf::Time deltaTime);
 
     void renderSystem(entt::registry& registry, sf::RenderWindow& window, bool showDebug);
+
+    void playSound(AppContext& context, std::string_view soundID);
 }
 
 namespace UISystems

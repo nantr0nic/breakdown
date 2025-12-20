@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <entt/entt.hpp>
 
 #include "Managers/ConfigManager.hpp"
@@ -10,6 +11,7 @@
 #include "Utilities/RandomMachine.hpp"
 
 #include <memory>
+#include <list>
 
 class StateManager;
 
@@ -52,4 +54,7 @@ struct AppContext
     bool m_LevelStarted{ false };
     int m_LevelNumber{ 1 };
     int m_TotalLevels{ 1 };
+
+    // Audio storage: holds sounds while they are playing
+    std::list<sf::Sound> m_ActiveSounds;
 };

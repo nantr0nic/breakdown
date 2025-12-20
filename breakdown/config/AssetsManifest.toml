@@ -19,6 +19,28 @@ path = "resources/fonts/Micro5-Regular.ttf"
 
 # --- SoundBuffers ---
 [[soundbuffers]]
+id = "BrickHit"
+path = "resources/sounds/brickHit.wav"
+
+[[soundbuffers]]
+id = "PaddleHit"
+path = "resources/sounds/paddleHit.wav"
+
+[[soundbuffers]]
+id = "WallHit"
+path = "resources/sounds/wallHit.wav"
+
+[[soundbuffers]]
+id = "NormBrickBreak"
+path = "resources/sounds/normalBrickBreak.wav"
+
+[[soundbuffers]]
+id = "GoldBrickBreak"
+path = "resources/sounds/goldBrickBreak.wav"
+
+[[soundbuffers]]
+id = "StrongBrickBreak"
+path = "resources/sounds/strongBrickBreak.wav"
 
 # --- Music ---
 # .ogg files are preferred, but .mp3 files should also work
