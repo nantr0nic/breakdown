@@ -1,7 +1,18 @@
+# Assets Manifest
+
+# This file lists all the assets used in the game, including fonts, textures, sound buffers, and music.
+# Each asset is defined with a unique identifier and its corresponding file path.
+# You can try out different assets by changing the paths below, but do not change the id's.
+
 # --- Fonts ---
+# Must be .ttf files
 [[fonts]]
 id = "MainFont"
 path = "resources/fonts/CaesarDressing-Regular.ttf"
+
+[[fonts]]
+id = "ScoreFont"
+path = "resources/fonts/Micro5-Regular.ttf"
 
 # --- Textures ---
 [[textures]]
@@ -10,6 +21,7 @@ path = "resources/fonts/CaesarDressing-Regular.ttf"
 [[soundbuffers]]
 
 # --- Music ---
+# .ogg files are preferred, but .mp3 files should also work
 [[musics]]
 id = "MainSong"
 path = "resources/music/VideoGameAm.ogg"
