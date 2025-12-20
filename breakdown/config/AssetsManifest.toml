@@ -3,10 +3,6 @@
 id = "MainFont"
 path = "resources/fonts/CaesarDressing-Regular.ttf"
 
-[[fonts]]
-id = "ScoreFont"
-path = "resources/fonts/Micro5-Regular.ttf"
-
 # --- Textures ---
 [[textures]]
 

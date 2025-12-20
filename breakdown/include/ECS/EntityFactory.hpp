@@ -4,8 +4,7 @@
 #include <SFML/System.hpp>
 #include <entt/entt.hpp>
 
-#include "AppContext.hpp"
-#include "Components.hpp"
+#include <AppContext.hpp>
 
 #include <functional>
 
@@ -23,12 +22,10 @@ namespace EntityFactory
 
     entt::entity createABrick(AppContext& context,
                                 sf::Vector2f size,
-                                sf::Vector2f position,
-                                BrickType type = BrickType::Normal);
+                                sf::Color& color,
+                                sf::Vector2f position);
 
     void createBricks(AppContext& context);
-
-    void loadLevel(AppContext& context, int levelNumber);
 
     //$ --- UI Entities --- //
     entt::entity createButton(AppContext& context,
@@ -36,11 +33,4 @@ namespace EntityFactory
                             const std::string& text,
                             sf::Vector2f position,
                             std::function<void()> action);
-
-    entt::entity createScoreDisplay(AppContext& context, 
-                                    sf::Font& font,
-                                    unsigned int size,
-                                    sf::Color& color, 
-                                    sf::Vector2f position);
-
 }
