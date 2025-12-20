@@ -118,10 +118,11 @@ PlayState::PlayState(AppContext& context)
     {
         m_MainMusic->setLooping(true);
         m_MainMusic->play();
+        logger::Info("Playing MainSong");
     }
     else if (!m_MainMusic)
     {
-        logger::Error("MainSong not found, not playing music.");
+        logger::Warn("MainSong not found, not playing music.");
     }
     else 
     {

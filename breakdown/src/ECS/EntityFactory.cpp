@@ -227,6 +227,8 @@ namespace EntityFactory
     {
         std::string sectionName = std::format("level_{}", levelNumber);
 
+        context.m_ConfigManager->loadConfig(Assets::Configs::Bricks, "config/Bricks.toml");
+
         std::vector<std::string> layout = context.m_ConfigManager->getStringArray(
             Assets::Configs::Levels, sectionName, "layout"
         );

@@ -46,6 +46,8 @@ namespace CoreSystems
 
             if (!levelStarted && sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Space))
             {
+                playSound(context, Assets::SoundBuffers::PaddleHit);
+
                 context.m_LevelStarted = true;
                 logger::Info("Level started.");
 

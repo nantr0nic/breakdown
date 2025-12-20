@@ -52,7 +52,6 @@ void Application::initMainWindow()
 void Application::initResources()
 {
     m_AppContext.m_ResourceManager->loadAssetsFromManifest("config/AssetsManifest.toml");
-    m_AppContext.m_ConfigManager->loadConfig(Assets::Configs::Bricks, "config/Bricks.toml");
     m_AppContext.m_ConfigManager->loadConfig(Assets::Configs::Levels, "config/Levels.toml");
 
     // Set total number of levels for game
