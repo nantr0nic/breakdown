@@ -8,7 +8,6 @@
 
 #include <functional>
 #include <optional>
-#include <cstdint>
 
 struct StateEvents
 {
@@ -64,7 +63,7 @@ private:
     bool m_ShowDebug{ false };
 
     // Descent mechanic data
-    float m_DescentSpeed{ 0.1f };
+    float m_DescentSpeed{ 0.05f };
 };
 
 class PauseState : public State

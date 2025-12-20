@@ -23,10 +23,10 @@ goldRGB = [249, 199, 79]
 
 [custom_1] # Code 'X' in Levels
 scoreValue = 67 
-healthMax = 0 
+healthMax = 1 
 custom_1RGB = [50, 250, 250] 
 
 [custom_2] # Code 'Y' in Levels
 scoreValue = 100 
-healthMax = 3 
+healthMax = 1
 custom_2RGB = [150, 10, 155] 

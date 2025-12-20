@@ -1,5 +1,6 @@
 # Levels Configuration File
 
+############################################
 # N = normal brick
 # G = gold brick
 # S = strong brick
@@ -18,6 +19,10 @@
 # brickWidth and brickHeight are in pixels, must be positive numbers and 
 # should end in .0
 
+# descentSpeed is how fast the bricks descend
+# values can be between 0.01 and 10.0 (but 10 is incredibly fast)
+############################################
+
 # The total number of levels
 totalLevels = 4
 
@@ -25,6 +30,7 @@ totalLevels = 4
 [level_1]
 brickWidth = 120.0
 brickHeight = 40.0
+descentSpeed = 0.15
 layout = [
     "....GG....", # Don't forget the comma if there is more than one row!
     "....SS...." 
@@ -33,6 +39,7 @@ layout = [
 [level_2]
 brickWidth = 120.0
 brickHeight = 40.0
+descentSpeed = 0.05
 layout = [
     "..N.N.N...",
     "...G.G.G..",
@@ -42,21 +49,23 @@ layout = [
 [level_3]
 brickWidth = 60.0
 brickHeight = 20.0
+descentSpeed = 0.1
 layout = [
-    ".........Y.........", 
-    "........YYY........",
-    ".......YYYYY.......", # Look at those commas!
-    "........YYY........",
-    ".........Y........."
+    "G........G........G", 
+    "........Y.Y........",
+    ".......YY.YY.......", # Look at those commas!
+    "........Y.Y........",
+    "..................."
 ]
 
 [level_4]
 brickWidth = 60.0
 brickHeight = 20.0
+descentSpeed = 0.0
 layout = [
-    "YY.......G.......YY",
+    "XY.......G.......YX",
     "..Y......S......Y..",
-    "...Y.....G.....Y...",
+    "...X.....G.....X...",
     "....Y....G....Y....",
     ".....Y...S...Y....."   # <-- look at there NOT being a comma!
 ]
