@@ -27,6 +27,7 @@ namespace Assets
     }
     namespace Configs
     {
+        constexpr std::string_view Window = "WindowConfig";
         constexpr std::string_view Player = "Player";
         constexpr std::string_view Ball = "Ball";
         constexpr std::string_view Bricks = "Bricks";

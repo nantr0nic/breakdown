@@ -8,7 +8,8 @@
 #include "Managers/WindowManager.hpp"
 #include "Managers/GlobalEventManager.hpp"
 #include "Managers/ResourceManager.hpp"
-#include "Utilities/RandomMachine.hpp"
+#include "AssetKeys.hpp"
+//#include "Utilities/RandomMachine.hpp"
 
 #include <memory>
 #include <list>
@@ -20,7 +21,7 @@ struct AppContext
     AppContext() {
         // make ConfigManager and load config files first
         m_ConfigManager = std::make_unique<ConfigManager>();
-        m_ConfigManager->loadConfig("window", "config/WindowConfig.toml");
+        m_ConfigManager->loadConfig(Assets::Configs::Window, "config/WindowConfig.toml");
 
         // then initialize the stuff that uses those configs
         m_WindowManager = std::make_unique<WindowManager>(*m_ConfigManager);
