@@ -89,7 +89,7 @@ PlayState::PlayState(AppContext& context)
     sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
 
     // Create game entities
-    EntityFactory::loadLevel(m_AppContext, context.m_LevelNumber);
+    m_DescentSpeed = EntityFactory::loadLevel(m_AppContext, context.m_LevelNumber);
     EntityFactory::createPlayer(m_AppContext);
     EntityFactory::createBall(m_AppContext);
     //EntityFactory::createBricks(*m_AppContext);
@@ -175,7 +175,7 @@ void PlayState::update(sf::Time deltaTime)
     if (m_AppContext.m_LevelStarted)
     {
         float moveAmount = m_DescentSpeed * deltaTime.asSeconds();
-        CoreSystems::moveBricksDown(*m_AppContext.m_Registry, m_DescentSpeed);
+        CoreSystems::moveBricksDown(*m_AppContext.m_Registry, moveAmount);
     }
 
 }

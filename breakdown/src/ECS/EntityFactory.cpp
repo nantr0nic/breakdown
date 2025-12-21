@@ -223,11 +223,15 @@ namespace EntityFactory
         logger::Info("Bricks created.");
     }
 
-    void loadLevel(AppContext& context, int levelNumber)
+    float loadLevel(AppContext& context, int levelNumber)
     {
         std::string sectionName = std::format("level_{}", levelNumber);
 
         context.m_ConfigManager->loadConfig(Assets::Configs::Bricks, "config/Bricks.toml");
+
+        float descentSpeed = context.m_ConfigManager->getConfigValue<float>(Assets::Configs::Levels,
+            sectionName, "descentSpeed"
+        ).value_or(0.0f);
 
         std::vector<std::string> layout = context.m_ConfigManager->getStringArray(
             Assets::Configs::Levels, sectionName, "layout"
@@ -236,7 +240,7 @@ namespace EntityFactory
         if (layout.empty())
         {
             logger::Error("Failed to load level layout: " + sectionName);
-            return;
+            return 0.0f;
         }
 
         sf::Vector2f startPos{ 10.0f, 10.0f };
@@ -296,7 +300,10 @@ namespace EntityFactory
             }
         }
         
-        logger::Info(std::format("Level {} loaded successfully.", levelNumber));
+        logger::Info(std::format("Level {} loaded successfully. Level speed: {}", 
+                                levelNumber, descentSpeed));
+
+        return descentSpeed;
     }
 
     //$ ----- UI/HUD ----- //

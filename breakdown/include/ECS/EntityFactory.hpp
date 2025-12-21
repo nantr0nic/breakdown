@@ -23,7 +23,7 @@ namespace EntityFactory
 
     void createBricks(AppContext& context);
 
-    void loadLevel(AppContext& context, int levelNumber);
+    float loadLevel(AppContext& context, int levelNumber);
 
     //$ --- UI Entities --- //
     entt::entity createButton(AppContext& context,

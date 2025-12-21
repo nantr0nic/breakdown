@@ -63,7 +63,7 @@ private:
     bool m_ShowDebug{ false };
 
     // Descent mechanic data
-    float m_DescentSpeed{ 0.05f };
+    float m_DescentSpeed{ 10.0f };
 };
 
 class PauseState : public State
