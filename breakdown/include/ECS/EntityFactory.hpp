@@ -12,11 +12,6 @@
 namespace EntityFactory
 {
     //$ --- Game Play Entities --- //
-    entt::entity createRectangle(AppContext& context,
-                                sf::Vector2f size,
-                                sf::Color& color,
-                                sf::Vector2f position);
-
     entt::entity createPlayer(AppContext& context);
 
     entt::entity createBall(AppContext& context);
@@ -28,7 +23,7 @@ namespace EntityFactory
 
     void createBricks(AppContext& context);
 
-    void loadLevel(AppContext& context, int levelNumber);
+    float loadLevel(AppContext& context, int levelNumber);
 
     //$ --- UI Entities --- //
     entt::entity createButton(AppContext& context,
@@ -40,7 +35,7 @@ namespace EntityFactory
     entt::entity createScoreDisplay(AppContext& context, 
                                     sf::Font& font,
                                     unsigned int size,
-                                    sf::Color& color, 
+                                    const sf::Color& color, 
                                     sf::Vector2f position);
 
 }

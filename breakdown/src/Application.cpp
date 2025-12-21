@@ -5,13 +5,14 @@
 #include "Application.hpp"
 #include "Utilities/Logger.hpp"
 #include "AssetKeys.hpp"
+#include "Utilities/Utils.hpp"
 
 #include <format>
 #include <memory>
 
 Application::Application()
     : m_AppContext()
-    , m_StateManager(&m_AppContext)
+    , m_StateManager(m_AppContext)
 {
     // Initialize Application Window and data
     initMainWindow();
@@ -21,7 +22,7 @@ Application::Application()
     m_AppContext.m_StateManager = &m_StateManager;
 
     // Push the initial application state
-    auto menuState = std::make_unique<MenuState>(&m_AppContext);
+    auto menuState = std::make_unique<MenuState>(m_AppContext);
     m_StateManager.pushState(std::move(menuState));
 
     // Debug
@@ -76,6 +77,7 @@ void Application::run()
     while (m_AppContext.m_MainWindow->isOpen())
     {
         sf::Time deltaTime = mainClock.restart();
+        m_StateManager.processPending();
         processEvents();
         update(deltaTime);
         render();
@@ -101,10 +103,20 @@ void Application::processEvents()
         }
     };
 
+    auto onResized = [&](const sf::Event::Resized& event)
+    {
+        sf::Vector2f targetSize = {m_AppContext.m_TargetWidth, m_AppContext.m_TargetHeight};
+
+        sf::View view(sf::FloatRect({0.0f, 0.0f}, targetSize));
+        utils::boxView(view, event.size.x, event.size.y);
+        m_AppContext.m_MainWindow->setView(view);
+    };
+
     m_AppContext.m_MainWindow->handleEvents(
         globalEvents.onClose,
         onKeyPressMerged,
-        stateEvents.onMouseButtonPress
+        stateEvents.onMouseButtonPress,
+        onResized
     );
 }
 

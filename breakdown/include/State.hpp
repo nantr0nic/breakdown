@@ -11,14 +11,14 @@
 
 struct StateEvents
 {
-	std::function<void(const sf::Event::KeyPressed&)> onKeyPress;
-    std::function<void(const sf::Event::MouseButtonPressed&)> onMouseButtonPress;
+	std::function<void(const sf::Event::KeyPressed&)> onKeyPress = [](const auto&){};
+    std::function<void(const sf::Event::MouseButtonPressed&)> onMouseButtonPress = [](const auto&){};
 };
 
 class State
 {
 public:
-    State(AppContext* appContext) : m_AppContext(appContext) {}
+    State(AppContext& context) : m_AppContext(context) {}
     virtual ~State() = default;
 
     StateEvents& getEventHandlers() noexcept { return m_StateEvents; }
@@ -28,17 +28,17 @@ public:
     virtual void render() = 0;
 
 protected:
-    AppContext* m_AppContext;
+    AppContext& m_AppContext;
     StateEvents m_StateEvents;  // each state will have its own StateEvents instance
 };
 
 class MenuState : public State
 {
 public:
-    MenuState(AppContext* appContext);
+    MenuState(AppContext& context);
     virtual ~MenuState() override;
 
-    virtual void update(sf::Time deltaTime) override;
+    virtual void update(sf::Time /* deltaTime */) override;
     virtual void render() override;
 
 private:
@@ -48,28 +48,31 @@ private:
 class PlayState : public State
 {
 public:
-    PlayState(AppContext* appContext);
+    PlayState(AppContext& context);
     virtual ~PlayState() override;
 
     virtual void update(sf::Time deltaTime) override;
     virtual void render() override;
 
-    bool getLevelStarted() { return m_LevelStarted; }
+    bool getLevelStarted() const { return m_LevelStarted; }
     void setLevelStarted(bool value) { m_LevelStarted = value; }
 
 private:
     sf::Music* m_MainMusic{ nullptr };
     bool m_LevelStarted{ false };
     bool m_ShowDebug{ false };
+
+    // Descent mechanic data
+    float m_DescentSpeed{ 10.0f };
 };
 
 class PauseState : public State
 {
 public:
-    PauseState(AppContext* appContext);
+    PauseState(AppContext& context);
     virtual ~PauseState() override = default;
 
-    virtual void update(sf::Time deltaTime) override;
+    virtual void update(sf::Time /* deltaTime */) override;
     virtual void render() override;
 
 private:
@@ -79,10 +82,10 @@ private:
 class GameOverState : public State
 {
 public:
-    GameOverState(AppContext* appContext);
+    GameOverState(AppContext& context);
     virtual ~GameOverState() override;
 
-    virtual void update(sf::Time deltaTime) override;
+    virtual void update(sf::Time /* deltaTime */) override;
     virtual void render() override;
 
 private:
@@ -92,10 +95,10 @@ private:
 class WinState: public State
 {
 public:
-    WinState(AppContext* appContext);
+    WinState(AppContext& context);
     virtual ~WinState() override;
 
-    virtual void update(sf::Time deltaTime) override;
+    virtual void update(sf::Time /* deltaTime */) override;
     virtual void render() override;
 
 private:
@@ -105,10 +108,10 @@ private:
 class GameCompleteState : public State
 {
 public:
-    GameCompleteState(AppContext* appContext);
+    GameCompleteState(AppContext& context);
     virtual ~GameCompleteState() override;
 
-    virtual void update(sf::Time deltaTime) override;
+    virtual void update(sf::Time /* deltaTime */) override;
     virtual void render() override;
 
 private:

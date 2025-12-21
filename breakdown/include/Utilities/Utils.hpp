@@ -16,6 +16,8 @@ struct SpritePadding
 
 namespace utils
 {
+    void boxView(sf::View& view, int windowWidth, int windowHeight);
+
     template <typename T>
     void centerOrigin(T& item)
     {

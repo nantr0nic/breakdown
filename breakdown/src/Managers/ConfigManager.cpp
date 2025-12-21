@@ -59,7 +59,21 @@ std::vector<std::string> ConfigManager::getStringArray(
         return result; // return empty
     }
 
-    auto node = it->second[section][key];
+    auto sectionNode = it->second[section];
+    if (!sectionNode)
+    {
+        logger::Warn(std::format(
+            "Section [{}] in Config [{}] not found.", section, configID));
+        return result;
+    }
+
+    auto node = sectionNode[key];
+    if (!node)
+    {
+        logger::Warn(std::format(
+            "Key [{}] in Section [{}] of Config [{}] not found.", key, section, configID));
+            return result;
+    }
 
     if (!node.is_array())
     {
@@ -71,8 +85,15 @@ std::vector<std::string> ConfigManager::getStringArray(
     const auto& arr = *node.as_array();
     for (const auto& elem : arr)
     {
-        // value_or("") ensures we get a string or empty if type is wrong
-        result.push_back(elem.value_or<std::string>(""));
+        if (auto str = elem.value<std::string>())
+        {
+            result.push_back(*str);
+        }
+        else
+        {
+            logger::Warn(std::format(
+                "Non-string element in array [{}][{}] of Config [{}].", section, key, configID));
+        }
     }
 
     return result;

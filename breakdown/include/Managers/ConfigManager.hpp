@@ -40,7 +40,7 @@ public:
         std::string_view configID, std::string_view section, std::string_view key,
         const std::source_location& loc = std::source_location::current()) const;
 
-    std::map<std::string, toml::table, std::less<>> getConfigFiles() const { return m_ConfigFiles; }
+    const std::map<std::string, toml::table, std::less<>> getConfigFiles() const { return m_ConfigFiles; }
 
 private:
     std::map<std::string, toml::table, std::less<>> m_ConfigFiles;

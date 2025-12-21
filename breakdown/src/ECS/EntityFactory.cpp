@@ -4,6 +4,7 @@
 
 #include "ECS/EntityFactory.hpp"
 #include "ECS/Components.hpp"
+#include "SFML/System/Vector2.hpp"
 #include "Utilities/Utils.hpp"
 #include "Utilities/Logger.hpp"
 #include "AppContext.hpp"
@@ -16,18 +17,6 @@
 // functions for the ECS system
 namespace EntityFactory
 {
-    entt::entity createRectangle(AppContext& context, sf::Vector2f size,
-                                sf::Color& color, sf::Vector2f position)
-    {
-        auto& registry = *context.m_Registry;
-
-        auto rectEntity = registry.create();
-
-        registry.emplace<Paddle>(rectEntity, size, color, position);
-
-        return rectEntity;
-    }
-
     //$ --- Player ---
     // the player is a paddle, of course
     entt::entity createPlayer(AppContext& context)
@@ -47,8 +36,8 @@ namespace EntityFactory
 
         // Player paddle properties
         // Starting position
-        auto windowCenterX = context.m_MainWindow->getSize().x / 2.0f;
-        auto paddleYPosition = context.m_MainWindow->getSize().y - 50.0f;
+        auto windowCenterX = context.m_TargetWidth / 2.0f;
+        auto paddleYPosition = context.m_TargetHeight - 50.0f;
         sf::Vector2f playerPosition = sf::Vector2f(windowCenterX, paddleYPosition);
 
         sf::Vector2f paddleSize = sf::Vector2f(paddleWidth, paddleHeight);
@@ -117,9 +106,6 @@ namespace EntityFactory
     {
         auto& registry = *context.m_Registry;
         auto brickEntity = registry.create();
-
-        // Load config file
-        context.m_ConfigManager->loadConfig(Assets::Configs::Bricks, "config/Bricks.toml");
 
         registry.emplace<BrickTag>(brickEntity);
         registry.emplace<RenderableTag>(brickEntity);
@@ -190,7 +176,7 @@ namespace EntityFactory
     {
         auto& registry = *context.m_Registry;
         auto& window = *context.m_MainWindow;
-        auto windowSize = window.getSize();
+        sf::Vector2f windowSize = { context.m_TargetWidth, context.m_TargetHeight };
 
         sf::Vector2f spawnStartXY{ 20.0f, 10.0f };
         sf::Vector2f brickSize{ 120.0f, 40.0f };
@@ -223,27 +209,30 @@ namespace EntityFactory
                 brickPosition.y = spawnStartXY.y + (row * (brickSize.y + brickSpacing));
                 if (brick % 3 == 0)
                 {
-                    auto brickEntity = createABrick(context, brickSize, 
-                                                    brickPosition, BrickType::Strong);
+                    createABrick(context, brickSize, brickPosition, BrickType::Strong);
                 }
                 else if (brick % 5 == 0)
                 {
-                    auto brickEntity = createABrick(context, brickSize, 
-                                                    brickPosition, BrickType::Gold);
+                    createABrick(context, brickSize, brickPosition, BrickType::Gold);
                 }
                 else
                 {
-                    auto brickEntity = createABrick(context, brickSize, 
-                                                    brickPosition, BrickType::Normal);
+                    createABrick(context, brickSize, brickPosition, BrickType::Normal);
                 }
             }
         }
         logger::Info("Bricks created.");
     }
 
-    void loadLevel(AppContext& context, int levelNumber)
+    float loadLevel(AppContext& context, int levelNumber)
     {
         std::string sectionName = std::format("level_{}", levelNumber);
+
+        context.m_ConfigManager->loadConfig(Assets::Configs::Bricks, "config/Bricks.toml");
+
+        float descentSpeed = context.m_ConfigManager->getConfigValue<float>(Assets::Configs::Levels,
+            sectionName, "descentSpeed"
+        ).value_or(0.0f);
 
         std::vector<std::string> layout = context.m_ConfigManager->getStringArray(
             Assets::Configs::Levels, sectionName, "layout"
@@ -252,7 +241,7 @@ namespace EntityFactory
         if (layout.empty())
         {
             logger::Error("Failed to load level layout: " + sectionName);
-            return;
+            return 0.0f;
         }
 
         sf::Vector2f startPos{ 10.0f, 10.0f };
@@ -312,7 +301,10 @@ namespace EntityFactory
             }
         }
         
-        logger::Info(std::format("Level {} loaded successfully.", levelNumber));
+        logger::Info(std::format("Level {} loaded successfully. Level speed: {}", 
+                                levelNumber, descentSpeed));
+
+        return descentSpeed;
     }
 
     //$ ----- UI/HUD ----- //
@@ -351,7 +343,7 @@ namespace EntityFactory
     }
 
     entt::entity createScoreDisplay(AppContext &context, sf::Font &font, 
-                                    unsigned int size, sf::Color& color, 
+                                    unsigned int size, const sf::Color& color, 
                                     sf::Vector2f position)
     {
         auto& registry = *context.m_Registry;

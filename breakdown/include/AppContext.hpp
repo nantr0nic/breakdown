@@ -1,15 +1,18 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <entt/entt.hpp>
 
 #include "Managers/ConfigManager.hpp"
 #include "Managers/WindowManager.hpp"
 #include "Managers/GlobalEventManager.hpp"
 #include "Managers/ResourceManager.hpp"
-#include "Utilities/RandomMachine.hpp"
+#include "AssetKeys.hpp"
+//#include "Utilities/RandomMachine.hpp"
 
 #include <memory>
+#include <list>
 
 class StateManager;
 
@@ -18,7 +21,7 @@ struct AppContext
     AppContext() {
         // make ConfigManager and load config files first
         m_ConfigManager = std::make_unique<ConfigManager>();
-        m_ConfigManager->loadConfig("window", "config/WindowConfig.toml");
+        m_ConfigManager->loadConfig(Assets::Configs::Window, "config/WindowConfig.toml");
 
         // then initialize the stuff that uses those configs
         m_WindowManager = std::make_unique<WindowManager>(*m_ConfigManager);
@@ -26,7 +29,14 @@ struct AppContext
         m_GlobalEventManager = std::make_unique<GlobalEventManager>(this);
         m_MainClock = std::make_unique<sf::Clock>();
         m_Registry = std::make_unique<entt::registry>();
-        m_RandomMachine = std::make_unique<utils::RandomMachine>();
+        // RandomMachine became unused but I'm leaving it here in case it is needed again
+        //m_RandomMachine = std::make_unique<utils::RandomMachine>();
+
+        // Set target width / height
+        m_TargetWidth = m_ConfigManager->getConfigValue<float>(
+                      Assets::Configs::Window, "mainWindow", "X").value_or(1280.0f);
+        m_TargetHeight = m_ConfigManager->getConfigValue<float>(
+                      Assets::Configs::Window, "mainWindow", "Y").value_or(720.0f);
     }
 
     AppContext(const AppContext&) = delete;
@@ -41,15 +51,23 @@ struct AppContext
     std::unique_ptr<ResourceManager> m_ResourceManager{ nullptr };
     std::unique_ptr<sf::Clock> m_MainClock{ nullptr };
     std::unique_ptr<entt::registry> m_Registry{ nullptr };
-    std::unique_ptr<utils::RandomMachine> m_RandomMachine{ nullptr };
+    // RandomMachine became unused but I'm leaving it here in case it is needed again
+    //std::unique_ptr<utils::RandomMachine> m_RandomMachine{ nullptr };
 
 
     // Pointers to Application-level objects
     sf::RenderWindow* m_MainWindow{ nullptr };
     StateManager* m_StateManager{ nullptr };
 
+    // resolutionTargets
+    float m_TargetWidth{ 1280.0f };
+    float m_TargetHeight{ 720.0f };
+
     // Some game data
     bool m_LevelStarted{ false };
     int m_LevelNumber{ 1 };
     int m_TotalLevels{ 1 };
+
+    // Audio storage: holds sounds while they are playing
+    std::list<sf::Sound> m_ActiveSounds;
 };
