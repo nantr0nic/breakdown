@@ -7,7 +7,7 @@ First prototype of an SFML game made with [SFML 3 Game Template](https://www.git
 
 **Work in progress!**
 
-Classic breakdown game but with a descending mechanic. **Fully configurable**: the level design, brick properties (value, health, color), paddle/ball, and descent speed are all configurable in a set of TOML files. Now with cool sounds!
+Classic breakdown game but with a descending mechanic. **Fully configurable**: the level design, brick properties (value, health, color), paddle & ball properties, and descent speeds are all configurable in a set of TOML files. Now with cool sounds!
 
 ## Complete features
 * Collision System
