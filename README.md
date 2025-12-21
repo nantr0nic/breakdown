@@ -1,16 +1,13 @@
 ![Preview gif of WIP](screenshots/breakdowngif.gif)
 
-`` Note: `` The number of bricks and size of the ball were made abnormal for purposes of illustration
-
 # Breakdown
-A breakout game but the bricks begin to descend.
+A breakout game but the bricks descend.
 
 First prototype of an SFML game made with [SFML 3 Game Template](https://www.github.com/nantr0nic/sfml3-game-template/).
 
 **Work in progress!**
 
-The descending mechanic isn't implemented yet but otherwise the foundation is complete.
-So far the coolest feature is **the user is able to customize** levels, bricks, and game properties by modifying the corresponding TOML files.
+Classic breakdown game but with a descending mechanic. **Fully configurable**: the level design, brick properties (value, health, color), paddle/ball, and descent speed are all configurable in a set of TOML files. Now with cool sounds!
 
 ## Complete features
 * Collision System
@@ -26,9 +23,8 @@ So far the coolest feature is **the user is able to customize** levels, bricks, 
 * Terminate the game with ``Escape``.
 
 ## Next features
-* The descending mechanic
-* Some appropriate sounds
 * A settings menu.
+* [[maybe]] Powerups
 
 ## Config files
 * ``Ball.toml`` Set ball properties and color.
