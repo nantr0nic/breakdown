@@ -20,7 +20,7 @@
 MenuState::MenuState(AppContext& context)
     : State(context)
 {
-    sf::Vector2u windowSize = m_AppContext.m_MainWindow->getSize();
+    sf::Vector2f windowSize = { context.m_TargetWidth, context.m_TargetHeight };
     sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
 
     // Play button entity
@@ -85,7 +85,7 @@ void MenuState::render()
 PlayState::PlayState(AppContext& context)
     : State(context)
 {
-    sf::Vector2u windowSize = m_AppContext.m_MainWindow->getSize();
+    sf::Vector2f windowSize = { context.m_TargetWidth, context.m_TargetHeight };
     sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
 
     // Create game entities
@@ -210,8 +210,7 @@ PauseState::PauseState(AppContext& context)
 
         utils::centerOrigin(*m_PauseText);
 
-        sf::Vector2u windowSize = m_AppContext.m_MainWindow->getSize();
-        sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
+        sf::Vector2f center(context.m_TargetWidth / 2.0f, context.m_TargetHeight / 2.0f);
         m_PauseText->setPosition(center);
     }
 
@@ -262,7 +261,7 @@ void PauseState::render()
 GameOverState::GameOverState(AppContext& context)
     : State(context)
 {
-    sf::Vector2u windowSize = m_AppContext.m_MainWindow->getSize();
+    sf::Vector2f windowSize = { context.m_TargetWidth, context.m_TargetHeight };
     sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
 
     // "Try again" button entity
@@ -360,7 +359,7 @@ void GameOverState::render()
 WinState::WinState(AppContext& context)
     : State(context)
 {
-    sf::Vector2u windowSize = m_AppContext.m_MainWindow->getSize();
+    sf::Vector2f windowSize = { context.m_TargetWidth, context.m_TargetHeight };
     sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
     
     bool nextLevelExists = (m_AppContext.m_LevelNumber < m_AppContext.m_TotalLevels ? true : false);
@@ -461,7 +460,7 @@ void WinState::render()
 GameCompleteState::GameCompleteState(AppContext& context)
     : State(context)
 {
-    sf::Vector2u windowSize = m_AppContext.m_MainWindow->getSize();
+    sf::Vector2f windowSize = { context.m_TargetWidth, context.m_TargetHeight };
     sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
 
     // "Restart" button entity

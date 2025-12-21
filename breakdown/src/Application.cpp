@@ -105,18 +105,10 @@ void Application::processEvents()
 
     auto onResized = [&](const sf::Event::Resized& event)
     {
-        float targetSizeX = m_AppContext.m_ConfigManager->getConfigValue<unsigned int>(
-                            Assets::Configs::Window, "mainWindow", "X").value_or(800.0f);
-                            
-        float targetSizeY = m_AppContext.m_ConfigManager->getConfigValue<unsigned int>(
-                            Assets::Configs::Window, "mainWindow", "Y").value_or(800.0f);
-                            
-        sf::Vector2f targetSize = {static_cast<float>(targetSizeX), static_cast<float>(targetSizeY)};
+        sf::Vector2f targetSize = {m_AppContext.m_TargetWidth, m_AppContext.m_TargetHeight};
 
         sf::View view(sf::FloatRect({0.0f, 0.0f}, targetSize));
-
         utils::boxView(view, event.size.x, event.size.y);
-
         m_AppContext.m_MainWindow->setView(view);
     };
 

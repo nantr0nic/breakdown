@@ -14,7 +14,7 @@
 #include "Utilities/Logger.hpp"
 #include "Utilities/Utils.hpp"
 
-#include <future>
+
 #include <memory>
 #include <format>
 #include <string_view>
@@ -124,7 +124,7 @@ namespace CoreSystems
         auto& window = context.m_MainWindow;
         auto& stateManager = context.m_StateManager;
 
-        auto windowSize = window->getSize();
+        sf::Vector2f windowSize = { context.m_TargetWidth, context.m_TargetHeight };
         bool triggerGameOver = false;
 
         // Cache data structures

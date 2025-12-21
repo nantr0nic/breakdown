@@ -31,6 +31,12 @@ struct AppContext
         m_Registry = std::make_unique<entt::registry>();
         // RandomMachine became unused but I'm leaving it here in case it is needed again
         //m_RandomMachine = std::make_unique<utils::RandomMachine>();
+
+        // Set target width / height
+        m_TargetWidth = m_ConfigManager->getConfigValue<float>(
+                      Assets::Configs::Window, "mainWindow", "X").value_or(1280.0f);
+        m_TargetHeight = m_ConfigManager->getConfigValue<float>(
+                      Assets::Configs::Window, "mainWindow", "Y").value_or(720.0f);
     }
 
     AppContext(const AppContext&) = delete;
@@ -52,6 +58,10 @@ struct AppContext
     // Pointers to Application-level objects
     sf::RenderWindow* m_MainWindow{ nullptr };
     StateManager* m_StateManager{ nullptr };
+
+    // resolutionTargets
+    float m_TargetWidth{ 1280.0f };
+    float m_TargetHeight{ 720.0f };
 
     // Some game data
     bool m_LevelStarted{ false };

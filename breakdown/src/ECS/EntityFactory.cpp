@@ -4,6 +4,7 @@
 
 #include "ECS/EntityFactory.hpp"
 #include "ECS/Components.hpp"
+#include "SFML/System/Vector2.hpp"
 #include "Utilities/Utils.hpp"
 #include "Utilities/Logger.hpp"
 #include "AppContext.hpp"
@@ -35,8 +36,8 @@ namespace EntityFactory
 
         // Player paddle properties
         // Starting position
-        auto windowCenterX = context.m_MainWindow->getSize().x / 2.0f;
-        auto paddleYPosition = context.m_MainWindow->getSize().y - 50.0f;
+        auto windowCenterX = context.m_TargetWidth / 2.0f;
+        auto paddleYPosition = context.m_TargetHeight - 50.0f;
         sf::Vector2f playerPosition = sf::Vector2f(windowCenterX, paddleYPosition);
 
         sf::Vector2f paddleSize = sf::Vector2f(paddleWidth, paddleHeight);
@@ -175,7 +176,7 @@ namespace EntityFactory
     {
         auto& registry = *context.m_Registry;
         auto& window = *context.m_MainWindow;
-        auto windowSize = window.getSize();
+        sf::Vector2f windowSize = { context.m_TargetWidth, context.m_TargetHeight };
 
         sf::Vector2f spawnStartXY{ 20.0f, 10.0f };
         sf::Vector2f brickSize{ 120.0f, 40.0f };
