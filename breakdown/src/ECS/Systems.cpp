@@ -135,7 +135,7 @@ namespace CoreSystems
         // clear these each frame
         brickCache.clear();
         paddleBoundsList.clear();
-        
+
         //$ --- Paddle Collision Logic--- //
         auto paddleView = registry->view<Paddle, Velocity>();
         for (auto paddleEntity : paddleView)
@@ -204,7 +204,7 @@ namespace CoreSystems
         //$ Check for game over after checking paddle/brick, brick/window collisions!
         if (triggerGameOver)
         {
-            auto gameoverState = std::make_unique<GameOverState>(context);
+            auto gameoverState = std::make_unique<GameTransitionState>(context);
             stateManager->replaceState(std::move(gameoverState));
             logger::Info("Game Over triggered.");
             return;
@@ -216,35 +216,35 @@ namespace CoreSystems
         {
             auto& ballComp = registry->get<Ball>(ballEntity);
             auto& ballVelocity = registry->get<Velocity>(ballEntity);
-            float ballSpeed = registry->get<MovementSpeed>(ballEntity).value; 
+            float ballSpeed = registry->get<MovementSpeed>(ballEntity).value;
 
             sf::Vector2f ballPosition = ballComp.shape.getPosition(); // Center
             float ballRadius = ballComp.shape.getRadius();
 
             //$ ----- Ball vs Walls ----- //
             // West Wall
-            if (ballPosition.x - ballRadius < 0.0f) 
+            if (ballPosition.x - ballRadius < 0.0f)
             {
                 playSound(context, Assets::SoundBuffers::WallHit);
-                ballPosition.x = ballRadius;                 
+                ballPosition.x = ballRadius;
                 ballVelocity.value.x *= -1.0f;
             }
             // East Wall
-            if (ballPosition.x + ballRadius > windowSize.x) 
+            if (ballPosition.x + ballRadius > windowSize.x)
             {
                 playSound(context, Assets::SoundBuffers::WallHit);
                 ballPosition.x = windowSize.x - ballRadius;
                 ballVelocity.value.x *= -1.0f;
             }
             // North Wall
-            if (ballPosition.y - ballRadius < 0.0f) 
+            if (ballPosition.y - ballRadius < 0.0f)
             {
                 playSound(context, Assets::SoundBuffers::WallHit);
                 ballPosition.y = ballRadius;
                 ballVelocity.value.y *= -1.0f;
             }
             // South Wall (Game over)
-            if (ballPosition.y + ballRadius > windowSize.y) 
+            if (ballPosition.y + ballRadius > windowSize.y)
             {
                 triggerGameOver = true;
                 logger::Info("Ball hit bottom of window.");
@@ -255,19 +255,19 @@ namespace CoreSystems
 
             // Update bounds for object collision checks
             sf::FloatRect ballBounds = ballComp.shape.getGlobalBounds(); // treats circle as square
-            
+
             //$ ----- Ball vs Paddle ----- //
             for (const auto& paddleBounds : paddleBoundsList)
             {
                 if (ballBounds.findIntersection(paddleBounds))
                 {
                     playSound(context, Assets::SoundBuffers::PaddleHit);
-                    
+
                     // calculate offset (-1 to 1)
                     // (ball - center) / half of paddle width
                     float paddleCenterX = paddleBounds.position.x + paddleBounds.size.x / 2.0f;
                     float ballCenterX = ballPosition.x;
-                    float relativeIntersectX = (ballCenterX - paddleCenterX) / 
+                    float relativeIntersectX = (ballCenterX - paddleCenterX) /
                                                (paddleBounds.size.x / 2.0f);
                     // define angle for reflection
                     sf::Angle rotation = sf::degrees(relativeIntersectX * 60.0f);
@@ -279,12 +279,12 @@ namespace CoreSystems
                     ballVelocity.value = rotatedDirection * ballSpeed;
                 }
             }
-                    
+
             //$ ----- Ball vs Bricks ----- //
             //auto brickView = registry->view<Brick, BrickScore, BrickHealth, BrickType>();
             for (const auto& cachedBrick : brickCache)
             {
-                // safety check 
+                // safety check
                 if (!registry->valid(cachedBrick.entity))
                 {
                     continue;
@@ -343,7 +343,7 @@ namespace CoreSystems
                     {
                         destroyed = true;
                     }
-                    
+
                     if (destroyed)
                     {
                         // play appropriate brick destruction sound
@@ -384,14 +384,16 @@ namespace CoreSystems
                             {
                                 logger::Info("Completed the last level.");
 
-                                auto gameCompleteState = std::make_unique<GameCompleteState>(context);
-                                stateManager->replaceState(std::move(gameCompleteState));
+                                auto gameState = std::make_unique<GameTransitionState>(context,
+                                                 TransitionType::GameWin);
+                                stateManager->replaceState(std::move(gameState));
                             }
                             else
                             {
                                 logger::Info("All bricks destroyed. Level complete!");
-                                
-                                auto winState = std::make_unique<WinState>(context);
+
+                                auto winState = std::make_unique<GameTransitionState>(context,
+                                                 TransitionType::LevelWin);
                                 stateManager->replaceState(std::move(winState));
                             }
 
@@ -400,7 +402,7 @@ namespace CoreSystems
                     }
                     //! We will need to handle this differently once there are more than one type
                     //! of "strong" brick
-                    else 
+                    else
                     {
                         if (brickType == BrickType::Strong)
                         {
@@ -416,12 +418,12 @@ namespace CoreSystems
         // Check if game is over
         if (triggerGameOver)
         {
-            auto gameoverState = std::make_unique<GameOverState>(context);
+            auto gameoverState = std::make_unique<GameTransitionState>(context);
             stateManager->replaceState(std::move(gameoverState));
             logger::Info("Game Over triggered.");
         }
     }
-    
+
     void renderSystem(entt::registry& registry, sf::RenderWindow& window, bool showDebug)
     {
         // Draw all Rectangles
@@ -510,7 +512,7 @@ namespace UISystems
         for (auto shapeEntity : shapeView)
         {
             auto& uiShape = shapeView.get<UIShape>(shapeEntity);
-            
+
             // Change color on hover
             if (registry.all_of<Hovered>(shapeEntity))
             {
@@ -520,7 +522,7 @@ namespace UISystems
             {
                 uiShape.shape.setFillColor(sf::Color::Blue); // Normal color
             }
-            
+
             window.draw(uiShape.shape);
         }
 
