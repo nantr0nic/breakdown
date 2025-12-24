@@ -56,5 +56,8 @@ sfml3-game-template.code-workspace
 launch.json
 settings.json
 
+# Zed files
+.zed/
+
 # clangd stuff
 .clangd
