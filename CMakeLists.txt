@@ -38,10 +38,10 @@ FetchContent_Declare(
 FetchContent_Declare(
     tomlplusplus
     GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
-    GIT_TAG        v3.4.0  
+    GIT_TAG        v3.4.0
 )
 
-FetchContent_MakeAvailable(sfml_dependency entt tomlplusplus) 
+FetchContent_MakeAvailable(sfml_dependency entt tomlplusplus)
 
 # ------------------ #
 # Configure project  #
@@ -64,21 +64,20 @@ add_executable(breakdown
 
 # This runs every time the breakdown target is built.
 # It will copy the resources to the build directory
-add_custom_command(
-    TARGET breakdown
-    POST_BUILD
+add_custom_target(CopyAssets ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/breakdown/resources"
             "$<TARGET_FILE_DIR:breakdown>/resources"
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/breakdown/config"
             "$<TARGET_FILE_DIR:breakdown>/config"
-    COMMENT "Copying resources and config to build directory"
+    COMMENT "Syncing resources and config files..."
 )
+ADD_DEPENDENCIES(breakdown CopyAssets)
 
-# This is to copy compile_commands.json to out directory for clangd to find it easily
+# This is to copy compile_commands.json to out directory for clangd
 add_custom_target(
-    copy-compile-commands ALL 
+    copy-compile-commands ALL
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${CMAKE_BINARY_DIR}/compile_commands.json"
             "${CMAKE_SOURCE_DIR}/out/compile_commands.json"
@@ -117,7 +116,7 @@ target_link_libraries(breakdown PRIVATE
 # ---------------------- #
 #   Precompile Headers   #
 # ---------------------- #
-target_precompile_headers(breakdown PRIVATE 
+target_precompile_headers(breakdown PRIVATE
     # STL
     <map>
     <vector>

@@ -15,7 +15,30 @@ id = "ScoreFont"
 path = "resources/fonts/Micro5-Regular.ttf"
 
 # --- Textures ---
+# GUI textures
 [[textures]]
+id = "Cursor"
+path = "resources/GUI/cursor.png"
+
+[[textures]]
+id = "RadioBackground"
+path = "resources/GUI/radioBackground.png"
+
+[[textures]]
+id = "RadioCheckmark"
+path = "resources/GUI/radioCheckmark.png"
+
+[[textures]]
+id = "BoxBackground"
+path = "resources/GUI/boxBackground.png"
+
+[[textures]]
+id = "ButtonRedX"
+path = "resources/GUI/buttonS1RedX.png"
+
+[[textures]]
+id = "ButtonBackground"
+path = "resources/GUI/buttonS1Background.png"
 
 # --- SoundBuffers ---
 [[soundbuffers]]

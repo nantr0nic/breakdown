@@ -47,7 +47,6 @@ out/
 .vs/
 .vscode/
 *.code-workspace
-sfml3-game-template.code-workspace
 
 # github stuff
 .github/
@@ -61,3 +60,4 @@ settings.json
 
 # clangd stuff
 .clangd
+compile_commands.json
