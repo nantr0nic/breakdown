@@ -35,8 +35,8 @@ namespace EntityFactory
 
         // Player paddle properties
         // Starting position
-        auto windowCenterX = context.m_TargetWidth / 2.0f;
-        auto paddleYPosition = context.m_TargetHeight - 50.0f;
+        auto windowCenterX = context.m_AppSettings.targetWidth / 2.0f;
+        auto paddleYPosition = context.m_AppSettings.targetHeight - 50.0f;
         sf::Vector2f playerPosition = sf::Vector2f(windowCenterX, paddleYPosition);
 
         sf::Vector2f paddleSize = sf::Vector2f(paddleWidth, paddleHeight);
@@ -175,7 +175,8 @@ namespace EntityFactory
     {
         auto& registry = *context.m_Registry;
         auto& window = *context.m_MainWindow;
-        sf::Vector2f windowSize = { context.m_TargetWidth, context.m_TargetHeight };
+        sf::Vector2f windowSize = { context.m_AppSettings.targetWidth, 
+                                    context.m_AppSettings.targetHeight };
 
         sf::Vector2f spawnStartXY{ 20.0f, 10.0f };
         sf::Vector2f brickSize{ 120.0f, 40.0f };

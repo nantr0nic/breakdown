@@ -105,7 +105,8 @@ void Application::processEvents()
 
     auto onResized = [&](const sf::Event::Resized& event)
     {
-        sf::Vector2f targetSize = {m_AppContext.m_TargetWidth, m_AppContext.m_TargetHeight};
+        sf::Vector2f targetSize = {m_AppContext.m_AppSettings.targetWidth, 
+                                    m_AppContext.m_AppSettings.targetHeight};
 
         sf::View view(sf::FloatRect({0.0f, 0.0f}, targetSize));
         utils::boxView(view, event.size.x, event.size.y);

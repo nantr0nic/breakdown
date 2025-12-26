@@ -39,10 +39,10 @@ namespace EntityFactory
                                 std::function<void()> action,
                                 ButtonNames buttonName);
     
-    entt::entity createGUIButtonLabel(AppContext& context,
-                                sf::Font& font,
-                                const std::string& text,
-                                sf::Vector2f position);
+    entt::entity createGUIButtonLabel(AppContext& context, sf::Font& font,
+                                    unsigned int size, const sf::Color& color,
+                                    const std::string& text, 
+                                    const entt::entity buttonEntity);
 
     entt::entity createScoreDisplay(AppContext& context, 
                                     sf::Font& font,

@@ -20,7 +20,8 @@
 MenuState::MenuState(AppContext& context)
     : State(context)
 {
-    sf::Vector2f windowSize = { context.m_TargetWidth, context.m_TargetHeight };
+    sf::Vector2f windowSize = { context.m_AppSettings.targetWidth, 
+                                context.m_AppSettings.targetHeight };
     sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
 
     // Play button entity
@@ -90,7 +91,8 @@ void MenuState::render()
 SettingsMenuState::SettingsMenuState(AppContext& context)
     : State(context)
 {
-    sf::Vector2f windowSize = { context.m_TargetWidth, context.m_TargetHeight };
+    sf::Vector2f windowSize = { context.m_AppSettings.targetWidth, 
+                                context.m_AppSettings.targetHeight };
     sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
     
     sf::Font* font = m_AppContext.m_ResourceManager->getResource<sf::Font>(
@@ -104,11 +106,14 @@ SettingsMenuState::SettingsMenuState(AppContext& context)
     {
         // Mute music button
         auto emptyAction = [](){}; // placeholder
-        auto button = EntityFactory::createGUIButton(m_AppContext, *buttonRedX, center, 
+        auto button = EntityFactory::createGUIButton(m_AppContext, *buttonBackground, center, 
                                         emptyAction, ButtonNames::MuteMusic);
-        
+        auto buttonLabel = EntityFactory::createGUIButtonLabel(m_AppContext, *font, 36, 
+                                                                sf::Color::White, "Mute Music", 
+                                                                button);
         // Swap UI tag
         EntityFactory::swapUITag<SettingsUITag>(m_AppContext, button);
+        EntityFactory::swapUITag<SettingsUITag>(m_AppContext, buttonLabel);
     }
     else 
     {
@@ -157,7 +162,8 @@ void SettingsMenuState::render()
 PlayState::PlayState(AppContext& context)
     : State(context)
 {
-    sf::Vector2f windowSize = { context.m_TargetWidth, context.m_TargetHeight };
+    sf::Vector2f windowSize = { context.m_AppSettings.targetWidth, 
+                                context.m_AppSettings.targetHeight };
     sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
 
     // Create game entities
@@ -282,7 +288,8 @@ PauseState::PauseState(AppContext& context)
 
         utils::centerOrigin(*m_PauseText);
 
-        sf::Vector2f center(context.m_TargetWidth / 2.0f, context.m_TargetHeight / 2.0f);
+        sf::Vector2f center(context.m_AppSettings.targetWidth / 2.0f, 
+                            context.m_AppSettings.targetHeight / 2.0f);
         m_PauseText->setPosition(center);
     }
 
@@ -333,7 +340,8 @@ void PauseState::render()
 GameTransitionState::GameTransitionState(AppContext& context, TransitionType type)
     : State(context)
 {
-    sf::Vector2f windowSize = { context.m_TargetWidth, context.m_TargetHeight };
+    sf::Vector2f windowSize = { context.m_AppSettings.targetWidth, 
+                                context.m_AppSettings.targetHeight };
     sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
 
     bool nextLevelExists = (m_AppContext.m_LevelNumber < m_AppContext.m_TotalLevels ? true : false);
