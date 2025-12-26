@@ -13,7 +13,6 @@
 #include <string>
 #include <utility>
 
-
 // functions for the ECS system
 namespace EntityFactory
 {

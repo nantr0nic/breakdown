@@ -8,6 +8,7 @@
 #include "Components.hpp"
 
 #include <functional>
+#include <type_traits>
 
 namespace EntityFactory
 {
@@ -48,5 +49,27 @@ namespace EntityFactory
                                     unsigned int size,
                                     const sf::Color& color, 
                                     sf::Vector2f position);
+    
+    // Helper function to swap tags, static_assert can be rewritten
+    // to allow swapping of any tag for any entity but for our purposes
+    // right now, keeping it to swapping MenuUITag and SettingsUITag
+    template <typename T>
+    void swapUITag(AppContext& context, entt::entity uiEntity)
+    {
+        auto& registry = *context.m_Registry;
+        static_assert(std::is_same_v<T, MenuUITag> || std::is_same_v<T, SettingsUITag>,
+            "Error: swapUITag only works with MenuUITag and SettingsUITag");
+        
+        if constexpr (std::is_same_v<T, SettingsUITag>)
+        {
+            registry.remove<MenuUITag>(uiEntity);
+            registry.emplace<SettingsUITag>(uiEntity);
+        }
+        else 
+        {
+            registry.remove<SettingsUITag>(uiEntity);
+            registry.emplace<MenuUITag>(uiEntity);
+        }
+    }
 
 }

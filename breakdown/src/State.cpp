@@ -104,8 +104,11 @@ SettingsMenuState::SettingsMenuState(AppContext& context)
     {
         // Mute music button
         auto emptyAction = [](){}; // placeholder
-        EntityFactory::createGUIButton(context, *buttonRedX, center, 
+        auto button = EntityFactory::createGUIButton(m_AppContext, *buttonRedX, center, 
                                         emptyAction, ButtonNames::MuteMusic);
+        
+        // Swap UI tag
+        EntityFactory::swapUITag<SettingsUITag>(m_AppContext, button);
     }
     else 
     {
@@ -133,7 +136,7 @@ SettingsMenuState::~SettingsMenuState()
 {
     // Clean up Menu UI entities
     auto& registry = *m_AppContext.m_Registry;
-    auto view = registry.view<MenuUITag>();
+    auto view = registry.view<SettingsUITag>();
     registry.destroy(view.begin(), view.end());
 }
 

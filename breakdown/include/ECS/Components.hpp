@@ -92,6 +92,7 @@ enum class ButtonNames { MuteMusic };
 
 // Tag to identify UI/HUD entities
 struct MenuUITag {};
+struct SettingsUITag {};
 struct HUDTag{};
 struct ScoreHUDTag {};
 struct GUIButtonTag {};
