@@ -334,15 +334,77 @@ namespace EntityFactory
         buttonText.text.setFillColor(sf::Color(200, 200, 200));
 
         // Bounds component
-        registry.emplace<Bounds>(buttonEntity, buttonShape.shape.getGlobalBounds());
+        registry.emplace<UIBounds>(buttonEntity, buttonShape.shape.getGlobalBounds());
 
         // Clickable component
-        registry.emplace<Clickable>(buttonEntity, std::move(action));
+        registry.emplace<UIAction>(buttonEntity, std::move(action));
         
         return buttonEntity;
     }
 
-    entt::entity createScoreDisplay(AppContext &context, sf::Font &font, 
+    entt::entity createGUIButton(AppContext& context, sf::Texture& texture,
+                                sf::Vector2f position,
+                                std::function<void()> action,
+                                ButtonNames buttonName)
+    {
+        auto& registry = *context.m_Registry;
+        auto buttonEntity = registry.create();
+        
+        registry.emplace<MenuUITag>(buttonEntity);
+        registry.emplace<GUIButtonTag>(buttonEntity);
+        
+        sf::Sprite buttonSprite(texture);
+        buttonSprite.setPosition(position);
+        registry.emplace<GUISprite>(buttonEntity, std::move(buttonSprite));
+        
+        // Bounds component
+        registry.emplace<UIBounds>(buttonEntity, buttonSprite.getGlobalBounds());
+
+        // Clickable component
+        registry.emplace<UIAction>(buttonEntity, std::move(action));
+        
+        registry.emplace<GUIButtonName>(buttonEntity, buttonName); // to identify
+        
+        logger::Info("Button created");
+        return buttonEntity;
+    }
+    
+    entt::entity createGUIButtonLabel(AppContext& context, sf::Font& font,
+                                        unsigned int size, const sf::Color& color,
+                                        const std::string& text, 
+                                        const entt::entity buttonEntity)
+    {
+        auto& registry = *context.m_Registry;
+        auto labelEntity = registry.create();
+        registry.emplace<MenuUITag>(labelEntity);
+        
+        // We'll assume the label goes to the left (for now)
+        auto& buttonBounds = registry.get<UIBounds>(buttonEntity);
+        sf::FloatRect buttonRect = buttonBounds.rect;
+        
+        auto& labelText = registry.emplace<UIText>(labelEntity, sf::Text(font, text, size));
+        labelText.text.setFillColor(color);
+        
+        sf::FloatRect textBounds = labelText.text.getLocalBounds();
+        
+        // set origin to RIGHT-CENTER of the text
+        sf::Vector2f origin;
+        origin.x = textBounds.position.x + textBounds.size.x; // far right edge
+        origin.y = textBounds.position.y + (textBounds.size.y / 2.0f);
+        labelText.text.setOrigin(origin);
+        
+        float labelPadding = 10.0f;
+        
+        sf::Vector2f position;
+        position.x = buttonRect.position.x - labelPadding; // left of the button
+        position.y = buttonRect.position.y + (buttonRect.size.y / 2.0f);
+        
+        labelText.text.setPosition(position);
+        
+        return labelEntity;
+    }
+
+    entt::entity createScoreDisplay(AppContext &context, sf::Font& font, 
                                     unsigned int size, const sf::Color& color, 
                                     sf::Vector2f position)
     {

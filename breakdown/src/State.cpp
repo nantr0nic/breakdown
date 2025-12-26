@@ -34,6 +34,13 @@ MenuState::MenuState(AppContext& context)
                 m_AppContext.m_StateManager->replaceState(std::move(playState));
             }
         );
+        EntityFactory::createButton(m_AppContext, *font, "Settings", 
+            {center.x, center.y + 150.0f},
+            [this]() {
+                auto settingsState = std::make_unique<SettingsMenuState>(m_AppContext);
+                m_AppContext.m_StateManager->replaceState(std::move(settingsState));
+            }
+        );
     }
     else
     {
@@ -75,6 +82,68 @@ void MenuState::update(sf::Time deltaTime)
 }
 
 void MenuState::render()
+{
+    // Render menu here
+    UISystems::uiRenderSystem(*m_AppContext.m_Registry, *m_AppContext.m_MainWindow);
+}
+
+SettingsMenuState::SettingsMenuState(AppContext& context)
+    : State(context)
+{
+    sf::Vector2f windowSize = { context.m_TargetWidth, context.m_TargetHeight };
+    sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
+    
+    sf::Font* font = m_AppContext.m_ResourceManager->getResource<sf::Font>(
+                                                        Assets::Fonts::ScoreFont);
+    sf::Texture* buttonBackground = m_AppContext.m_ResourceManager->getResource<sf::Texture>(
+                                                            Assets::Textures::ButtonBackground);
+    sf::Texture* buttonRedX = m_AppContext.m_ResourceManager->getResource<sf::Texture>(
+                                                            Assets::Textures::ButtonRedX);
+    
+    if (font && buttonBackground && buttonRedX)
+    {
+        // Mute music button
+        auto emptyAction = [](){}; // placeholder
+        EntityFactory::createGUIButton(context, *buttonRedX, center, 
+                                        emptyAction, ButtonNames::MuteMusic);
+    }
+    else 
+    {
+        logger::Error("Failed to load resources for SettingsMenuState");
+    }
+    
+    // Lambdas to handle input
+    m_StateEvents.onMouseButtonPress = [this](const sf::Event::MouseButtonPressed& event)
+    {
+        UISystems::uiClickSystem(*m_AppContext.m_Registry, event);
+    };
+
+    m_StateEvents.onKeyPress = [this](const sf::Event::KeyPressed& event)
+    {
+        if (event.scancode == sf::Keyboard::Scancode::Escape)
+        {
+            m_AppContext.m_MainWindow->close();
+        }
+    };
+
+    logger::Info("SettingsMenuState initialized.");
+}
+
+SettingsMenuState::~SettingsMenuState()
+{
+    // Clean up Menu UI entities
+    auto& registry = *m_AppContext.m_Registry;
+    auto view = registry.view<MenuUITag>();
+    registry.destroy(view.begin(), view.end());
+}
+
+void SettingsMenuState::update(sf::Time deltaTime)
+{
+    // Call the UI hover system here
+    UISystems::uiHoverSystem(*m_AppContext.m_Registry, *m_AppContext.m_MainWindow);
+}
+
+void SettingsMenuState::render()
 {
     // Render menu here
     UISystems::uiRenderSystem(*m_AppContext.m_Registry, *m_AppContext.m_MainWindow);

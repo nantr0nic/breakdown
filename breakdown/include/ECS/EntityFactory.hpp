@@ -31,6 +31,17 @@ namespace EntityFactory
                             const std::string& text,
                             sf::Vector2f position,
                             std::function<void()> action);
+    
+    entt::entity createGUIButton(AppContext& context,
+                                sf::Texture& texture,
+                                sf::Vector2f position,
+                                std::function<void()> action,
+                                ButtonNames buttonName);
+    
+    entt::entity createGUIButtonLabel(AppContext& context,
+                                sf::Font& font,
+                                const std::string& text,
+                                sf::Vector2f position);
 
     entt::entity createScoreDisplay(AppContext& context, 
                                     sf::Font& font,

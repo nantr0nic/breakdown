@@ -489,18 +489,18 @@ namespace UISystems
     void uiHoverSystem(entt::registry& registry, sf::RenderWindow& window)
     {
         sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-        auto view = registry.view<Bounds>();
+        auto view = registry.view<UIBounds>();
 
         for (auto entity : view)
         {
-            const auto& bounds = view.get<Bounds>(entity);
+            const auto& bounds = view.get<UIBounds>(entity);
             if (bounds.rect.contains(mousePos))
             {
-                registry.emplace_or_replace<Hovered>(entity);
+                registry.emplace_or_replace<UIHover>(entity);
             }
-            else if (registry.all_of<Hovered>(entity))
+            else if (registry.all_of<UIHover>(entity))
             {
-                registry.remove<Hovered>(entity);
+                registry.remove<UIHover>(entity);
             }
         }
     }
@@ -514,7 +514,7 @@ namespace UISystems
             auto& uiShape = shapeView.get<UIShape>(shapeEntity);
 
             // Change color on hover
-            if (registry.all_of<Hovered>(shapeEntity))
+            if (registry.all_of<UIHover>(shapeEntity))
             {
                 uiShape.shape.setFillColor(sf::Color(100, 100, 255)); // Hover color
             }
@@ -533,9 +533,9 @@ namespace UISystems
             auto& uiText = textView.get<UIText>(textEntity);
 
             // Change text color on hover for interactive UI
-            if (registry.any_of<Clickable, Bounds>(textEntity))
+            if (registry.any_of<UIAction, UIBounds>(textEntity))
             {
-                if (registry.all_of<Hovered>(textEntity))
+                if (registry.all_of<UIHover>(textEntity))
                 {
                     uiText.text.setFillColor(sf::Color::White); // Hover text color
                 }
@@ -547,16 +547,24 @@ namespace UISystems
 
             window.draw(uiText.text);
         }
+
+        // Render UI buttons
+        auto buttonView = registry.view<GUISprite>();
+        for (auto buttonEntity : buttonView)
+        {
+            auto& button = buttonView.get<GUISprite>(buttonEntity);
+            window.draw(button.sprite);
+        }
     }
 
     void uiClickSystem(entt::registry& registry, const sf::Event::MouseButtonPressed& event)
     {
         if (event.button == sf::Mouse::Button::Left)
         {
-            auto view = registry.view<Hovered, Clickable>();
+            auto view = registry.view<UIHover, UIAction>();
             for (auto entity : view)
             {
-                auto& clickable = view.get<Clickable>(entity);
+                auto& clickable = view.get<UIAction>(entity);
                 if (clickable.action)
                 {
                     clickable.action();

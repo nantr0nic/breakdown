@@ -86,21 +86,28 @@ struct BrickHealth { int current{ 1 }; int max{ 1 }; };
 struct CurrentScore { int value{ 0 }; };
 struct CurrentLives { int value{ 3 }; };
 
-//$ ----- UI Components -----
+//$ ----- UI Components ----- //
+
+enum class ButtonNames { MuteMusic };
 
 // Tag to identify UI/HUD entities
 struct MenuUITag {};
 struct HUDTag{};
 struct ScoreHUDTag {};
-struct LivesHUDTag {};
+struct GUIButtonTag {};
+
+struct UIHover {};
 
 struct UIText { sf::Text text; };
 
 struct UIShape { sf::RectangleShape shape; };
 
-// Defines the clickable/hoverable area 
-struct Bounds { sf::FloatRect rect; };
+struct UIBounds { sf::FloatRect rect; };
 
-struct Clickable { std::function<void()> action; };
+struct UIAction { std::function<void()> action; };
 
-struct Hovered {};
+struct GUISprite { sf::Sprite sprite; };
+
+struct GUITexture { sf::Texture texture; };
+
+struct GUIButtonName { ButtonNames name; };

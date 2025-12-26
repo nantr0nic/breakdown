@@ -52,6 +52,19 @@ private:
     // Empty
 };
 
+class SettingsMenuState : public State
+{
+public:
+    explicit SettingsMenuState(AppContext& context);
+    virtual ~SettingsMenuState() override;
+
+    virtual void update(sf::Time /* deltaTime */) override;
+    virtual void render() override;
+
+private:
+    // Empty
+};
+
 class PlayState : public State
 {
 public:
