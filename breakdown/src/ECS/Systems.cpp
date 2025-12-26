@@ -25,7 +25,7 @@ namespace CoreSystems
     void handlePlayerInput(AppContext& context)
     {
         auto& registry = context.m_Registry;
-        bool levelStarted = context.m_LevelStarted;
+        bool levelStarted = context.m_AppData.levelStarted;
 
         auto paddleView = registry->view<PaddleTag, Velocity, MovementSpeed>();
 
@@ -50,7 +50,7 @@ namespace CoreSystems
             {
                 playSound(context, Assets::SoundBuffers::PaddleHit);
 
-                context.m_LevelStarted = true;
+                context.m_AppData.levelStarted = true;
                 logger::Info("Level started.");
 
                 auto ballView = registry->view<Ball, Velocity, MovementSpeed>();
@@ -67,7 +67,7 @@ namespace CoreSystems
     void movementSystem(AppContext& context, sf::Time deltaTime)
     {
         auto& registry = context.m_Registry;
-        bool levelStarted = context.m_LevelStarted;
+        bool levelStarted = context.m_AppData.levelStarted;
 
         auto paddleView = registry->view<Paddle, Velocity>();
         for (auto paddleEntity : paddleView)
@@ -381,7 +381,7 @@ namespace CoreSystems
 
                         if (registry->view<Brick>().empty())
                         {
-                            if (context.m_LevelNumber >= context.m_TotalLevels)
+                            if (context.m_AppData.levelNumber >= context.m_AppData.totalLevels)
                             {
                                 logger::Info("Completed the last level.");
 
@@ -455,7 +455,7 @@ namespace CoreSystems
     void playSound(AppContext& context, std::string_view soundID)
     {
         // remove sounds that are done playing
-        context.m_ActiveSounds.remove_if([](const sf::Sound& sound) {
+        context.m_AppData.activeSounds.remove_if([](const sf::Sound& sound) {
             return sound.getStatus() == sf::Sound::Status::Stopped;
             });
 
@@ -468,8 +468,8 @@ namespace CoreSystems
         }
 
         // Add it to the list and play it
-        context.m_ActiveSounds.emplace_back(*sound);
-        context.m_ActiveSounds.back().play();
+        context.m_AppData.activeSounds.emplace_back(*sound);
+        context.m_AppData.activeSounds.back().play();
     }
 
     void moveBricksDown(entt::registry& registry, float amount)

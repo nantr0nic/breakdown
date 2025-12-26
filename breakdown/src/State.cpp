@@ -4,6 +4,7 @@
 #include <SFML/Window/Event.hpp>
 
 #include "AppContext.hpp"
+#include "AppData.hpp"
 #include "State.hpp"
 #include "Managers/StateManager.hpp"
 #include "ECS/Components.hpp"
@@ -167,7 +168,7 @@ PlayState::PlayState(AppContext& context)
     sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
 
     // Create game entities
-    m_DescentSpeed = EntityFactory::loadLevel(m_AppContext, context.m_LevelNumber);
+    m_DescentSpeed = EntityFactory::loadLevel(m_AppContext, context.m_AppData.levelNumber);
     EntityFactory::createPlayer(m_AppContext);
     EntityFactory::createBall(m_AppContext);
     //EntityFactory::createBricks(*m_AppContext);
@@ -250,7 +251,7 @@ void PlayState::update(sf::Time deltaTime)
     CoreSystems::collisionSystem(m_AppContext, deltaTime);
 
     // Descent mechanic
-    if (m_AppContext.m_LevelStarted)
+    if (m_AppContext.m_AppData.levelStarted)
     {
         float moveAmount = m_DescentSpeed * deltaTime.asSeconds();
         CoreSystems::moveBricksDown(*m_AppContext.m_Registry, moveAmount);
@@ -344,7 +345,8 @@ GameTransitionState::GameTransitionState(AppContext& context, TransitionType typ
                                 context.m_AppSettings.targetHeight };
     sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
 
-    bool nextLevelExists = (m_AppContext.m_LevelNumber < m_AppContext.m_TotalLevels ? true : false);
+    bool nextLevelExists = (m_AppContext.m_AppData.levelNumber < m_AppContext.m_AppData.totalLevels 
+                            ? true : false);
 
     std::string stateMessage{};
     sf::Color stateMessageColor = sf::Color::White;
@@ -363,7 +365,7 @@ GameTransitionState::GameTransitionState(AppContext& context, TransitionType typ
             topButtonText = "Next Level";
             break;
         case TransitionType::GameWin:
-            stateMessage = "You completed all levels! Woo!";
+            stateMessage = "You beat the game! Woo!";
             stateMessageColor = sf::Color::Yellow;
             topButtonText = "Restart";
             break;
@@ -387,7 +389,7 @@ GameTransitionState::GameTransitionState(AppContext& context, TransitionType typ
                     center,
                     [this]() {
                         logger::Info("Try Again button pressed.");
-                        m_AppContext.m_LevelStarted = false;
+                        m_AppContext.m_AppData.levelStarted = false;
                         auto playState = std::make_unique<PlayState>(m_AppContext);
                         m_AppContext.m_StateManager->replaceState(std::move(playState));
                     }
@@ -401,8 +403,11 @@ GameTransitionState::GameTransitionState(AppContext& context, TransitionType typ
                     center,
                     [this, nextLevelExists]() {
                         logger::Info("Next Level button pressed.");
-                        m_AppContext.m_LevelStarted = false;
-                        (nextLevelExists ? m_AppContext.m_LevelNumber++ : m_AppContext.m_LevelNumber);
+                        m_AppContext.m_AppData.levelStarted = false;
+                        if (nextLevelExists) 
+                        {
+                            m_AppContext.m_AppData.levelNumber++;
+                        }
                         auto playState = std::make_unique<PlayState>(m_AppContext);
                         m_AppContext.m_StateManager->replaceState(std::move(playState));
                     }
@@ -416,8 +421,7 @@ GameTransitionState::GameTransitionState(AppContext& context, TransitionType typ
                     center,
                     [this]() {
                         logger::Info("Restart button pressed.");
-                        m_AppContext.m_LevelStarted = false;
-                        m_AppContext.m_LevelNumber = 1;
+                        m_AppContext.m_AppData.reset();
                         auto playState = std::make_unique<PlayState>(m_AppContext);
                         m_AppContext.m_StateManager->replaceState(std::move(playState));
                     }
