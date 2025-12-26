@@ -61,3 +61,6 @@ settings.json
 # clangd stuff
 .clangd
 compile_commands.json
+
+# clang/cache
+.cache/
