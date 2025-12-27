@@ -124,7 +124,7 @@ namespace CoreSystems
         auto& window = context.m_MainWindow;
         auto& stateManager = context.m_StateManager;
 
-        sf::Vector2f windowSize = { context.m_AppSettings.targetWidth, 
+        sf::Vector2f windowSize = { context.m_AppSettings.targetWidth,
                                     context.m_AppSettings.targetHeight };
         bool triggerGameOver = false;
 
@@ -536,6 +536,14 @@ namespace UISystems
             auto& button = buttonView.get<GUISprite>(buttonEntity);
             window.draw(button.sprite);
         }
+
+        // Render Red X overlay
+        auto xView = registry.view<GUIRedX>();
+        for (auto entity : xView)
+        {
+            auto& redX = xView.get<GUIRedX>(entity);
+            window.draw(redX.sprite);
+        }
     }
 
     void uiClickSystem(entt::registry& registry, const sf::Event::MouseButtonPressed& event)
@@ -557,7 +565,7 @@ namespace UISystems
             // empty
         }
     }
-    
+
     void uiHoverSystem(entt::registry& registry, sf::RenderWindow& window)
     {
         sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
@@ -576,7 +584,7 @@ namespace UISystems
             }
         }
     }
-    
+
     void uiSettingsChecks(AppContext& context)
     {
         auto* buttonRedX = context.m_ResourceManager->getResource<sf::Texture>(
@@ -585,20 +593,33 @@ namespace UISystems
         {
             return;
         }
-        
+
         auto redXSprite = sf::Sprite(*buttonRedX);
-        
+
         auto& registry = context.m_Registry;
-        auto buttonView = registry->view<GUIButtonTag, GUISprite, ButtonNames>();
+        auto buttonView = registry->view<GUIButtonTag, GUISprite, GUIButtonName>();
         for (auto buttonEntity : buttonView)
         {
-            auto buttonName = registry->get<ButtonNames>(buttonEntity);
-            if (buttonName == ButtonNames::MuteMusic)
+            auto buttonName = registry->get<GUIButtonName>(buttonEntity);
+            auto& buttonSprite = registry->get<GUISprite>(buttonEntity);
+            auto buttonCenter = buttonSprite.sprite.getGlobalBounds().getCenter();
+            //auto drawPosition = buttonSprite.sprite.getPosition();
+            utils::centerOrigin(redXSprite);
+            redXSprite.setPosition(buttonCenter);
+            
+            if (buttonName.name == ButtonNames::MuteMusic)
             {
                 if (context.m_AppSettings.musicMuted)
                 {
-                    registry->emplace<GUISprite>(buttonEntity, redXSprite);
-                    logger::Info("Mute music X drawn");
+                    if (!registry->all_of<GUIRedX>(buttonEntity))
+                    {
+                        registry->emplace<GUIRedX>(buttonEntity, redXSprite);
+                        logger::Info("Mute music X drawn");
+                    }
+                }
+                else
+                {
+                    registry->remove<GUIRedX>(buttonEntity);
                 }
             }
         }
