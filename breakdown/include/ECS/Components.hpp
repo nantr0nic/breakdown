@@ -88,7 +88,7 @@ struct CurrentLives { int value{ 3 }; };
 
 //$ ----- UI Components ----- //
 
-enum class ButtonNames { MuteMusic };
+enum class ButtonNames { None, MuteMusic };
 
 // Tag to identify UI/HUD entities
 struct MenuUITag {};

@@ -74,12 +74,8 @@ public:
     virtual void update(sf::Time deltaTime) override;
     virtual void render() override;
 
-    bool getLevelStarted() const { return m_LevelStarted; }
-    void setLevelStarted(bool value) { m_LevelStarted = value; }
-
 private:
-    sf::Music* m_MainMusic{ nullptr };
-    bool m_LevelStarted{ false };
+    sf::Music* m_Music{ nullptr };
     bool m_ShowDebug{ false };
 
     // Descent mechanic data

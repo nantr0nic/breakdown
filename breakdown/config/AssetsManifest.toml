@@ -76,3 +76,5 @@ path = "resources/sounds/strongBrickBreak.wav"
 # --- Music ---
 # .ogg files are preferred, but .mp3 files should also work
 [[musics]]
+id = "MainSong"
+path = "resources/musics/swung.ogg"

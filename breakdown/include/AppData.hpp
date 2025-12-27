@@ -2,7 +2,10 @@
 
 #include <SFML/Audio.hpp>
 
+#include "Utilities/Logger.hpp"
+
 #include <list>
+#include <format>
 
 struct AppData
 {
@@ -25,10 +28,16 @@ struct AppData
 struct AppSettings
 {
     // Audio settings
-    bool muteMusic{ false };
-    bool muteSFX{ false };
-    float volumeMusic{ 100.0f };
-    float volumeSFX{ 100.0f };
+    bool musicMuted{ false };
+    bool sfxMuted{ false };
+    float musicVolume{ 100.0f };
+    float sfxVolume{ 100.0f };
+    
+    void toggleMusicMute()
+    {
+        musicMuted = !musicMuted;
+        logger::Info(std::format("Music muted: {}", musicMuted ? "true" : "false"));
+    }
     
     // Resolution target settings
     float targetWidth{ 1280.0f };

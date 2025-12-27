@@ -30,7 +30,6 @@ namespace CoreSystems
 namespace UISystems
 {
     //$ ----- UI Systems -----
-
     void uiRenderSystem(entt::registry& registry, sf::RenderWindow& window);
 
     void uiClickSystem(entt::registry& registry, const sf::Event::MouseButtonPressed& event);

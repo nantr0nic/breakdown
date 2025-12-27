@@ -25,8 +25,15 @@ namespace EntityFactory
     void createBricks(AppContext& context);
 
     float loadLevel(AppContext& context, int levelNumber);
+    
+    //$ --- HUD Entities --- //
+    entt::entity createScoreDisplay(AppContext& context, 
+                                    sf::Font& font,
+                                    unsigned int size,
+                                    const sf::Color& color, 
+                                    sf::Vector2f position);
 
-    //$ --- UI Entities --- //
+    //$ --- G/UI Entities --- //
     entt::entity createButton(AppContext& context,
                             sf::Font& font,
                             const std::string& text,
@@ -37,18 +44,22 @@ namespace EntityFactory
                                 sf::Texture& texture,
                                 sf::Vector2f position,
                                 std::function<void()> action,
-                                ButtonNames buttonName);
+                                ButtonNames buttonName = ButtonNames::None);
     
-    entt::entity createGUIButtonLabel(AppContext& context, sf::Font& font,
-                                    unsigned int size, const sf::Color& color,
-                                    const std::string& text, 
-                                    const entt::entity buttonEntity);
-
-    entt::entity createScoreDisplay(AppContext& context, 
+    entt::entity createButtonLabel(AppContext& context, 
+                                   const entt::entity buttonEntity,
+                                   sf::Font& font, const std::string& text,
+                                   unsigned int size = 32, 
+                                   const sf::Color& color = sf::Color::White);
+    
+    entt::entity createLabeledButton(AppContext& context, sf::Texture& texture,
+                                    sf::Vector2f position,
+                                    std::function<void()> action,
                                     sf::Font& font,
-                                    unsigned int size,
-                                    const sf::Color& color, 
-                                    sf::Vector2f position);
+                                    const std::string& text = "",
+                                    unsigned int size = 32, 
+                                    const sf::Color& color = sf::Color::White,
+                                    ButtonNames buttonName = ButtonNames::None);
     
     // Helper function to swap tags, static_assert can be rewritten
     // to allow swapping of any tag for any entity but for our purposes

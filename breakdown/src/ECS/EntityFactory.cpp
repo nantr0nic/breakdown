@@ -306,8 +306,31 @@ namespace EntityFactory
 
         return descentSpeed;
     }
+    
+    //$ ----- HUD ----- //
+    entt::entity createScoreDisplay(AppContext &context, sf::Font& font, 
+                                    unsigned int size, const sf::Color& color, 
+                                    sf::Vector2f position)
+    {
+        auto& registry = *context.m_Registry;
+        auto scoreEntity = registry.create();
 
-    //$ ----- UI/HUD ----- //
+        registry.emplace<HUDTag>(scoreEntity);
+        registry.emplace<ScoreHUDTag>(scoreEntity);
+
+        registry.emplace<CurrentScore>(scoreEntity, 0);
+
+        auto& scoreText = registry.emplace<UIText>(scoreEntity, sf::Text(font, "Score: 0", size));
+        scoreText.text.setFillColor(color);
+        utils::centerOrigin(scoreText.text);
+        scoreText.text.setPosition(position);
+
+        logger::Info("Score Display created.");
+
+        return scoreEntity;
+    }
+
+    //$ ----- G/UI ----- //
     entt::entity createButton(AppContext& context, sf::Font& font,
                             const std::string& text, sf::Vector2f position,
                             std::function<void()> action)
@@ -369,10 +392,9 @@ namespace EntityFactory
         return buttonEntity;
     }
     
-    entt::entity createGUIButtonLabel(AppContext& context, sf::Font& font,
-                                        unsigned int size, const sf::Color& color,
-                                        const std::string& text, 
-                                        const entt::entity buttonEntity)
+    entt::entity createButtonLabel(AppContext& context, const entt::entity buttonEntity,
+                                sf::Font& font, const std::string& text, 
+                                unsigned int size, const sf::Color& color)
     {
         auto& registry = *context.m_Registry;
         auto labelEntity = registry.create();
@@ -403,26 +425,52 @@ namespace EntityFactory
         
         return labelEntity;
     }
-
-    entt::entity createScoreDisplay(AppContext &context, sf::Font& font, 
-                                    unsigned int size, const sf::Color& color, 
-                                    sf::Vector2f position)
+    
+    entt::entity createLabeledButton(AppContext &context, sf::Texture &texture, 
+                                sf::Vector2f position, std::function<void ()> action,
+                                sf::Font& font, const std::string& text, 
+                                unsigned int size, const sf::Color& color, 
+                                ButtonNames buttonName)
     {
         auto& registry = *context.m_Registry;
-        auto scoreEntity = registry.create();
+        auto buttonEntity = registry.create();
+        
+        registry.emplace<MenuUITag>(buttonEntity);
+        registry.emplace<GUIButtonTag>(buttonEntity);
+        
+        sf::Sprite buttonSprite(texture);
+        buttonSprite.setPosition(position);
+        registry.emplace<GUISprite>(buttonEntity, std::move(buttonSprite));
+        
+        // Bounds component
+        auto& buttonBounds = registry.emplace<UIBounds>(buttonEntity, 
+                             buttonSprite.getGlobalBounds());
+        sf::FloatRect buttonRect = buttonBounds.rect;
 
-        registry.emplace<HUDTag>(scoreEntity);
-        registry.emplace<ScoreHUDTag>(scoreEntity);
-
-        registry.emplace<CurrentScore>(scoreEntity, 0);
-
-        auto& scoreText = registry.emplace<UIText>(scoreEntity, sf::Text(font, "Score: 0", size));
-        scoreText.text.setFillColor(color);
-        utils::centerOrigin(scoreText.text);
-        scoreText.text.setPosition(position);
-
-        logger::Info("Score Display created.");
-
-        return scoreEntity;
+        // Clickable component
+        registry.emplace<UIAction>(buttonEntity, std::move(action));
+        
+        registry.emplace<GUIButtonName>(buttonEntity, buttonName); // to identify
+        
+        // Label text
+        auto& labelText = registry.emplace<UIText>(buttonEntity, sf::Text(font, text, size));
+        labelText.text.setFillColor(color);
+        
+        sf::FloatRect textBounds = labelText.text.getLocalBounds();
+        
+        sf::Vector2f origin;
+        origin.x = textBounds.position.x + textBounds.size.x; // far right edge
+        origin.y = textBounds.position.y + (textBounds.size.y / 2.0f);
+        labelText.text.setOrigin(origin);
+        
+        float labelPadding = 10.0f;
+        
+        sf::Vector2f labelPosition;
+        labelPosition.x = buttonRect.position.x - labelPadding; // left of the button
+        labelPosition.y = buttonRect.position.y + (buttonRect.size.y / 2.0f);
+        
+        labelText.text.setPosition(labelPosition);
+        
+        return buttonEntity;
     }
 }

@@ -23,20 +23,20 @@ MenuState::MenuState(AppContext& context)
 {
     sf::Vector2f windowSize = { context.m_AppSettings.targetWidth, 
                                 context.m_AppSettings.targetHeight };
-    sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
+    sf::Vector2f center = { windowSize.x / 2.0f, windowSize.y / 2.0f };
 
     // Play button entity
-    sf::Font* font = m_AppContext.m_ResourceManager->getResource<sf::Font>(Assets::Fonts::MainFont);
+    sf::Font* font = context.m_ResourceManager->getResource<sf::Font>(Assets::Fonts::MainFont);
     if (font)
     {
-        EntityFactory::createButton(m_AppContext, *font, "Play", center,
+        EntityFactory::createButton(context, *font, "Play", center,
             // lambda for when button is clicked
             [this]() {
                 auto playState = std::make_unique<PlayState>(m_AppContext);
                 m_AppContext.m_StateManager->replaceState(std::move(playState));
             }
         );
-        EntityFactory::createButton(m_AppContext, *font, "Settings", 
+        EntityFactory::createButton(context, *font, "Settings", 
             {center.x, center.y + 150.0f},
             [this]() {
                 auto settingsState = std::make_unique<SettingsMenuState>(m_AppContext);
@@ -50,16 +50,11 @@ MenuState::MenuState(AppContext& context)
     }
 
     // Lambdas to handle input
-    m_StateEvents.onMouseButtonPress = [this](const sf::Event::MouseButtonPressed& event)
-    {
-        // using ECS system here instead of previous SFML event response
-
+    m_StateEvents.onMouseButtonPress = [this](const sf::Event::MouseButtonPressed& event) {
         UISystems::uiClickSystem(*m_AppContext.m_Registry, event);
-
     };
 
-    m_StateEvents.onKeyPress = [this](const sf::Event::KeyPressed& event)
-    {
+    m_StateEvents.onKeyPress = [this](const sf::Event::KeyPressed& event) {
         if (event.scancode == sf::Keyboard::Scancode::Escape)
         {
             m_AppContext.m_MainWindow->close();
@@ -71,7 +66,6 @@ MenuState::MenuState(AppContext& context)
 
 MenuState::~MenuState()
 {
-    // Clean up Menu UI entities
     auto& registry = *m_AppContext.m_Registry;
     auto view = registry.view<MenuUITag>();
     registry.destroy(view.begin(), view.end());
@@ -79,13 +73,11 @@ MenuState::~MenuState()
 
 void MenuState::update(sf::Time deltaTime)
 {
-    // Call the UI hover system here
     UISystems::uiHoverSystem(*m_AppContext.m_Registry, *m_AppContext.m_MainWindow);
 }
 
 void MenuState::render()
 {
-    // Render menu here
     UISystems::uiRenderSystem(*m_AppContext.m_Registry, *m_AppContext.m_MainWindow);
 }
 
@@ -94,27 +86,34 @@ SettingsMenuState::SettingsMenuState(AppContext& context)
 {
     sf::Vector2f windowSize = { context.m_AppSettings.targetWidth, 
                                 context.m_AppSettings.targetHeight };
-    sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
+    sf::Vector2f center = { windowSize.x / 2.0f, windowSize.y / 2.0f };
     
-    sf::Font* font = m_AppContext.m_ResourceManager->getResource<sf::Font>(
+    auto* font = context.m_ResourceManager->getResource<sf::Font>(
                                                         Assets::Fonts::ScoreFont);
-    sf::Texture* buttonBackground = m_AppContext.m_ResourceManager->getResource<sf::Texture>(
+    auto* buttonBackground = context.m_ResourceManager->getResource<sf::Texture>(
                                                             Assets::Textures::ButtonBackground);
-    sf::Texture* buttonRedX = m_AppContext.m_ResourceManager->getResource<sf::Texture>(
+    auto* buttonRedX = context.m_ResourceManager->getResource<sf::Texture>(
                                                             Assets::Textures::ButtonRedX);
-    
-    if (font && buttonBackground && buttonRedX)
+    auto* music = context.m_ResourceManager->getResource<sf::Music>(
+                                                            Assets::Musics::MainSong);
+    if (font && buttonBackground && buttonRedX && music)
     {
         // Mute music button
-        auto emptyAction = [](){}; // placeholder
-        auto button = EntityFactory::createGUIButton(m_AppContext, *buttonBackground, center, 
-                                        emptyAction, ButtonNames::MuteMusic);
-        auto buttonLabel = EntityFactory::createGUIButtonLabel(m_AppContext, *font, 36, 
-                                                                sf::Color::White, "Mute Music", 
-                                                                button);
+        auto toggleMusicMute = [this, music]() { 
+            m_AppContext.m_AppSettings.toggleMusicMute();
+            if (m_AppContext.m_AppSettings.musicMuted)
+            {
+                music->play();
+            }
+            else
+            {
+                music->stop();
+            }
+        };
+        auto muteMusicButton = EntityFactory::createLabeledButton(context, *buttonBackground, 
+                                center, toggleMusicMute, *font, "Mute Music", 36);
         // Swap UI tag
-        EntityFactory::swapUITag<SettingsUITag>(m_AppContext, button);
-        EntityFactory::swapUITag<SettingsUITag>(m_AppContext, buttonLabel);
+        EntityFactory::swapUITag<SettingsUITag>(context, muteMusicButton);
     }
     else 
     {
@@ -122,13 +121,11 @@ SettingsMenuState::SettingsMenuState(AppContext& context)
     }
     
     // Lambdas to handle input
-    m_StateEvents.onMouseButtonPress = [this](const sf::Event::MouseButtonPressed& event)
-    {
+    m_StateEvents.onMouseButtonPress = [this](const sf::Event::MouseButtonPressed& event) {
         UISystems::uiClickSystem(*m_AppContext.m_Registry, event);
     };
 
-    m_StateEvents.onKeyPress = [this](const sf::Event::KeyPressed& event)
-    {
+    m_StateEvents.onKeyPress = [this](const sf::Event::KeyPressed& event) {
         if (event.scancode == sf::Keyboard::Scancode::Escape)
         {
             m_AppContext.m_MainWindow->close();
@@ -163,18 +160,17 @@ void SettingsMenuState::render()
 PlayState::PlayState(AppContext& context)
     : State(context)
 {
-    sf::Vector2f windowSize = { context.m_AppSettings.targetWidth, 
-                                context.m_AppSettings.targetHeight };
-    sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
-
     // Create game entities
-    m_DescentSpeed = EntityFactory::loadLevel(m_AppContext, context.m_AppData.levelNumber);
-    EntityFactory::createPlayer(m_AppContext);
-    EntityFactory::createBall(m_AppContext);
-    //EntityFactory::createBricks(*m_AppContext);
+    m_DescentSpeed = EntityFactory::loadLevel(context, context.m_AppData.levelNumber);
+    EntityFactory::createPlayer(context);
+    EntityFactory::createBall(context);
 
     // Create UI/HUD entities
-    sf::Font* scoreFont = m_AppContext.m_ResourceManager->getResource<sf::Font>(
+    sf::Vector2f windowSize = { context.m_AppSettings.targetWidth, 
+                                context.m_AppSettings.targetHeight };
+    sf::Vector2f center = { windowSize.x / 2.0f, windowSize.y / 2.0f };
+    
+    sf::Font* scoreFont = context.m_ResourceManager->getResource<sf::Font>(
                                                            Assets::Fonts::ScoreFont);
     if (!scoreFont)
     {
@@ -185,31 +181,32 @@ PlayState::PlayState(AppContext& context)
         unsigned int scoreFontSize{ 32 };
         sf::Vector2f scorePosition({ center.x, windowSize.y - 20.0f });
 
-        EntityFactory::createScoreDisplay(m_AppContext, *scoreFont, scoreFontSize,
+        EntityFactory::createScoreDisplay(context, *scoreFont, scoreFontSize,
                                         sf::Color::White, scorePosition);
     }
 
-    // Handle music stuff
-    m_MainMusic = m_AppContext.m_ResourceManager->getResource<sf::Music>(Assets::Musics::MainSong);
-
-    // Start music
-    if (m_MainMusic && m_MainMusic->getStatus() != sf::Music::Status::Playing)
+    // Handle Music
+    m_Music = context.m_ResourceManager->getResource<sf::Music>(Assets::Musics::MainSong);
+    if (!m_Music)
     {
-        m_MainMusic->setLooping(true);
-        m_MainMusic->play();
-        logger::Info("Playing MainSong");
+        logger::Error("Couldn't load MainSong! Music will not be played.");
     }
-    else if (!m_MainMusic)
+    else 
     {
-        logger::Warn("MainSong not found, not playing music.");
+        if (context.m_AppSettings.musicMuted)
+        {
+            logger::Info("Music muted, not playing MainSong.");
+        }
+        else
+        {
+            m_Music->setLooping(true);
+            m_Music->play();
+            logger::Info("Playing MainSong");
+        }
     }
-    else
-    {
-        logger::Warn("MainSong not playing");
-    }
-
-    m_StateEvents.onKeyPress = [this](const sf::Event::KeyPressed& event)
-    {
+  
+    // Handle Input
+    m_StateEvents.onKeyPress = [this](const sf::Event::KeyPressed& event) {
         // "Global" Escape key
         if (event.scancode == sf::Keyboard::Scancode::Escape)
         {
@@ -276,7 +273,7 @@ void PlayState::render()
 PauseState::PauseState(AppContext& context)
     : State(context)
 {
-    sf::Font* font = m_AppContext.m_ResourceManager->getResource<sf::Font>(Assets::Fonts::MainFont);
+    sf::Font* font = context.m_ResourceManager->getResource<sf::Font>(Assets::Fonts::MainFont);
 
     if (!font)
     {
@@ -294,25 +291,24 @@ PauseState::PauseState(AppContext& context)
         m_PauseText->setPosition(center);
     }
 
-    // Handle music stuff
-    auto* music = m_AppContext.m_ResourceManager->getResource<sf::Music>(Assets::Musics::MainSong);
-    bool wasMusicPlaying = (music && music->getStatus() == sf::Music::Status::Playing);
+    // Handle music
+    auto* music = context.m_ResourceManager->getResource<sf::Music>(Assets::Musics::MainSong);
+    bool isMusicPlaying = (music && music->getStatus() == sf::Music::Status::Playing);
 
-    if (wasMusicPlaying)
+    if (isMusicPlaying && music)
     {
         music->pause();
     }
 
     // Lambda to handle pause
-    m_StateEvents.onKeyPress = [this, music, wasMusicPlaying](const sf::Event::KeyPressed& event)
-    {
+    m_StateEvents.onKeyPress = [this, music, isMusicPlaying](const sf::Event::KeyPressed& event) {
         if (event.scancode == sf::Keyboard::Scancode::Escape)
         {
             m_AppContext.m_MainWindow->close();
         }
         else if (event.scancode == sf::Keyboard::Scancode::P)
         {
-            if (wasMusicPlaying && music)
+            if (isMusicPlaying && music)
             {
                 music->play();
             }
@@ -343,9 +339,9 @@ GameTransitionState::GameTransitionState(AppContext& context, TransitionType typ
 {
     sf::Vector2f windowSize = { context.m_AppSettings.targetWidth, 
                                 context.m_AppSettings.targetHeight };
-    sf::Vector2f center(windowSize.x / 2.0f, windowSize.y / 2.0f);
+    sf::Vector2f center = { windowSize.x / 2.0f, windowSize.y / 2.0f };
 
-    bool nextLevelExists = (m_AppContext.m_AppData.levelNumber < m_AppContext.m_AppData.totalLevels 
+    bool nextLevelExists = (context.m_AppData.levelNumber < context.m_AppData.totalLevels 
                             ? true : false);
 
     std::string stateMessage{};
@@ -375,7 +371,7 @@ GameTransitionState::GameTransitionState(AppContext& context, TransitionType typ
     }
 
     // "Try again" button entity
-    sf::Font* font = m_AppContext.m_ResourceManager->getResource<sf::Font>(Assets::Fonts::MainFont);
+    auto* font = context.m_ResourceManager->getResource<sf::Font>(Assets::Fonts::MainFont);
     if (font)
     {
         // Create top button
@@ -383,7 +379,7 @@ GameTransitionState::GameTransitionState(AppContext& context, TransitionType typ
         {
             case TransitionType::LevelLoss:
                 EntityFactory::createButton(
-                    m_AppContext,
+                    context,
                     *font,
                     topButtonText,
                     center,
@@ -397,7 +393,7 @@ GameTransitionState::GameTransitionState(AppContext& context, TransitionType typ
                 break;
             case TransitionType::LevelWin:
                 EntityFactory::createButton(
-                    m_AppContext,
+                    context,
                     *font,
                     topButtonText,
                     center,
@@ -415,7 +411,7 @@ GameTransitionState::GameTransitionState(AppContext& context, TransitionType typ
                 break;
             case TransitionType::GameWin:
                 EntityFactory::createButton(
-                    m_AppContext,
+                    context,
                     *font,
                     topButtonText,
                     center,
@@ -431,7 +427,7 @@ GameTransitionState::GameTransitionState(AppContext& context, TransitionType typ
 
         // make the "Quit" button
         EntityFactory::createButton(
-            m_AppContext,
+            context,
             *font,
             "Quit",
             {center.x, center.y + 150.0f},
@@ -455,7 +451,7 @@ GameTransitionState::GameTransitionState(AppContext& context, TransitionType typ
     }
 
     // Handle music stuff
-    auto* music = m_AppContext.m_ResourceManager->getResource<sf::Music>(Assets::Musics::MainSong);
+    auto* music = context.m_ResourceManager->getResource<sf::Music>(Assets::Musics::MainSong);
     bool wasMusicPlaying = (music && music->getStatus() == sf::Music::Status::Playing);
 
     if (wasMusicPlaying)
@@ -464,13 +460,11 @@ GameTransitionState::GameTransitionState(AppContext& context, TransitionType typ
     }
 
     // Lambdas to handle input
-    m_StateEvents.onMouseButtonPress = [this](const sf::Event::MouseButtonPressed& event)
-    {
+    m_StateEvents.onMouseButtonPress = [this](const sf::Event::MouseButtonPressed& event) {
         UISystems::uiClickSystem(*m_AppContext.m_Registry, event);
     };
 
-    m_StateEvents.onKeyPress = [this](const sf::Event::KeyPressed& event)
-    {
+    m_StateEvents.onKeyPress = [this](const sf::Event::KeyPressed& event) {
         if (event.scancode == sf::Keyboard::Scancode::Escape)
         {
             m_AppContext.m_MainWindow->close();
