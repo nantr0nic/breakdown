@@ -46,14 +46,14 @@ namespace EntityFactory
                                 sf::Texture& texture,
                                 sf::Vector2f position,
                                 std::function<void()> action,
-                                UITags tag = UITags::Menu,
-                                ButtonNames buttonName = ButtonNames::None);
+                                UITags tag = UITags::Menu);
 
     entt::entity createButtonLabel(AppContext& context,
                                    const entt::entity buttonEntity,
                                    sf::Font& font, const std::string& text,
                                    unsigned int size = 32,
-                                   const sf::Color& color = sf::Color::White);
+                                   const sf::Color& color = sf::Color::White,
+                                   UITags tag = UITags::Menu);
 
     entt::entity createLabeledButton(AppContext& context, 
                                     sf::Texture& texture,
@@ -63,29 +63,5 @@ namespace EntityFactory
                                     UITags tag = UITags::Menu,
                                     const std::string& text = "",
                                     unsigned int size = 32,
-                                    const sf::Color& color = sf::Color::White,
-                                    ButtonNames buttonName = ButtonNames::None);
-
-    // Helper function to swap tags, static_assert can be rewritten
-    // to allow swapping of any tag for any entity but for our purposes
-    // right now, keeping it to swapping MenuUITag and SettingsUITag
-    template <typename T>
-    void swapUITag(AppContext& context, entt::entity uiEntity)
-    {
-        auto& registry = *context.m_Registry;
-        static_assert(std::is_same_v<T, MenuUITag> || std::is_same_v<T, SettingsUITag>,
-            "Error: swapUITag only works with MenuUITag and SettingsUITag");
-
-        if constexpr (std::is_same_v<T, SettingsUITag>)
-        {
-            registry.remove<MenuUITag>(uiEntity);
-            registry.emplace<SettingsUITag>(uiEntity);
-        }
-        else
-        {
-            registry.remove<SettingsUITag>(uiEntity);
-            registry.emplace<MenuUITag>(uiEntity);
-        }
-    }
-
+                                    const sf::Color& color = sf::Color::White);
 }

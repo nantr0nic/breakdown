@@ -595,29 +595,27 @@ namespace UISystems
         }
 
         auto redXSprite = sf::Sprite(*buttonRedX);
+        utils::centerOrigin(redXSprite);
 
         auto& registry = context.m_Registry;
-        auto buttonView = registry->view<GUIButtonTag, GUISprite, GUIButtonName>();
+        
+        auto buttonView = registry->view<GUISprite, UIToggleCond>();
         for (auto buttonEntity : buttonView)
         {
-            auto buttonName = registry->get<GUIButtonName>(buttonEntity);
-            auto& buttonSprite = registry->get<GUISprite>(buttonEntity);
-            auto buttonCenter = buttonSprite.sprite.getGlobalBounds().getCenter();
-            //auto drawPosition = buttonSprite.sprite.getPosition();
-            utils::centerOrigin(redXSprite);
-            redXSprite.setPosition(buttonCenter);
-            
-            if (buttonName.name == ButtonNames::MuteMusic)
+            auto& condition = buttonView.get<UIToggleCond>(buttonEntity);
+            if (condition.shouldShowOverlay())
             {
-                if (context.m_AppSettings.musicMuted)
+                if (!registry->all_of<GUIRedX>(buttonEntity))
                 {
-                    if (!registry->all_of<GUIRedX>(buttonEntity))
-                    {
-                        registry->emplace<GUIRedX>(buttonEntity, redXSprite);
-                        logger::Info("Mute music X drawn");
-                    }
+                    auto& buttonSprite = registry->get<GUISprite>(buttonEntity);
+                    auto buttonCenter = buttonSprite.sprite.getGlobalBounds().getCenter();
+                    redXSprite.setPosition(buttonCenter);
+                    registry->emplace<GUIRedX>(buttonEntity, redXSprite);
                 }
-                else
+            }
+            else 
+            {
+                if (registry->all_of<GUIRedX>(buttonEntity))
                 {
                     registry->remove<GUIRedX>(buttonEntity);
                 }

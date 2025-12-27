@@ -87,8 +87,6 @@ struct CurrentScore { int value{ 0 }; };
 struct CurrentLives { int value{ 3 }; };
 
 //$ ----- UI Components ----- //
-
-enum class ButtonNames { None, MuteMusic };
 enum class UITags { None, Menu, Settings, Transition };
 
 // Tag to identify UI/HUD entities
@@ -110,10 +108,10 @@ struct UIBounds { sf::FloatRect rect; };
 
 struct UIAction { std::function<void()> action; };
 
+struct UIToggleCond { std::function<bool()> shouldShowOverlay; };
+
 struct GUISprite { sf::Sprite sprite; };
 
 struct GUIRedX { sf::Sprite sprite; };
 
 struct GUITexture { sf::Texture texture; };
-
-struct GUIButtonName { ButtonNames name; };

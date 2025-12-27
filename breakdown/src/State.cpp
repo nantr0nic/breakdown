@@ -119,7 +119,10 @@ SettingsMenuState::SettingsMenuState(AppContext& context)
         auto toggleMusicMute = [this]() { m_AppContext.m_AppSettings.toggleMusicMute(); };
         auto muteMusicButton = EntityFactory::createLabeledButton(context, *buttonBackground,
                                 center, toggleMusicMute, *font, UITags::Settings, "Mute Music",
-                                36, sf::Color::White, ButtonNames::MuteMusic);
+                                36, sf::Color::White);
+        m_AppContext.m_Registry->emplace<UIToggleCond>(muteMusicButton, [this]() {
+            return m_AppContext.m_AppSettings.musicMuted;
+        });
 
         sf::Vector2f backButtonSize = { 150.0f, 50.0f };
         auto backButton = EntityFactory::createButton(context, *font, "Back",

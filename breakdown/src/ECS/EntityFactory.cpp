@@ -382,8 +382,7 @@ namespace EntityFactory
 
     entt::entity createGUIButton(AppContext& context, sf::Texture& texture,
                                 sf::Vector2f position,
-                                std::function<void()> action, UITags tag,
-                                ButtonNames buttonName)
+                                std::function<void()> action, UITags tag)
     {
         auto& registry = *context.m_Registry;
         auto buttonEntity = registry.create();
@@ -415,19 +414,30 @@ namespace EntityFactory
         // Clickable component
         registry.emplace<UIAction>(buttonEntity, std::move(action));
         
-        registry.emplace<GUIButtonName>(buttonEntity, buttonName); // to identify
-        
         logger::Info("Button created");
         return buttonEntity;
     }
     
     entt::entity createButtonLabel(AppContext& context, const entt::entity buttonEntity,
                                 sf::Font& font, const std::string& text, 
-                                unsigned int size, const sf::Color& color)
+                                unsigned int size, const sf::Color& color, UITags tag)
     {
         auto& registry = *context.m_Registry;
         auto labelEntity = registry.create();
-        registry.emplace<MenuUITag>(labelEntity);
+        switch (tag)
+        {
+            case UITags::Menu:
+                registry.emplace<MenuUITag>(labelEntity); 
+                break;
+            case UITags::Settings:
+                registry.emplace<SettingsUITag>(labelEntity); 
+                break;
+            case UITags::Transition:
+                registry.emplace<TransUITag>(labelEntity); 
+                break;
+            default:
+                break;
+        }
         
         // We'll assume the label goes to the left (for now)
         auto& buttonBounds = registry.get<UIBounds>(buttonEntity);
@@ -458,8 +468,7 @@ namespace EntityFactory
     entt::entity createLabeledButton(AppContext &context, sf::Texture &texture, 
                                 sf::Vector2f position, std::function<void ()> action,
                                 sf::Font& font, UITags tag, const std::string& text, 
-                                unsigned int size, const sf::Color& color, 
-                                ButtonNames buttonName)
+                                unsigned int size, const sf::Color& color)
     {
         auto& registry = *context.m_Registry;
         auto buttonEntity = registry.create();
@@ -492,8 +501,6 @@ namespace EntityFactory
 
         // Clickable component
         registry.emplace<UIAction>(buttonEntity, std::move(action));
-        
-        registry.emplace<GUIButtonName>(buttonEntity, buttonName); // to identify
         
         // Label text
         auto& labelText = registry.emplace<UIText>(buttonEntity, sf::Text(font, text, size));
