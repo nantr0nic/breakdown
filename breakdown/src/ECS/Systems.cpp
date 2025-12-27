@@ -486,26 +486,6 @@ namespace CoreSystems
 namespace UISystems
 {
     //$ --- UI Systems Implementation ---
-
-    void uiHoverSystem(entt::registry& registry, sf::RenderWindow& window)
-    {
-        sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-        auto view = registry.view<UIBounds>();
-
-        for (auto entity : view)
-        {
-            const auto& bounds = view.get<UIBounds>(entity);
-            if (bounds.rect.contains(mousePos))
-            {
-                registry.emplace_or_replace<UIHover>(entity);
-            }
-            else if (registry.all_of<UIHover>(entity))
-            {
-                registry.remove<UIHover>(entity);
-            }
-        }
-    }
-
     void uiRenderSystem(entt::registry& registry, sf::RenderWindow& window)
     {
         // Render shapes
@@ -575,6 +555,52 @@ namespace UISystems
         else
         {
             // empty
+        }
+    }
+    
+    void uiHoverSystem(entt::registry& registry, sf::RenderWindow& window)
+    {
+        sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+        auto view = registry.view<UIBounds>();
+
+        for (auto entity : view)
+        {
+            const auto& bounds = view.get<UIBounds>(entity);
+            if (bounds.rect.contains(mousePos))
+            {
+                registry.emplace_or_replace<UIHover>(entity);
+            }
+            else if (registry.all_of<UIHover>(entity))
+            {
+                registry.remove<UIHover>(entity);
+            }
+        }
+    }
+    
+    void uiSettingsChecks(AppContext& context)
+    {
+        auto* buttonRedX = context.m_ResourceManager->getResource<sf::Texture>(
+                                                                Assets::Textures::ButtonRedX);
+        if (!buttonRedX)
+        {
+            return;
+        }
+        
+        auto redXSprite = sf::Sprite(*buttonRedX);
+        
+        auto& registry = context.m_Registry;
+        auto buttonView = registry->view<GUIButtonTag, GUISprite, ButtonNames>();
+        for (auto buttonEntity : buttonView)
+        {
+            auto buttonName = registry->get<ButtonNames>(buttonEntity);
+            if (buttonName == ButtonNames::MuteMusic)
+            {
+                if (context.m_AppSettings.musicMuted)
+                {
+                    registry->emplace<GUISprite>(buttonEntity, redXSprite);
+                    logger::Info("Mute music X drawn");
+                }
+            }
         }
     }
 }

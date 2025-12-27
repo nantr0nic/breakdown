@@ -333,16 +333,31 @@ namespace EntityFactory
     //$ ----- G/UI ----- //
     entt::entity createButton(AppContext& context, sf::Font& font,
                             const std::string& text, sf::Vector2f position,
-                            std::function<void()> action)
+                            std::function<void()> action,
+                            UITags tag, sf::Vector2f size)
     {
         auto& registry = *context.m_Registry;
 
         auto buttonEntity = registry.create();
-        registry.emplace<MenuUITag>(buttonEntity); // Tag for easy cleanup
+        
+        switch (tag)
+        {
+            case UITags::Menu:
+                registry.emplace<MenuUITag>(buttonEntity); 
+                break;
+            case UITags::Settings:
+                registry.emplace<SettingsUITag>(buttonEntity); 
+                break;
+            case UITags::Transition:
+                registry.emplace<TransUITag>(buttonEntity); 
+                break;
+            default:
+                break;
+        }
 
         // Shape component
         auto& buttonShape = registry.emplace<UIShape>(buttonEntity);
-        buttonShape.shape.setSize({250.f, 100.f});
+        buttonShape.shape.setSize(size);
         buttonShape.shape.setFillColor(sf::Color::Blue);
         utils::centerOrigin(buttonShape.shape);
         buttonShape.shape.setPosition(position);
@@ -367,13 +382,27 @@ namespace EntityFactory
 
     entt::entity createGUIButton(AppContext& context, sf::Texture& texture,
                                 sf::Vector2f position,
-                                std::function<void()> action,
+                                std::function<void()> action, UITags tag,
                                 ButtonNames buttonName)
     {
         auto& registry = *context.m_Registry;
         auto buttonEntity = registry.create();
         
-        registry.emplace<MenuUITag>(buttonEntity);
+        switch (tag)
+        {
+            case UITags::Menu:
+                registry.emplace<MenuUITag>(buttonEntity); 
+                break;
+            case UITags::Settings:
+                registry.emplace<SettingsUITag>(buttonEntity); 
+                break;
+            case UITags::Transition:
+                registry.emplace<TransUITag>(buttonEntity); 
+                break;
+            default:
+                break;
+        }
+        
         registry.emplace<GUIButtonTag>(buttonEntity);
         
         sf::Sprite buttonSprite(texture);
@@ -428,14 +457,28 @@ namespace EntityFactory
     
     entt::entity createLabeledButton(AppContext &context, sf::Texture &texture, 
                                 sf::Vector2f position, std::function<void ()> action,
-                                sf::Font& font, const std::string& text, 
+                                sf::Font& font, UITags tag, const std::string& text, 
                                 unsigned int size, const sf::Color& color, 
                                 ButtonNames buttonName)
     {
         auto& registry = *context.m_Registry;
         auto buttonEntity = registry.create();
         
-        registry.emplace<MenuUITag>(buttonEntity);
+        switch (tag)
+        {
+            case UITags::Menu:
+                registry.emplace<MenuUITag>(buttonEntity);
+                break;
+            case UITags::Settings:
+                registry.emplace<SettingsUITag>(buttonEntity);
+                break;
+            case UITags::Transition:
+                registry.emplace<TransUITag>(buttonEntity);
+                break;
+            default:
+                break;
+        }
+        
         registry.emplace<GUIButtonTag>(buttonEntity);
         
         sf::Sprite buttonSprite(texture);

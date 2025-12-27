@@ -49,7 +49,7 @@ public:
     virtual void render() override;
 
 private:
-    // Empty
+    std::optional<sf::Text> m_TitleText;
 };
 
 class SettingsMenuState : public State

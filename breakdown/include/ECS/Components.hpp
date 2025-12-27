@@ -89,11 +89,14 @@ struct CurrentLives { int value{ 3 }; };
 //$ ----- UI Components ----- //
 
 enum class ButtonNames { None, MuteMusic };
+enum class UITags { None, Menu, Settings, Transition };
 
 // Tag to identify UI/HUD entities
 struct MenuUITag {};
 struct SettingsUITag {};
-struct HUDTag{};
+struct TransUITag {};
+
+struct HUDTag {};
 struct ScoreHUDTag {};
 struct GUIButtonTag {};
 
@@ -108,6 +111,8 @@ struct UIBounds { sf::FloatRect rect; };
 struct UIAction { std::function<void()> action; };
 
 struct GUISprite { sf::Sprite sprite; };
+
+struct GUIRedX { sf::Sprite sprite; };
 
 struct GUITexture { sf::Texture texture; };
 
