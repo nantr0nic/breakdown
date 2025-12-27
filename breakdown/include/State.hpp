@@ -36,7 +36,14 @@ public:
 
 protected:
     AppContext& m_AppContext;
-    StateEvents m_StateEvents;  // each state will have its own StateEvents instance
+    StateEvents m_StateEvents;
+    
+    sf::Vector2f getWindowCenter() const noexcept
+    {
+        sf::Vector2f windowSize = { m_AppContext.m_AppSettings.targetWidth,
+                                    m_AppContext.m_AppSettings.targetHeight };
+        return { windowSize.x / 2.0f, windowSize.y / 2.0f };
+    }
 };
 
 class MenuState : public State
@@ -50,6 +57,11 @@ public:
 
 private:
     std::optional<sf::Text> m_TitleText;
+    
+private:
+    void initTitleText();
+    void initMenuButtons();
+    void assignStateEvents();
 };
 
 class SettingsMenuState : public State
@@ -62,7 +74,8 @@ public:
     virtual void render() override;
 
 private:
-    // Empty
+    void initMenuButtons();
+    void assignStateEvents();
 };
 
 class PlayState : public State
@@ -107,4 +120,9 @@ public:
 
 private:
     std::optional<sf::Text> m_TransitionText;
+    
+private:
+    void initTitleText(TransitionType type);
+    void initMenuButtons(TransitionType type);
+    void assignStateEvents();
 };
