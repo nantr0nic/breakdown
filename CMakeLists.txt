@@ -62,8 +62,7 @@ add_executable(breakdown
     "breakdown/src/Utilities/Utils.cpp"
 )
 
-# This runs every time the breakdown target is built.
-# It will copy the resources to the build directory
+# This will copy the resources to the build directory
 add_custom_target(CopyAssets ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/breakdown/resources"
@@ -149,9 +148,10 @@ target_precompile_headers(breakdown PRIVATE
 )
 
 # ------------------ #
-#   MSVC  Settings   #
+#  Platform Config   #
 # ------------------ #
 
+# ----- MSVC  Settings ----- #
 # This should hopefully mitigate any false 'trojan' flags by Windows Defender
 if(MSVC)
     target_compile_options(breakdown PRIVATE "/std:c++latest" /Zi /GL /guard:cf /Gy)
@@ -160,3 +160,56 @@ if(MSVC)
         MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
     )
 endif()
+
+# ----- Windows Settings ----- #
+# Default to OFF (No console) for final game. 
+# Turn this ON to enable console window on Windows Release builds to see log output
+option(SHOW_CONSOLE "Show console window on Windows Release builds" OFF)
+
+if(WIN32)
+    if(SHOW_CONSOLE)
+        # 1. CONSOLE MODE
+        message(STATUS "Windows Build: Console Window ENABLED")
+    else()
+        # 2. GUI MODE
+        set_target_properties(breakdown PROPERTIES WIN32_EXECUTABLE ON)
+        
+        # Link SFML::Main to provide the 'WinMain' entry point required by GUI apps
+        target_link_libraries(breakdown PRIVATE SFML::Main)
+        
+        message(STATUS "Windows Build: Console Window DISABLED (GUI Mode)")
+    endif()
+endif()
+
+# ----- Linux Packaging ----- #
+
+# ------------------ #
+#    Installation    #
+# ------------------ #
+# This isn't the correct way to do this but it works for now.
+# It is going to put resources and config into the same directory
+# as the executable rather than in a separate share/breakdown or ~/.config/breakdown
+install(TARGETS breakdown DESTINATION .)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/breakdown/resources" DESTINATION .)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/breakdown/config" DESTINATION .)
+
+# ------------------ #
+#      Packaging     #
+# ------------------ #
+
+# Set package metadata
+set(CPACK_PACKAGE_NAME "breakdown")
+set(CPACK_PACKAGE_VENDOR "nantr0nic")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A configurable breakout game where the bricks descend.")
+set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_PACKAGE_CONTACT "nantr0nic")
+
+# Set the Generator (TGZ = .tar.gz)
+set(CPACK_GENERATOR "TGZ")
+
+# Configure the structure inside the tarball
+# This makes it so when they extract it, they get a folder named "breakdown-1.0.0-Linux"
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}")
+
+# This includes CPack and generates the packaging targets
+include(CPack)

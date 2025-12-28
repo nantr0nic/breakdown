@@ -24,32 +24,46 @@
 ############################################
 
 # The total number of levels
-totalLevels = 4
+# Don't forget to update this if you add/remove levels!
+totalLevels = 7
 
 # If you add levels, the section MUST be named level_NUMBER
 [level_1]
 brickWidth = 120.0
 brickHeight = 40.0
-descentSpeed = 15.5
+descentSpeed = 18.0
 layout = [
-    "....GG....", # Don't forget the comma if there is more than one row!
-    "....SS...." 
+    "..N....N..", # Don't forget the comma if there is more than one row!
+    "...N..N...",
+    "....NN...."
 ]
 
 [level_2]
 brickWidth = 120.0
 brickHeight = 40.0
-descentSpeed = 5.0
+descentSpeed = 15.0
 layout = [
-    "..N.N.N...",
-    "...G.G.G..",
-    "..N.N.N..."  # But do NOT add a comma on the last row
+    "N...SS...N",
+    ".G......G.",
+    "N........N"  # But do NOT add a comma on the last row
 ]
 
 [level_3]
+brickWidth = 120.0
+brickHeight = 40.0
+descentSpeed = 10.0
+layout = [
+    "N........N",
+    "N.X....X.N",
+    "N..Y..Y..N",
+    "N........N",
+    "....GG...."  # But do NOT add a comma on the last row
+]
+
+[level_4]
 brickWidth = 60.0
 brickHeight = 20.0
-descentSpeed = 2.5
+descentSpeed = 12.0
 layout = [
     "G........G........G", 
     "........Y.Y........",
@@ -58,14 +72,41 @@ layout = [
     "..................."
 ]
 
-[level_4]
+[level_5]
 brickWidth = 60.0
 brickHeight = 20.0
-descentSpeed = 0.0
+descentSpeed = 5.0
 layout = [
-    "XY.......G.......YX",
-    "..Y......S......Y..",
-    "...X.....G.....X...",
-    "....Y....G....Y....",
-    ".....Y...S...Y....."   # <-- look at there NOT being a comma!
+    "X...XYYYYX...XYYYYY",
+    "XX..XY..YXX..X..Y..",
+    "X.X.XYYYYX.X.X..Y..",
+    "X..XXY..YX..XX..Y..",
+    "X...XY..YX...X..Y..",
+    "..................." # <-- look at there NOT being a comma!
+]
+
+[level_6]
+brickWidth = 60.0
+brickHeight = 20.0
+descentSpeed = 5.0
+layout = [
+    "NNN....G...G....XXX",
+    "NSN...G.....G...XYX",
+    "NNN..G.......G..XXX",
+    "...NNNNNNNNNNNNN...",
+    "..................."
+]
+
+[level_7]
+brickWidth = 60.0
+brickHeight = 20.0
+descentSpeed = 5.0
+layout = [
+    ".......GGGG........",
+    ".....GG....GG......",
+    "....G..Y..Y..G.....",
+    "....G.X....X.G.....",
+    "....G..XXXX..G.....",
+    ".....GG....GG......",
+    ".......GGGG........"
 ]

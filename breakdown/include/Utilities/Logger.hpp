@@ -27,9 +27,12 @@ namespace logger
         constexpr std::string_view White = "\033[37m";
     }
 
-    // For release builds, only print Error logs
+    // Option for modifying log level
     #ifdef NDEBUG
-        inline LogLevel currentLevel = LogLevel::Error;
+        // uncomment the line beneath to restrict release builds to print only Error logs
+        // inline LogLevel currentLevel = LogLevel::Error;
+        // if you uncomment the line above, then comment the line below
+        inline LogLevel currentLevel = LogLevel::Info;
     #else
     // For non-release builds, we'll print Warning and Info logs too
         inline LogLevel currentLevel = LogLevel::Info;

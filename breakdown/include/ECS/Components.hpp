@@ -21,7 +21,7 @@ struct Velocity { sf::Vector2f value{ 0.0f, 0.0f }; };
 struct MovementSpeed { float value{ 0.0f }; };
 
 //$ Ball component
-struct Ball 
+struct Ball
 {
     Ball(float radius, const sf::Color& color, sf::Vector2f position)
         : shape()
@@ -32,7 +32,7 @@ struct Ball
         shape.setPosition(position);
     }
 
-    sf::CircleShape shape; 
+    sf::CircleShape shape;
 };
 
 //$ Paddle component
@@ -50,7 +50,7 @@ struct Paddle
     sf::RectangleShape shape;
 };
 
-struct ConfineToWindow 
+struct ConfineToWindow
 {
     float padLeft{ 1.0f };
     float padRight{ 1.0f };
@@ -58,13 +58,6 @@ struct ConfineToWindow
 
 //$ ----- Brick Components ----- //
 enum class BrickType { Normal, Strong, Gold, Custom_1, Custom_2 };
-namespace BrickColors 
-{
-    constexpr sf::Color Normal{ 66, 170, 139 };
-    constexpr sf::Color Strong{ 87, 117, 144 };
-    constexpr sf::Color StrongDamaged{ 76, 144, 142 };
-    constexpr sf::Color Gold{ 249, 199, 79 };
-}
 
 struct Brick
 {
@@ -84,7 +77,6 @@ struct BrickHealth { int current{ 1 }; int max{ 1 }; };
 
 //$ ----- Game Data ----- //
 struct CurrentScore { int value{ 0 }; };
-struct CurrentLives { int value{ 3 }; };
 
 //$ ----- UI Components ----- //
 enum class UITags { None, Menu, Settings, Transition };
