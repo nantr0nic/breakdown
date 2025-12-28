@@ -68,7 +68,7 @@ sudo dnf install gcc-c++ cmake libX11-devel libXrandr-devel libXcursor-devel lib
 ```
 **Arch Linux:**
 ```bash
-sudo pacman -S base-devel cmake git libx11 libxrandr libxcursor libxi mesa freetype2 openal flac libvorbis
+sudo pacman -S base-devel cmake git libx11 libxrandr libxcursor libxi mesa freetype2 openal flac libvorbis libsndfile
 ```
 
 ### Build options

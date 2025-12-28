@@ -100,7 +100,7 @@ namespace EntityFactory
         return ballEntity;
     }
 
-    entt::entity createABrick(AppContext& context, sf::Vector2f size, 
+    entt::entity createABrick(AppContext& context, sf::Vector2f size,
                               sf::Vector2f position, BrickType type)
     {
         auto& registry = *context.m_Registry;
@@ -123,7 +123,7 @@ namespace EntityFactory
                                   Assets::Configs::Bricks, "normal", "scoreValue").value_or(5);
                 brickHealthMax = context.m_ConfigManager->getConfigValue<int>(
                                   Assets::Configs::Bricks, "normal", "healthMax").value_or(1);
-                color = utils::loadColorFromConfig(*context.m_ConfigManager, 
+                color = utils::loadColorFromConfig(*context.m_ConfigManager,
                         Assets::Configs::Bricks, "normal", "normalRGB");
                 break;
             case BrickType::Strong:
@@ -131,7 +131,7 @@ namespace EntityFactory
                                   Assets::Configs::Bricks, "strong", "scoreValue").value_or(10);
                 brickHealthMax = context.m_ConfigManager->getConfigValue<int>(
                                   Assets::Configs::Bricks, "strong", "healthMax").value_or(2);
-                color = utils::loadColorFromConfig(*context.m_ConfigManager, 
+                color = utils::loadColorFromConfig(*context.m_ConfigManager,
                         Assets::Configs::Bricks, "strong", "strongRGB");
                 break;
             case BrickType::Gold:
@@ -139,7 +139,7 @@ namespace EntityFactory
                                   Assets::Configs::Bricks, "gold", "scoreValue").value_or(20);
                 brickHealthMax = context.m_ConfigManager->getConfigValue<int>(
                                   Assets::Configs::Bricks, "gold", "healthMax").value_or(1);
-                color = utils::loadColorFromConfig(*context.m_ConfigManager, 
+                color = utils::loadColorFromConfig(*context.m_ConfigManager,
                         Assets::Configs::Bricks, "gold", "goldRGB");
                 break;
             case BrickType::Custom_1:
@@ -147,7 +147,7 @@ namespace EntityFactory
                                   Assets::Configs::Bricks, "custom_1", "scoreValue").value_or(0);
                 brickHealthMax = context.m_ConfigManager->getConfigValue<int>(
                                   Assets::Configs::Bricks, "custom_1", "healthMax").value_or(0);
-                color = utils::loadColorFromConfig(*context.m_ConfigManager, 
+                color = utils::loadColorFromConfig(*context.m_ConfigManager,
                         Assets::Configs::Bricks, "custom_1", "custom_1RGB");
                 break;
             case BrickType::Custom_2:
@@ -155,7 +155,7 @@ namespace EntityFactory
                                   Assets::Configs::Bricks, "custom_2", "scoreValue").value_or(0);
                 brickHealthMax = context.m_ConfigManager->getConfigValue<int>(
                                   Assets::Configs::Bricks, "custom_2", "healthMax").value_or(0);
-                color = utils::loadColorFromConfig(*context.m_ConfigManager, 
+                color = utils::loadColorFromConfig(*context.m_ConfigManager,
                         Assets::Configs::Bricks, "custom_2", "custom_2RGB");
                 break;
             default:
@@ -175,7 +175,7 @@ namespace EntityFactory
     {
         auto& registry = *context.m_Registry;
         auto& window = *context.m_MainWindow;
-        sf::Vector2f windowSize = { context.m_AppSettings.targetWidth, 
+        sf::Vector2f windowSize = { context.m_AppSettings.targetWidth,
                                     context.m_AppSettings.targetHeight };
 
         sf::Vector2f spawnStartXY{ 20.0f, 10.0f };
@@ -184,7 +184,7 @@ namespace EntityFactory
 
         float availableWidth = windowSize.x - spawnStartXY.x;
         float availableHeight = windowSize.y - (spawnStartXY.y * 2.0f);
-        int bricksPerRow = static_cast<int>((availableWidth + brickSpacing) 
+        int bricksPerRow = static_cast<int>((availableWidth + brickSpacing)
                                             / (brickSize.x + brickSpacing));
         int rows = 3;
 
@@ -204,7 +204,7 @@ namespace EntityFactory
             {
                 sf::Vector2f brickPosition;
 
-                brickPosition.x = spawnStartXY.x + rowOffsetX + 
+                brickPosition.x = spawnStartXY.x + rowOffsetX +
                                   (brick * (brickSize.x + brickSpacing));
                 brickPosition.y = spawnStartXY.y + (row * (brickSize.y + brickSpacing));
                 if (brick % 3 == 0)
@@ -265,7 +265,7 @@ namespace EntityFactory
 
                 // . and ' ' are empty spaces
                 if (typeChar == '.' || typeChar == ' ')
-                { 
+                {
                     continue;
                 }
 
@@ -277,14 +277,14 @@ namespace EntityFactory
                 BrickType type = BrickType::Normal;
                 switch (typeChar)
                 {
-                    case 'S': 
-                        type = BrickType::Strong; 
+                    case 'S':
+                        type = BrickType::Strong;
                         break;
-                    case 'G': 
-                        type = BrickType::Gold;   
+                    case 'G':
+                        type = BrickType::Gold;
                         break;
-                    case 'N': 
-                        type = BrickType::Normal; 
+                    case 'N':
+                        type = BrickType::Normal;
                         break;
                     case 'X':
                         type = BrickType::Custom_1;
@@ -292,24 +292,24 @@ namespace EntityFactory
                     case 'Y':
                         type = BrickType::Custom_2;
                         break;
-                    default:  
-                        type = BrickType::Normal; 
+                    default:
+                        type = BrickType::Normal;
                         break;
                 }
 
                 createABrick(context, brickSize, pos, type);
             }
         }
-        
-        logger::Info(std::format("Level {} loaded successfully. Level speed: {}", 
+
+        logger::Info(std::format("Level {} loaded successfully. Level speed: {}",
                                 levelNumber, descentSpeed));
 
         return descentSpeed;
     }
-    
+
     //$ ----- HUD ----- //
-    entt::entity createScoreDisplay(AppContext &context, sf::Font& font, 
-                                    unsigned int size, const sf::Color& color, 
+    entt::entity createScoreDisplay(AppContext &context, sf::Font& font,
+                                    unsigned int size, const sf::Color& color,
                                     sf::Vector2f position)
     {
         auto& registry = *context.m_Registry;
@@ -339,20 +339,20 @@ namespace EntityFactory
         auto& registry = *context.m_Registry;
 
         auto buttonEntity = registry.create();
-        
+
         switch (tag)
         {
             case UITags::Menu:
-                registry.emplace<MenuUITag>(buttonEntity); 
+                registry.emplace<MenuUITag>(buttonEntity);
                 break;
             case UITags::Settings:
-                registry.emplace<SettingsUITag>(buttonEntity); 
+                registry.emplace<SettingsUITag>(buttonEntity);
                 break;
             case UITags::Transition:
-                registry.emplace<TransUITag>(buttonEntity); 
+                registry.emplace<TransUITag>(buttonEntity);
                 break;
             case UITags::Pause:
-                registry.emplace<PauseUITag>(buttonEntity); 
+                registry.emplace<PauseUITag>(buttonEntity);
                 break;
             default:
                 break;
@@ -379,7 +379,7 @@ namespace EntityFactory
 
         // Clickable component
         registry.emplace<UIAction>(buttonEntity, std::move(action));
-        
+
         return buttonEntity;
     }
 
@@ -389,43 +389,42 @@ namespace EntityFactory
     {
         auto& registry = *context.m_Registry;
         auto buttonEntity = registry.create();
-        
+
         switch (tag)
         {
             case UITags::Menu:
-                registry.emplace<MenuUITag>(buttonEntity); 
+                registry.emplace<MenuUITag>(buttonEntity);
                 break;
             case UITags::Settings:
-                registry.emplace<SettingsUITag>(buttonEntity); 
+                registry.emplace<SettingsUITag>(buttonEntity);
                 break;
             case UITags::Transition:
-                registry.emplace<TransUITag>(buttonEntity); 
+                registry.emplace<TransUITag>(buttonEntity);
                 break;
             case UITags::Pause:
-                registry.emplace<PauseUITag>(buttonEntity); 
+                registry.emplace<PauseUITag>(buttonEntity);
                 break;
             default:
                 break;
         }
-        
+
         registry.emplace<GUIButtonTag>(buttonEntity);
-        
+
         sf::Sprite buttonSprite(texture);
         buttonSprite.setPosition(position);
         registry.emplace<GUISprite>(buttonEntity, std::move(buttonSprite));
-        
+
         // Bounds component
         registry.emplace<UIBounds>(buttonEntity, buttonSprite.getGlobalBounds());
 
         // Clickable component
         registry.emplace<UIAction>(buttonEntity, std::move(action));
-        
-        logger::Info("Button created");
+
         return buttonEntity;
     }
-    
+
     entt::entity createButtonLabel(AppContext& context, const entt::entity buttonEntity,
-                                sf::Font& font, const std::string& text, 
+                                sf::Font& font, const std::string& text,
                                 unsigned int size, const sf::Color& color, UITags tag)
     {
         auto& registry = *context.m_Registry;
@@ -433,55 +432,55 @@ namespace EntityFactory
         switch (tag)
         {
             case UITags::Menu:
-                registry.emplace<MenuUITag>(labelEntity); 
+                registry.emplace<MenuUITag>(labelEntity);
                 break;
             case UITags::Settings:
-                registry.emplace<SettingsUITag>(labelEntity); 
+                registry.emplace<SettingsUITag>(labelEntity);
                 break;
             case UITags::Transition:
-                registry.emplace<TransUITag>(labelEntity); 
+                registry.emplace<TransUITag>(labelEntity);
                 break;
             case UITags::Pause:
-                registry.emplace<PauseUITag>(labelEntity); 
+                registry.emplace<PauseUITag>(labelEntity);
                 break;
             default:
                 break;
         }
-        
+
         // We'll assume the label goes to the left (for now)
         auto& buttonBounds = registry.get<UIBounds>(buttonEntity);
         sf::FloatRect buttonRect = buttonBounds.rect;
-        
+
         auto& labelText = registry.emplace<UIText>(labelEntity, sf::Text(font, text, size));
         labelText.text.setFillColor(color);
-        
+
         sf::FloatRect textBounds = labelText.text.getLocalBounds();
-        
+
         // set origin to RIGHT-CENTER of the text
         sf::Vector2f origin;
         origin.x = textBounds.position.x + textBounds.size.x; // far right edge
         origin.y = textBounds.position.y + (textBounds.size.y / 2.0f);
         labelText.text.setOrigin(origin);
-        
+
         float labelPadding = 10.0f;
-        
+
         sf::Vector2f position;
         position.x = buttonRect.position.x - labelPadding; // left of the button
         position.y = buttonRect.position.y + (buttonRect.size.y / 2.0f);
-        
+
         labelText.text.setPosition(position);
-        
+
         return labelEntity;
     }
-    
-    entt::entity createLabeledButton(AppContext &context, sf::Texture &texture, 
+
+    entt::entity createLabeledButton(AppContext &context, sf::Texture &texture,
                                 sf::Vector2f position, std::function<void ()> action,
-                                sf::Font& font, UITags tag, const std::string& text, 
+                                sf::Font& font, UITags tag, const std::string& text,
                                 unsigned int size, const sf::Color& color)
     {
         auto& registry = *context.m_Registry;
         auto buttonEntity = registry.create();
-        
+
         switch (tag)
         {
             case UITags::Menu:
@@ -496,40 +495,40 @@ namespace EntityFactory
             default:
                 break;
         }
-        
+
         registry.emplace<GUIButtonTag>(buttonEntity);
-        
+
         sf::Sprite buttonSprite(texture);
         buttonSprite.setPosition(position);
         registry.emplace<GUISprite>(buttonEntity, std::move(buttonSprite));
-        
+
         // Bounds component
-        auto& buttonBounds = registry.emplace<UIBounds>(buttonEntity, 
+        auto& buttonBounds = registry.emplace<UIBounds>(buttonEntity,
                              buttonSprite.getGlobalBounds());
         sf::FloatRect buttonRect = buttonBounds.rect;
 
         // Clickable component
         registry.emplace<UIAction>(buttonEntity, std::move(action));
-        
+
         // Label text
         auto& labelText = registry.emplace<UIText>(buttonEntity, sf::Text(font, text, size));
         labelText.text.setFillColor(color);
-        
+
         sf::FloatRect textBounds = labelText.text.getLocalBounds();
-        
+
         sf::Vector2f origin;
         origin.x = textBounds.position.x + textBounds.size.x; // far right edge
         origin.y = textBounds.position.y + (textBounds.size.y / 2.0f);
         labelText.text.setOrigin(origin);
-        
+
         float labelPadding = 10.0f;
-        
+
         sf::Vector2f labelPosition;
         labelPosition.x = buttonRect.position.x - labelPadding; // left of the button
         labelPosition.y = buttonRect.position.y + (buttonRect.size.y / 2.0f);
-        
+
         labelText.text.setPosition(labelPosition);
-        
+
         return buttonEntity;
     }
 }
