@@ -412,10 +412,11 @@ namespace EntityFactory
 
         sf::Sprite buttonSprite(texture);
         buttonSprite.setPosition(position);
+        sf::FloatRect bounds = buttonSprite.getGlobalBounds();
         registry.emplace<GUISprite>(buttonEntity, std::move(buttonSprite));
 
         // Bounds component
-        registry.emplace<UIBounds>(buttonEntity, buttonSprite.getGlobalBounds());
+        registry.emplace<UIBounds>(buttonEntity, bounds);
 
         // Clickable component
         registry.emplace<UIAction>(buttonEntity, std::move(action));
@@ -500,11 +501,11 @@ namespace EntityFactory
 
         sf::Sprite buttonSprite(texture);
         buttonSprite.setPosition(position);
+        sf::FloatRect bounds = buttonSprite.getGlobalBounds();
         registry.emplace<GUISprite>(buttonEntity, std::move(buttonSprite));
 
         // Bounds component
-        auto& buttonBounds = registry.emplace<UIBounds>(buttonEntity,
-                             buttonSprite.getGlobalBounds());
+        auto& buttonBounds = registry.emplace<UIBounds>(buttonEntity, bounds);
         sf::FloatRect buttonRect = buttonBounds.rect;
 
         // Clickable component

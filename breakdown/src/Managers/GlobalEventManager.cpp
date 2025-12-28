@@ -24,21 +24,6 @@ GlobalEventManager::GlobalEventManager(AppContext* context)
 			logger::Info("Escape key pressed! Exiting.");
 			context->m_MainWindow->close();
 		}
-		else if (event.scancode == sf::Keyboard::Scancode::M)
-		{
-			if (auto* music = context->m_ResourceManager->getResource<sf::Music>("MainSong"))
-			{
-				if (music->getStatus() == sf::Music::Status::Playing)
-				{
-					music->pause();
-					context->m_AppSettings.toggleMusicMute();
-				}
-				else
-				{
-					music->play();
-				}
-			}
-		}
 	};
 	
 }

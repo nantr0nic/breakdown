@@ -18,7 +18,7 @@ Classic breakdown game but with a descending mechanic. **Fully configurable**: t
 ## Keymap
 * Shoot the ball with the ``spacebar``.
 * Move the paddle with ``A`` and ``D``.
-* Turn music on/off with ``M``.
+* Pause the game and access settings with ``P``.
 * Terminate the game with ``Escape``.
 
 ## Next features
