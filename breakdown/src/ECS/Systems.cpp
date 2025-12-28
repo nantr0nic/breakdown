@@ -454,6 +454,11 @@ namespace CoreSystems
 
     void playSound(AppContext& context, std::string_view soundID)
     {
+        if (context.m_AppSettings.sfxMuted)
+        {
+            return;
+        }
+
         // remove sounds that are done playing
         context.m_AppData.activeSounds.remove_if([](const sf::Sound& sound) {
             return sound.getStatus() == sf::Sound::Status::Stopped;
@@ -469,6 +474,7 @@ namespace CoreSystems
 
         // Add it to the list and play it
         context.m_AppData.activeSounds.emplace_back(*sound);
+        context.m_AppData.activeSounds.back().setVolume(context.m_AppSettings.sfxVolume);
         context.m_AppData.activeSounds.back().play();
     }
 

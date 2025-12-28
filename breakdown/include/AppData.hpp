@@ -27,6 +27,10 @@ struct AppData
 
 struct AppSettings
 {
+    // Resolution target settings
+    float targetWidth{ 1280.0f };
+    float targetHeight{ 720.0f };
+    
     // Audio settings
     bool musicMuted{ false };
     bool sfxMuted{ false };
@@ -39,7 +43,54 @@ struct AppSettings
         logger::Info(std::format("Music muted: {}", musicMuted ? "true" : "false"));
     }
     
-    // Resolution target settings
-    float targetWidth{ 1280.0f };
-    float targetHeight{ 720.0f };
+    void toggleSfxMute()
+    {
+        sfxMuted = !sfxMuted;
+        logger::Info(std::format("SFX muted: {}", sfxMuted ? "true" : "false"));
+    }
+    
+    float getMusicVolume()
+    {
+        logger::Info(std::format("Music volume: {}", musicVolume));
+        return musicVolume;
+    }
+    
+    float getSfxVolume()
+    {
+        logger::Info(std::format("SFX volume: {}", sfxVolume));
+        return sfxVolume;
+    }
+    
+    void setMusicVolume(float volume, sf::Music& music)
+    {
+        musicVolume = volume;
+        
+        if (musicVolume <= 0.0f)
+        {
+            musicVolume = 0.0f;
+        }
+        else if (musicVolume > 100.0f)
+        {
+            musicVolume = 100.0f;
+        }
+        music.setVolume(musicVolume);
+        
+        logger::Info(std::format("Music volume set to: {}", musicVolume));
+    }
+    
+    void setSfxVolume(float volume)
+    {
+        sfxVolume = volume;
+        
+        if (sfxVolume <= 0.0f)
+        {
+            sfxVolume = 0.0f;
+        }
+        else if (sfxVolume > 100.0f)
+        {
+            sfxVolume = 100.0f;
+        }
+        
+        logger::Info(std::format("SFX volume set to: {}", sfxVolume));
+    }
 };

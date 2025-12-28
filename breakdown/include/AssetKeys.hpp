@@ -11,13 +11,9 @@ namespace Assets
     }
     namespace Textures
     {
-        constexpr std::string_view Cursor = "Cursor";
-        constexpr std::string_view RadioBackground = "RadioBackground";
-        constexpr std::string_view RadioCheckmark = "RadioCheckmark";
-        constexpr std::string_view RadioHover = "RadioHover";
-        constexpr std::string_view BoxBackground = "BoxBackground";
         constexpr std::string_view ButtonRedX = "ButtonRedX";
-        constexpr std::string_view ButtonArrow = "ButtonArrow";
+        constexpr std::string_view ButtonLeftArrow = "ButtonLeftArrow";
+        constexpr std::string_view ButtonRightArrow = "ButtonRightArrow";
         constexpr std::string_view ButtonBackground = "ButtonBackground";
     }
     namespace SoundBuffers

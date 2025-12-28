@@ -74,6 +74,10 @@ public:
     virtual void render() override;
 
 private:
+    std::optional<sf::Text> m_MusicVolumeText;
+    std::optional<sf::Text> m_SfxVolumeText;
+    
+private:
     void initMenuButtons();
     void assignStateEvents();
 };
