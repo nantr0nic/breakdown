@@ -493,6 +493,9 @@ namespace EntityFactory
             case UITags::Transition:
                 registry.emplace<TransUITag>(buttonEntity);
                 break;
+            case UITags::Pause:
+                registry.emplace<PauseUITag>(buttonEntity);
+                break;
             default:
                 break;
         }

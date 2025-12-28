@@ -3,12 +3,14 @@
 #include "Utilities/Logger.hpp"
 #include "AppContext.hpp"
 
+#include <stdexcept>
+
 GlobalEventManager::GlobalEventManager(AppContext* context)
 {
     if (!context)
     {
         logger::Error("GlobalEventManager was passed a null context! Cannot initialize.");
-        return;
+		throw std::invalid_argument("GlobalEventManager requires a non-null context");
     }
     
     m_Events.onClose = [context](const sf::Event::Closed&)
