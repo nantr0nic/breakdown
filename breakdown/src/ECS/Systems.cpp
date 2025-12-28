@@ -25,7 +25,7 @@ namespace CoreSystems
     void handlePlayerInput(AppContext& context)
     {
         auto& registry = context.m_Registry;
-        bool levelStarted = context.m_LevelStarted;
+        bool levelStarted = context.m_AppData.levelStarted;
 
         auto paddleView = registry->view<PaddleTag, Velocity, MovementSpeed>();
 
@@ -50,7 +50,7 @@ namespace CoreSystems
             {
                 playSound(context, Assets::SoundBuffers::PaddleHit);
 
-                context.m_LevelStarted = true;
+                context.m_AppData.levelStarted = true;
                 logger::Info("Level started.");
 
                 auto ballView = registry->view<Ball, Velocity, MovementSpeed>();
@@ -67,7 +67,7 @@ namespace CoreSystems
     void movementSystem(AppContext& context, sf::Time deltaTime)
     {
         auto& registry = context.m_Registry;
-        bool levelStarted = context.m_LevelStarted;
+        bool levelStarted = context.m_AppData.levelStarted;
 
         auto paddleView = registry->view<Paddle, Velocity>();
         for (auto paddleEntity : paddleView)
@@ -124,7 +124,8 @@ namespace CoreSystems
         auto& window = context.m_MainWindow;
         auto& stateManager = context.m_StateManager;
 
-        sf::Vector2f windowSize = { context.m_TargetWidth, context.m_TargetHeight };
+        sf::Vector2f windowSize = { context.m_AppSettings.targetWidth,
+                                    context.m_AppSettings.targetHeight };
         bool triggerGameOver = false;
 
         // Cache data structures
@@ -135,7 +136,7 @@ namespace CoreSystems
         // clear these each frame
         brickCache.clear();
         paddleBoundsList.clear();
-        
+
         //$ --- Paddle Collision Logic--- //
         auto paddleView = registry->view<Paddle, Velocity>();
         for (auto paddleEntity : paddleView)
@@ -204,7 +205,7 @@ namespace CoreSystems
         //$ Check for game over after checking paddle/brick, brick/window collisions!
         if (triggerGameOver)
         {
-            auto gameoverState = std::make_unique<GameOverState>(context);
+            auto gameoverState = std::make_unique<GameTransitionState>(context);
             stateManager->replaceState(std::move(gameoverState));
             logger::Info("Game Over triggered.");
             return;
@@ -216,35 +217,35 @@ namespace CoreSystems
         {
             auto& ballComp = registry->get<Ball>(ballEntity);
             auto& ballVelocity = registry->get<Velocity>(ballEntity);
-            float ballSpeed = registry->get<MovementSpeed>(ballEntity).value; 
+            float ballSpeed = registry->get<MovementSpeed>(ballEntity).value;
 
             sf::Vector2f ballPosition = ballComp.shape.getPosition(); // Center
             float ballRadius = ballComp.shape.getRadius();
 
             //$ ----- Ball vs Walls ----- //
             // West Wall
-            if (ballPosition.x - ballRadius < 0.0f) 
+            if (ballPosition.x - ballRadius < 0.0f)
             {
                 playSound(context, Assets::SoundBuffers::WallHit);
-                ballPosition.x = ballRadius;                 
+                ballPosition.x = ballRadius;
                 ballVelocity.value.x *= -1.0f;
             }
             // East Wall
-            if (ballPosition.x + ballRadius > windowSize.x) 
+            if (ballPosition.x + ballRadius > windowSize.x)
             {
                 playSound(context, Assets::SoundBuffers::WallHit);
                 ballPosition.x = windowSize.x - ballRadius;
                 ballVelocity.value.x *= -1.0f;
             }
             // North Wall
-            if (ballPosition.y - ballRadius < 0.0f) 
+            if (ballPosition.y - ballRadius < 0.0f)
             {
                 playSound(context, Assets::SoundBuffers::WallHit);
                 ballPosition.y = ballRadius;
                 ballVelocity.value.y *= -1.0f;
             }
             // South Wall (Game over)
-            if (ballPosition.y + ballRadius > windowSize.y) 
+            if (ballPosition.y + ballRadius > windowSize.y)
             {
                 triggerGameOver = true;
                 logger::Info("Ball hit bottom of window.");
@@ -255,19 +256,19 @@ namespace CoreSystems
 
             // Update bounds for object collision checks
             sf::FloatRect ballBounds = ballComp.shape.getGlobalBounds(); // treats circle as square
-            
+
             //$ ----- Ball vs Paddle ----- //
             for (const auto& paddleBounds : paddleBoundsList)
             {
                 if (ballBounds.findIntersection(paddleBounds))
                 {
                     playSound(context, Assets::SoundBuffers::PaddleHit);
-                    
+
                     // calculate offset (-1 to 1)
                     // (ball - center) / half of paddle width
                     float paddleCenterX = paddleBounds.position.x + paddleBounds.size.x / 2.0f;
                     float ballCenterX = ballPosition.x;
-                    float relativeIntersectX = (ballCenterX - paddleCenterX) / 
+                    float relativeIntersectX = (ballCenterX - paddleCenterX) /
                                                (paddleBounds.size.x / 2.0f);
                     // define angle for reflection
                     sf::Angle rotation = sf::degrees(relativeIntersectX * 60.0f);
@@ -279,12 +280,12 @@ namespace CoreSystems
                     ballVelocity.value = rotatedDirection * ballSpeed;
                 }
             }
-                    
+
             //$ ----- Ball vs Bricks ----- //
             //auto brickView = registry->view<Brick, BrickScore, BrickHealth, BrickType>();
             for (const auto& cachedBrick : brickCache)
             {
-                // safety check 
+                // safety check
                 if (!registry->valid(cachedBrick.entity))
                 {
                     continue;
@@ -343,7 +344,7 @@ namespace CoreSystems
                     {
                         destroyed = true;
                     }
-                    
+
                     if (destroyed)
                     {
                         // play appropriate brick destruction sound
@@ -380,18 +381,20 @@ namespace CoreSystems
 
                         if (registry->view<Brick>().empty())
                         {
-                            if (context.m_LevelNumber >= context.m_TotalLevels)
+                            if (context.m_AppData.levelNumber >= context.m_AppData.totalLevels)
                             {
                                 logger::Info("Completed the last level.");
 
-                                auto gameCompleteState = std::make_unique<GameCompleteState>(context);
-                                stateManager->replaceState(std::move(gameCompleteState));
+                                auto gameState = std::make_unique<GameTransitionState>(context,
+                                                 TransitionType::GameWin);
+                                stateManager->replaceState(std::move(gameState));
                             }
                             else
                             {
                                 logger::Info("All bricks destroyed. Level complete!");
-                                
-                                auto winState = std::make_unique<WinState>(context);
+
+                                auto winState = std::make_unique<GameTransitionState>(context,
+                                                 TransitionType::LevelWin);
                                 stateManager->replaceState(std::move(winState));
                             }
 
@@ -400,7 +403,7 @@ namespace CoreSystems
                     }
                     //! We will need to handle this differently once there are more than one type
                     //! of "strong" brick
-                    else 
+                    else
                     {
                         if (brickType == BrickType::Strong)
                         {
@@ -416,12 +419,12 @@ namespace CoreSystems
         // Check if game is over
         if (triggerGameOver)
         {
-            auto gameoverState = std::make_unique<GameOverState>(context);
+            auto gameoverState = std::make_unique<GameTransitionState>(context);
             stateManager->replaceState(std::move(gameoverState));
             logger::Info("Game Over triggered.");
         }
     }
-    
+
     void renderSystem(entt::registry& registry, sf::RenderWindow& window, bool showDebug)
     {
         // Draw all Rectangles
@@ -451,8 +454,13 @@ namespace CoreSystems
 
     void playSound(AppContext& context, std::string_view soundID)
     {
+        if (context.m_AppSettings.sfxMuted)
+        {
+            return;
+        }
+
         // remove sounds that are done playing
-        context.m_ActiveSounds.remove_if([](const sf::Sound& sound) {
+        context.m_AppData.activeSounds.remove_if([](const sf::Sound& sound) {
             return sound.getStatus() == sf::Sound::Status::Stopped;
             });
 
@@ -465,8 +473,9 @@ namespace CoreSystems
         }
 
         // Add it to the list and play it
-        context.m_ActiveSounds.emplace_back(*sound);
-        context.m_ActiveSounds.back().play();
+        context.m_AppData.activeSounds.emplace_back(*sound);
+        context.m_AppData.activeSounds.back().setVolume(context.m_AppSettings.sfxVolume);
+        context.m_AppData.activeSounds.back().play();
     }
 
     void moveBricksDown(entt::registry& registry, float amount)
@@ -483,26 +492,6 @@ namespace CoreSystems
 namespace UISystems
 {
     //$ --- UI Systems Implementation ---
-
-    void uiHoverSystem(entt::registry& registry, sf::RenderWindow& window)
-    {
-        sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-        auto view = registry.view<Bounds>();
-
-        for (auto entity : view)
-        {
-            const auto& bounds = view.get<Bounds>(entity);
-            if (bounds.rect.contains(mousePos))
-            {
-                registry.emplace_or_replace<Hovered>(entity);
-            }
-            else if (registry.all_of<Hovered>(entity))
-            {
-                registry.remove<Hovered>(entity);
-            }
-        }
-    }
-
     void uiRenderSystem(entt::registry& registry, sf::RenderWindow& window)
     {
         // Render shapes
@@ -510,9 +499,9 @@ namespace UISystems
         for (auto shapeEntity : shapeView)
         {
             auto& uiShape = shapeView.get<UIShape>(shapeEntity);
-            
+
             // Change color on hover
-            if (registry.all_of<Hovered>(shapeEntity))
+            if (registry.all_of<UIHover>(shapeEntity))
             {
                 uiShape.shape.setFillColor(sf::Color(100, 100, 255)); // Hover color
             }
@@ -520,7 +509,7 @@ namespace UISystems
             {
                 uiShape.shape.setFillColor(sf::Color::Blue); // Normal color
             }
-            
+
             window.draw(uiShape.shape);
         }
 
@@ -531,9 +520,9 @@ namespace UISystems
             auto& uiText = textView.get<UIText>(textEntity);
 
             // Change text color on hover for interactive UI
-            if (registry.any_of<Clickable, Bounds>(textEntity))
+            if (registry.any_of<UIAction, UIBounds>(textEntity))
             {
-                if (registry.all_of<Hovered>(textEntity))
+                if (registry.all_of<UIHover>(textEntity))
                 {
                     uiText.text.setFillColor(sf::Color::White); // Hover text color
                 }
@@ -545,16 +534,32 @@ namespace UISystems
 
             window.draw(uiText.text);
         }
+
+        // Render UI buttons
+        auto buttonView = registry.view<GUISprite>();
+        for (auto buttonEntity : buttonView)
+        {
+            auto& button = buttonView.get<GUISprite>(buttonEntity);
+            window.draw(button.sprite);
+        }
+
+        // Render Red X overlay
+        auto xView = registry.view<GUIRedX>();
+        for (auto entity : xView)
+        {
+            auto& redX = xView.get<GUIRedX>(entity);
+            window.draw(redX.sprite);
+        }
     }
 
     void uiClickSystem(entt::registry& registry, const sf::Event::MouseButtonPressed& event)
     {
         if (event.button == sf::Mouse::Button::Left)
         {
-            auto view = registry.view<Hovered, Clickable>();
+            auto view = registry.view<UIHover, UIAction>();
             for (auto entity : view)
             {
-                auto& clickable = view.get<Clickable>(entity);
+                auto& clickable = view.get<UIAction>(entity);
                 if (clickable.action)
                 {
                     clickable.action();
@@ -564,6 +569,63 @@ namespace UISystems
         else
         {
             // empty
+        }
+    }
+
+    void uiHoverSystem(entt::registry& registry, sf::RenderWindow& window)
+    {
+        sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+        auto view = registry.view<UIBounds>();
+
+        for (auto entity : view)
+        {
+            const auto& bounds = view.get<UIBounds>(entity);
+            if (bounds.rect.contains(mousePos))
+            {
+                registry.emplace_or_replace<UIHover>(entity);
+            }
+            else if (registry.all_of<UIHover>(entity))
+            {
+                registry.remove<UIHover>(entity);
+            }
+        }
+    }
+
+    void uiSettingsChecks(AppContext& context)
+    {
+        auto* buttonRedX = context.m_ResourceManager->getResource<sf::Texture>(
+                                                                Assets::Textures::ButtonRedX);
+        if (!buttonRedX)
+        {
+            return;
+        }
+
+        auto redXSprite = sf::Sprite(*buttonRedX);
+        utils::centerOrigin(redXSprite);
+
+        auto& registry = context.m_Registry;
+        
+        auto buttonView = registry->view<GUISprite, UIToggleCond>();
+        for (auto buttonEntity : buttonView)
+        {
+            auto& condition = buttonView.get<UIToggleCond>(buttonEntity);
+            if (condition.shouldShowOverlay())
+            {
+                if (!registry->all_of<GUIRedX>(buttonEntity))
+                {
+                    auto& buttonSprite = registry->get<GUISprite>(buttonEntity);
+                    auto buttonCenter = buttonSprite.sprite.getGlobalBounds().getCenter();
+                    redXSprite.setPosition(buttonCenter);
+                    registry->emplace<GUIRedX>(buttonEntity, redXSprite);
+                }
+            }
+            else 
+            {
+                if (registry->all_of<GUIRedX>(buttonEntity))
+                {
+                    registry->remove<GUIRedX>(buttonEntity);
+                }
+            }
         }
     }
 }

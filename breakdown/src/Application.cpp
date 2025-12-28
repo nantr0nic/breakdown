@@ -58,7 +58,7 @@ void Application::initResources()
     // Set total number of levels for game
     int totalLevels = m_AppContext.m_ConfigManager->getConfigValue<int>(
                                 Assets::Configs::Levels, "totalLevels").value_or(1);
-    m_AppContext.m_TotalLevels = totalLevels;
+    m_AppContext.m_AppData.totalLevels = totalLevels;
     
     logger::Info(std::format("Total number of levels available: {}", totalLevels));
     logger::Info("Resources initialized.");
@@ -105,7 +105,8 @@ void Application::processEvents()
 
     auto onResized = [&](const sf::Event::Resized& event)
     {
-        sf::Vector2f targetSize = {m_AppContext.m_TargetWidth, m_AppContext.m_TargetHeight};
+        sf::Vector2f targetSize = {m_AppContext.m_AppSettings.targetWidth, 
+                                    m_AppContext.m_AppSettings.targetHeight};
 
         sf::View view(sf::FloatRect({0.0f, 0.0f}, targetSize));
         utils::boxView(view, event.size.x, event.size.y);

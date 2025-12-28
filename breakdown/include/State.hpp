@@ -5,6 +5,7 @@
 #include <SFML/Window/Event.hpp>
 
 #include "AppContext.hpp"
+#include "SFML/Graphics/RectangleShape.hpp"
 
 #include <functional>
 #include <optional>
@@ -15,10 +16,17 @@ struct StateEvents
     std::function<void(const sf::Event::MouseButtonPressed&)> onMouseButtonPress = [](const auto&){};
 };
 
+enum class TransitionType
+{
+    LevelLoss,
+    LevelWin,
+    GameWin
+};
+
 class State
 {
 public:
-    State(AppContext& context) : m_AppContext(context) {}
+    explicit State(AppContext& context) : m_AppContext(context) {}
     virtual ~State() = default;
 
     StateEvents& getEventHandlers() noexcept { return m_StateEvents; }
@@ -29,37 +37,65 @@ public:
 
 protected:
     AppContext& m_AppContext;
-    StateEvents m_StateEvents;  // each state will have its own StateEvents instance
+    StateEvents m_StateEvents;
+    
+    sf::Vector2f getWindowCenter() const noexcept
+    {
+        sf::Vector2f windowSize = { m_AppContext.m_AppSettings.targetWidth,
+                                    m_AppContext.m_AppSettings.targetHeight };
+        return { windowSize.x / 2.0f, windowSize.y / 2.0f };
+    }
 };
 
 class MenuState : public State
 {
 public:
-    MenuState(AppContext& context);
+    explicit MenuState(AppContext& context);
     virtual ~MenuState() override;
 
     virtual void update(sf::Time /* deltaTime */) override;
     virtual void render() override;
 
 private:
-    // Empty
+    std::optional<sf::Text> m_TitleText;
+    
+private:
+    void initTitleText();
+    void initMenuButtons();
+    void assignStateEvents();
+};
+
+class SettingsMenuState : public State
+{
+public:
+    explicit SettingsMenuState(AppContext& context, bool fromPlayState = false);
+    virtual ~SettingsMenuState() override;
+
+    virtual void update(sf::Time /* deltaTime */) override;
+    virtual void render() override;
+
+private:
+    sf::RectangleShape m_Background;
+    std::optional<sf::Text> m_MusicVolumeText;
+    std::optional<sf::Text> m_SfxVolumeText;
+    bool m_FromPlayState;
+    
+private:
+    void initMenuButtons();
+    void assignStateEvents();
 };
 
 class PlayState : public State
 {
 public:
-    PlayState(AppContext& context);
+    explicit PlayState(AppContext& context);
     virtual ~PlayState() override;
 
     virtual void update(sf::Time deltaTime) override;
     virtual void render() override;
 
-    bool getLevelStarted() const { return m_LevelStarted; }
-    void setLevelStarted(bool value) { m_LevelStarted = value; }
-
 private:
-    sf::Music* m_MainMusic{ nullptr };
-    bool m_LevelStarted{ false };
+    sf::Music* m_Music{ nullptr };
     bool m_ShowDebug{ false };
 
     // Descent mechanic data
@@ -69,8 +105,8 @@ private:
 class PauseState : public State
 {
 public:
-    PauseState(AppContext& context);
-    virtual ~PauseState() override = default;
+    explicit PauseState(AppContext& context);
+    virtual ~PauseState() override;
 
     virtual void update(sf::Time /* deltaTime */) override;
     virtual void render() override;
@@ -79,41 +115,21 @@ private:
     std::optional<sf::Text> m_PauseText;
 };
 
-class GameOverState : public State
+class GameTransitionState : public State
 {
 public:
-    GameOverState(AppContext& context);
-    virtual ~GameOverState() override;
+    explicit GameTransitionState(AppContext& context, 
+                                TransitionType type = TransitionType::LevelLoss);
+    virtual ~GameTransitionState() override;
 
     virtual void update(sf::Time /* deltaTime */) override;
     virtual void render() override;
 
 private:
-    std::optional<sf::Text> m_GameOverText;
-};
-
-class WinState: public State
-{
-public:
-    WinState(AppContext& context);
-    virtual ~WinState() override;
-
-    virtual void update(sf::Time /* deltaTime */) override;
-    virtual void render() override;
-
+    std::optional<sf::Text> m_TransitionText;
+    
 private:
-    std::optional<sf::Text> m_WinText;
-};
-
-class GameCompleteState : public State
-{
-public:
-    GameCompleteState(AppContext& context);
-    virtual ~GameCompleteState() override;
-
-    virtual void update(sf::Time /* deltaTime */) override;
-    virtual void render() override;
-
-private:
-    std::optional<sf::Text> m_GameCompleteText;
+    void initTitleText(TransitionType type);
+    void initMenuButtons(TransitionType type);
+    void assignStateEvents();
 };

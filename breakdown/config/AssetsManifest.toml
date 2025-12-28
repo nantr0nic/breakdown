@@ -15,7 +15,22 @@ id = "ScoreFont"
 path = "resources/fonts/Micro5-Regular.ttf"
 
 # --- Textures ---
+# GUI textures
 [[textures]]
+id = "ButtonRedX"
+path = "resources/GUI/buttonS1RedX.png"
+
+[[textures]]
+id = "ButtonLeftArrow"
+path = "resources/GUI/buttonLeftArrow.png"
+
+[[textures]]
+id = "ButtonRightArrow"
+path = "resources/GUI/buttonRightArrow.png"
+
+[[textures]]
+id = "ButtonBackground"
+path = "resources/GUI/buttonS1Background.png"
 
 # --- SoundBuffers ---
 [[soundbuffers]]
@@ -45,3 +60,5 @@ path = "resources/sounds/strongBrickBreak.wav"
 # --- Music ---
 # .ogg files are preferred, but .mp3 files should also work
 [[musics]]
+id = "MainSong"
+path = "resources/musics/swung.ogg"

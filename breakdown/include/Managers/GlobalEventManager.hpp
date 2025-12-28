@@ -7,19 +7,18 @@
 
 #include <functional>
 
-class AppContext; // forward declaration
+struct AppContext; // forward declaration
 
 struct ApplicationEvents
 {
 	std::function<void(const sf::Event::Closed&)> onClose;
     std::function<void(const sf::Event::KeyPressed&)> onGlobalKeyPress;
-
 };
 
 class GlobalEventManager
 {
 public:
-    explicit GlobalEventManager(AppContext* appContext);
+    explicit GlobalEventManager(AppContext* context);
     GlobalEventManager(const GlobalEventManager&) = delete;
     GlobalEventManager& operator=(const GlobalEventManager&) = delete;
     ~GlobalEventManager() = default;

@@ -11,6 +11,10 @@ namespace Assets
     }
     namespace Textures
     {
+        constexpr std::string_view ButtonRedX = "ButtonRedX";
+        constexpr std::string_view ButtonLeftArrow = "ButtonLeftArrow";
+        constexpr std::string_view ButtonRightArrow = "ButtonRightArrow";
+        constexpr std::string_view ButtonBackground = "ButtonBackground";
     }
     namespace SoundBuffers
     {

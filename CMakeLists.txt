@@ -38,10 +38,10 @@ FetchContent_Declare(
 FetchContent_Declare(
     tomlplusplus
     GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
-    GIT_TAG        v3.4.0  
+    GIT_TAG        v3.4.0
 )
 
-FetchContent_MakeAvailable(sfml_dependency entt tomlplusplus) 
+FetchContent_MakeAvailable(sfml_dependency entt tomlplusplus)
 
 # ------------------ #
 # Configure project  #
@@ -62,23 +62,21 @@ add_executable(breakdown
     "breakdown/src/Utilities/Utils.cpp"
 )
 
-# This runs every time the breakdown target is built.
-# It will copy the resources to the build directory
-add_custom_command(
-    TARGET breakdown
-    POST_BUILD
+# This will copy the resources to the build directory
+add_custom_target(CopyAssets ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/breakdown/resources"
             "$<TARGET_FILE_DIR:breakdown>/resources"
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/breakdown/config"
             "$<TARGET_FILE_DIR:breakdown>/config"
-    COMMENT "Copying resources and config to build directory"
+    COMMENT "Syncing resources and config files..."
 )
+ADD_DEPENDENCIES(breakdown CopyAssets)
 
-# This is to copy compile_commands.json to out directory for clangd to find it easily
+# This is to copy compile_commands.json to out directory for clangd
 add_custom_target(
-    copy-compile-commands ALL 
+    copy-compile-commands ALL
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${CMAKE_BINARY_DIR}/compile_commands.json"
             "${CMAKE_SOURCE_DIR}/out/compile_commands.json"
@@ -117,7 +115,7 @@ target_link_libraries(breakdown PRIVATE
 # ---------------------- #
 #   Precompile Headers   #
 # ---------------------- #
-target_precompile_headers(breakdown PRIVATE 
+target_precompile_headers(breakdown PRIVATE
     # STL
     <map>
     <vector>
@@ -150,9 +148,10 @@ target_precompile_headers(breakdown PRIVATE
 )
 
 # ------------------ #
-#   MSVC  Settings   #
+#  Platform Config   #
 # ------------------ #
 
+# ----- MSVC  Settings ----- #
 # This should hopefully mitigate any false 'trojan' flags by Windows Defender
 if(MSVC)
     target_compile_options(breakdown PRIVATE "/std:c++latest" /Zi /GL /guard:cf /Gy)
@@ -161,3 +160,56 @@ if(MSVC)
         MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
     )
 endif()
+
+# ----- Windows Settings ----- #
+# Default to OFF (No console) for final game. 
+# Turn this ON to enable console window on Windows Release builds to see log output
+option(SHOW_CONSOLE "Show console window on Windows Release builds" OFF)
+
+if(WIN32)
+    if(SHOW_CONSOLE)
+        # 1. CONSOLE MODE
+        message(STATUS "Windows Build: Console Window ENABLED")
+    else()
+        # 2. GUI MODE
+        set_target_properties(breakdown PROPERTIES WIN32_EXECUTABLE ON)
+        
+        # Link SFML::Main to provide the 'WinMain' entry point required by GUI apps
+        target_link_libraries(breakdown PRIVATE SFML::Main)
+        
+        message(STATUS "Windows Build: Console Window DISABLED (GUI Mode)")
+    endif()
+endif()
+
+# ----- Linux Packaging ----- #
+
+# ------------------ #
+#    Installation    #
+# ------------------ #
+# This isn't the correct way to do this but it works for now.
+# It is going to put resources and config into the same directory
+# as the executable rather than in a separate share/breakdown or ~/.config/breakdown
+install(TARGETS breakdown DESTINATION .)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/breakdown/resources" DESTINATION .)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/breakdown/config" DESTINATION .)
+
+# ------------------ #
+#      Packaging     #
+# ------------------ #
+
+# Set package metadata
+set(CPACK_PACKAGE_NAME "breakdown")
+set(CPACK_PACKAGE_VENDOR "nantr0nic")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A configurable breakout game where the bricks descend.")
+set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_PACKAGE_CONTACT "nantr0nic")
+
+# Set the Generator (TGZ = .tar.gz)
+set(CPACK_GENERATOR "TGZ")
+
+# Configure the structure inside the tarball
+# This makes it so when they extract it, they get a folder named "breakdown-1.0.0-Linux"
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}")
+
+# This includes CPack and generates the packaging targets
+include(CPack)

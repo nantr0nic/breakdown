@@ -47,7 +47,6 @@ out/
 .vs/
 .vscode/
 *.code-workspace
-sfml3-game-template.code-workspace
 
 # github stuff
 .github/
@@ -56,5 +55,12 @@ sfml3-game-template.code-workspace
 launch.json
 settings.json
 
+# Zed files
+.zed/
+
 # clangd stuff
 .clangd
+compile_commands.json
+
+# clang/cache
+.cache/
