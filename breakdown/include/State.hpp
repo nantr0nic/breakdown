@@ -5,6 +5,7 @@
 #include <SFML/Window/Event.hpp>
 
 #include "AppContext.hpp"
+#include "SFML/Graphics/RectangleShape.hpp"
 
 #include <functional>
 #include <optional>
@@ -74,6 +75,7 @@ public:
     virtual void render() override;
 
 private:
+    sf::RectangleShape m_Background;
     std::optional<sf::Text> m_MusicVolumeText;
     std::optional<sf::Text> m_SfxVolumeText;
     bool m_FromPlayState;

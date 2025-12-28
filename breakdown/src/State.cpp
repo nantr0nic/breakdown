@@ -148,6 +148,8 @@ void SettingsMenuState::update(sf::Time deltaTime)
 
 void SettingsMenuState::render()
 {
+    m_AppContext.m_MainWindow->draw(m_Background);
+
     UISystems::uiRenderSystem(*m_AppContext.m_Registry, *m_AppContext.m_MainWindow);
 
     if (m_MusicVolumeText)
@@ -165,6 +167,12 @@ void SettingsMenuState::initMenuButtons()
     sf::Vector2f windowSize = { m_AppContext.m_AppSettings.targetWidth,
                                 m_AppContext.m_AppSettings.targetHeight };
     sf::Vector2f center = getWindowCenter();
+
+    // Add semi-transparent background so buttons are visible if accessed during PauseState
+    m_Background.setSize({ windowSize.x - 250.f, windowSize.y - 50.0f });
+    utils::centerOrigin(m_Background);
+    m_Background.setFillColor(sf::Color(0, 0, 0, 150)); // Black with ~60% alpha
+    m_Background.setPosition(center);
 
     auto* font = m_AppContext.m_ResourceManager->getResource<sf::Font>(
                                                         Assets::Fonts::ScoreFont);
@@ -198,11 +206,11 @@ void SettingsMenuState::initMenuButtons()
     sf::Vector2f sfxVolumeTextPos = { center.x, center.y - 130.0f };
     sf::Vector2f leftSfxArrowPos = { center.x - 90, center.y - 150.0f };
     sf::Vector2f rightSfxArrowPos = { center.x + 50, center.y - 150.0f };
-    
+
     sf::Vector2f musicVolumeTextPos = { center.x, center.y - 80.0f };
     sf::Vector2f leftMusicArrowPos = { center.x - 90, center.y - 100.0f };
     sf::Vector2f rightMusicArrowPos = { center.x + 50, center.y - 100.0f };
-    
+
     sf::Vector2f muteSfxPos = { center.x, center.y };
     sf::Vector2f muteMusicPos = { center.x, center.y + 100.0f };
     sf::Vector2f backButtonPos = { center.x, windowSize.y - 75.0f };
@@ -214,7 +222,7 @@ void SettingsMenuState::initMenuButtons()
     utils::centerOrigin(*m_SfxVolumeText);
     m_SfxVolumeText->setPosition(sfxVolumeTextPos);
     m_SfxVolumeText->setFillColor(sf::Color(250, 250, 250));
-    
+
     // Adjust sfx volume buttons
     auto decreaseSfxVolume = [this]() {
         float currentVolume = m_AppContext.m_AppSettings.sfxVolume;
@@ -226,7 +234,7 @@ void SettingsMenuState::initMenuButtons()
         m_AppContext.m_AppSettings.setSfxVolume(currentVolume + 10.0f);
         m_SfxVolumeText->setString(std::to_string(static_cast<int>(m_AppContext.m_AppSettings.sfxVolume)));
     };
-    
+
     auto leftSfxArrow = EntityFactory::createLabeledButton(m_AppContext, *leftArrowButton,
                                             leftSfxArrowPos, decreaseSfxVolume, *font,
                                             UITags::Settings, "SFX Volume: ", 36);
@@ -447,11 +455,11 @@ PauseState::PauseState(AppContext& context)
         utils::centerOrigin(*m_PauseText);
         sf::Vector2f center = getWindowCenter();
         m_PauseText->setPosition(center);
-        
+
         // Settings button
         sf::Vector2f buttonSize{ 200.0f, 50.0f };
         EntityFactory::createButton(context, *font, "Settings",
-            { center.x, center.y + 100.0f }, 
+            { center.x, center.y + 100.0f },
             [this]() {
                 auto settingsState = std::make_unique<SettingsMenuState>(m_AppContext, true);
                 m_AppContext.m_StateManager->replaceState(std::move(settingsState));
@@ -463,22 +471,26 @@ PauseState::PauseState(AppContext& context)
 
     // Handle music
     auto* music = context.m_ResourceManager->getResource<sf::Music>(Assets::Musics::MainSong);
-    bool isMusicPlaying = (music && music->getStatus() == sf::Music::Status::Playing);
 
-    if (isMusicPlaying && music)
+    if (music && music->getStatus() == sf::Music::Status::Playing)
     {
         music->pause();
     }
 
-    // Lambda to handle pause
-    m_StateEvents.onKeyPress = [this, music, isMusicPlaying](const sf::Event::KeyPressed& event) {
+    m_StateEvents.onMouseButtonPress = [this](const sf::Event::MouseButtonPressed& event) {
+            UISystems::uiClickSystem(*m_AppContext.m_Registry, event);
+        };
+
+    m_StateEvents.onKeyPress = [this, music](const sf::Event::KeyPressed& event) {
         if (event.scancode == sf::Keyboard::Scancode::Escape)
         {
             m_AppContext.m_MainWindow->close();
         }
         else if (event.scancode == sf::Keyboard::Scancode::P)
         {
-            if (isMusicPlaying && music)
+            bool shouldResume = (music && !m_AppContext.m_AppSettings.musicMuted
+                                       && music->getStatus() == sf::Music::Status::Paused);
+            if (shouldResume && music)
             {
                 music->play();
             }
