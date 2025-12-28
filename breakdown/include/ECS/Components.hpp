@@ -79,12 +79,13 @@ struct BrickHealth { int current{ 1 }; int max{ 1 }; };
 struct CurrentScore { int value{ 0 }; };
 
 //$ ----- UI Components ----- //
-enum class UITags { None, Menu, Settings, Transition };
+enum class UITags { None, Menu, Settings, Transition, Pause };
 
 // Tag to identify UI/HUD entities
 struct MenuUITag {};
 struct SettingsUITag {};
 struct TransUITag {};
+struct PauseUITag {};
 
 struct HUDTag {};
 struct ScoreHUDTag {};

@@ -67,7 +67,7 @@ private:
 class SettingsMenuState : public State
 {
 public:
-    explicit SettingsMenuState(AppContext& context);
+    explicit SettingsMenuState(AppContext& context, bool fromPlayState = false);
     virtual ~SettingsMenuState() override;
 
     virtual void update(sf::Time /* deltaTime */) override;
@@ -76,6 +76,7 @@ public:
 private:
     std::optional<sf::Text> m_MusicVolumeText;
     std::optional<sf::Text> m_SfxVolumeText;
+    bool m_FromPlayState;
     
 private:
     void initMenuButtons();
@@ -103,7 +104,7 @@ class PauseState : public State
 {
 public:
     explicit PauseState(AppContext& context);
-    virtual ~PauseState() override = default;
+    virtual ~PauseState() override;
 
     virtual void update(sf::Time /* deltaTime */) override;
     virtual void render() override;

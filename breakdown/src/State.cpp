@@ -111,8 +111,8 @@ void MenuState::assignStateEvents()
     };
 }
 
-SettingsMenuState::SettingsMenuState(AppContext& context)
-    : State(context)
+SettingsMenuState::SettingsMenuState(AppContext& context, bool fromPlayState)
+    : State(context), m_FromPlayState(fromPlayState)
 {
     initMenuButtons();
     assignStateEvents();
@@ -286,8 +286,16 @@ void SettingsMenuState::initMenuButtons()
     auto backButton = EntityFactory::createButton(m_AppContext, *font, "Back",
         backButtonPos,
         [this]() {
-            auto menuState = std::make_unique<MenuState>(m_AppContext);
-            m_AppContext.m_StateManager->replaceState(std::move(menuState));
+            if (m_FromPlayState)
+            {
+                auto pauseState = std::make_unique<PauseState>(m_AppContext);
+                m_AppContext.m_StateManager->replaceState(std::move(pauseState));
+            }
+            else
+            {
+                auto menuState = std::make_unique<MenuState>(m_AppContext);
+                m_AppContext.m_StateManager->replaceState(std::move(menuState));
+            }
         },
         UITags::Settings,
         backButtonSize
@@ -433,11 +441,24 @@ PauseState::PauseState(AppContext& context)
     }
     else
     {
+        // Paused text
         m_PauseText.emplace(*font, "Paused", 100);
         m_PauseText->setFillColor(sf::Color::Red);
         utils::centerOrigin(*m_PauseText);
         sf::Vector2f center = getWindowCenter();
         m_PauseText->setPosition(center);
+        
+        // Settings button
+        sf::Vector2f buttonSize{ 200.0f, 50.0f };
+        EntityFactory::createButton(context, *font, "Settings",
+            { center.x, center.y + 100.0f }, 
+            [this]() {
+                auto settingsState = std::make_unique<SettingsMenuState>(m_AppContext, true);
+                m_AppContext.m_StateManager->replaceState(std::move(settingsState));
+            },
+            UITags::Pause,
+            buttonSize
+        );
     }
 
     // Handle music
@@ -469,14 +490,21 @@ PauseState::PauseState(AppContext& context)
     logger::Info("Game paused.");
 }
 
+PauseState::~PauseState()
+{
+    auto& registry = *m_AppContext.m_Registry;
+    auto view = registry.view<PauseUITag>();
+    registry.destroy(view.begin(), view.end());
+}
 
 void PauseState::update(sf::Time deltaTime)
 {
-    // Update pause logic here
+    UISystems::uiHoverSystem(*m_AppContext.m_Registry, *m_AppContext.m_MainWindow);
 }
 
 void PauseState::render()
 {
+    UISystems::uiRenderSystem(*m_AppContext.m_Registry, *m_AppContext.m_MainWindow);
     if (m_PauseText)
     {
         m_AppContext.m_MainWindow->draw(*m_PauseText);

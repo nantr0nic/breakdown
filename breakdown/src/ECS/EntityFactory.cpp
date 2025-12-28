@@ -351,6 +351,9 @@ namespace EntityFactory
             case UITags::Transition:
                 registry.emplace<TransUITag>(buttonEntity); 
                 break;
+            case UITags::Pause:
+                registry.emplace<PauseUITag>(buttonEntity); 
+                break;
             default:
                 break;
         }
@@ -398,6 +401,9 @@ namespace EntityFactory
             case UITags::Transition:
                 registry.emplace<TransUITag>(buttonEntity); 
                 break;
+            case UITags::Pause:
+                registry.emplace<PauseUITag>(buttonEntity); 
+                break;
             default:
                 break;
         }
@@ -434,6 +440,9 @@ namespace EntityFactory
                 break;
             case UITags::Transition:
                 registry.emplace<TransUITag>(labelEntity); 
+                break;
+            case UITags::Pause:
+                registry.emplace<PauseUITag>(labelEntity); 
                 break;
             default:
                 break;
