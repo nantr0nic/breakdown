@@ -22,8 +22,7 @@ Classic breakdown game but with a descending mechanic. **Fully configurable**: t
 * Terminate the game with ``Escape``.
 
 ## Next features
-Kinda done with this for now (12/2025), but when I come back to it:
-
+Kinda done with this for now (01/2026), but when I come back to it:
 * [[maybe]] Powerups
 
 ## Config files
