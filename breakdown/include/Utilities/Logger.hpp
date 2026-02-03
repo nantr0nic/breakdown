@@ -7,6 +7,7 @@
 #include <print>
 #include <source_location>
 #include <string_view>
+#include <string>
 #include <cstdio>
 #include <format>
 #include <utility>
@@ -104,6 +105,10 @@ namespace logger
             }
 
             void push(LogEntry entry) {
+                if (stopFlag.load(std::memory_order_acquire)) 
+                {
+                    return; 
+                }
                 {
                     std::scoped_lock lock(logMutex);
                     logQueue.push(std::move(entry));
@@ -216,26 +221,26 @@ namespace logger
         // uncomment the line beneath to restrict release builds to print only Error logs
         // inline LogLevel currentLevel = LogLevel::Error;
         // if you uncomment the line above, then comment the line below
-        inline LogLevel currentLevel = LogLevel::Info;
+        inline std::atomic<LogLevel> currentLevel = LogLevel::Info;
     #else
     // For non-release builds, we'll print Warning and Info logs too
-        inline LogLevel currentLevel = LogLevel::Info;
+        inline std::atomic<LogLevel> currentLevel = LogLevel::Info;
     #endif
 
     inline void setLevel(LogLevel level)
     {
-        currentLevel = level;
+        currentLevel.store(level, std::memory_order_relaxed);
     }
 
     inline void forceVerbose()
     {
-        currentLevel = LogLevel::Info;
+        currentLevel.store(LogLevel::Info, std::memory_order_relaxed);
     }
 
     inline void Print(LogLevel level, std::string_view message, const std::source_location& loc)
     {
         // Only print current level and above
-        if (level < currentLevel)
+        if (level < currentLevel.load(std::memory_order_relaxed))
         {
             return;
         }
