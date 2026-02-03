@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef LOG_TO_FILE
+    #define LOG_TO_FILE 0 // default to off
+#endif
+
 #include <print>
 #include <source_location>
 #include <string_view>
@@ -11,6 +15,13 @@
 #include <mutex>
 #include <thread>
 #include <condition_variable>
+
+#if LOG_TO_FILE
+    #include <fstream>
+    #include <chrono>
+    #include <filesystem>
+#endif
+
 
 namespace logger
 {
@@ -55,11 +66,41 @@ namespace logger
         class LogWorker
         {
         public:
-            LogWorker() : logWorker(&LogWorker::processLogs, this) { /* empty */ }
+            LogWorker() : logWorker(&LogWorker::processLogs, this) {
+                #if LOG_TO_FILE
+                std::error_code errorCode;
+                std::filesystem::create_directories("logs", errorCode);
+
+                auto now = std::chrono::system_clock::now();
+                auto now_sec = std::chrono::floor<std::chrono::seconds>(now);
+                auto local_time = std::chrono::zoned_time{ std::chrono::current_zone(), now_sec };
+
+                std::string fileName{};
+
+                if (!errorCode)
+                {
+                    fileName = std::format("logs/{:%Y-%m-%d_%H-%M-%S}.log", local_time);
+                }
+                else
+                {
+                    std::println(stderr, "[[ERROR]] Failed to create logs directory: {}",
+                        errorCode.message());
+                    std::println(stderr, "[[ERROR]] Logger will log to file in root directory.");
+
+                    fileName = std::format("{:%Y-%m-%d_%H-%M-%S}.log", local_time);
+                }
+
+            logFile.open(fileName, std::ios::app);
+                #endif
+            }
             ~LogWorker() {
                 stopFlag = true;
                 logC_V.notify_all();
                 logWorker.join();
+                #if LOG_TO_FILE
+                logFile.flush();
+                logFile.close();
+                #endif
             }
 
             void push(LogEntry entry) {
@@ -131,12 +172,33 @@ namespace logger
                         entry.message,
                         Color::Reset
                     );
+
+                    #if LOG_TO_FILE
+                    if (logFile.is_open())
+                    {
+                        std::println(logFile, "[[{}]] {}({}:{}) -> {}",
+                            levelStr,
+                            formatPath(entry.location.file_name()),
+                            entry.location.line(),
+                            entry.location.column(),
+                            entry.message);
+
+                        if (entry.level == LogLevel::Error) { logFile.flush(); }
+                    }
+                    #endif
                 }
+
+                #if LOG_TO_FILE
+                logFile.flush();
+                #endif
             }
 
         private:
             std::queue<LogEntry> logQueue;
             std::atomic<bool> stopFlag{ false };
+            #if LOG_TO_FILE
+                std::ofstream logFile;
+            #endif
             std::mutex logMutex;
             std::condition_variable logC_V;
             std::jthread logWorker;
