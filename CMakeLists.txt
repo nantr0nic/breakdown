@@ -194,7 +194,7 @@ if(WIN32)
     endif()
 endif()
 
-# ----- Linux Packaging ----- #
+# ----- Packaging ----- #
 
 # ------------------ #
 #    Installation    #
@@ -214,11 +214,17 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/breakdown/config" DESTINATION .)
 set(CPACK_PACKAGE_NAME "breakdown")
 set(CPACK_PACKAGE_VENDOR "nantr0nic")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A configurable breakout game where the bricks descend.")
-set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_PACKAGE_VERSION "1.0.1")
 set(CPACK_PACKAGE_CONTACT "nantr0nic")
 
-# Set the Generator (TGZ = .tar.gz)
-set(CPACK_GENERATOR "TGZ")
+# Set the Generator
+if (WIN32)
+    set(CPACK_GENERATOR "ZIP")
+elseif (UNIX)
+    set(CPACK_GENERATOR "TGZ")
+else()
+    set(CPACK_GENERATOR "TGZ")
+endif()
 
 # Configure the structure inside the tarball
 # This makes it so when they extract it, they get a folder named "breakdown-1.0.0-Linux"
