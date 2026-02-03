@@ -1,14 +1,32 @@
 #pragma once
 
+#ifndef LOG_TO_FILE
+    #define LOG_TO_FILE 0 // default to off
+#endif
+
 #include <print>
 #include <source_location>
 #include <string_view>
+#include <string>
 #include <cstdio>
 #include <format>
+#include <utility>
+#include <atomic>
+#include <queue>
+#include <mutex>
+#include <thread>
+#include <condition_variable>
+
+#if LOG_TO_FILE
+    #include <fstream>
+    #include <chrono>
+    #include <filesystem>
+#endif
+
 
 namespace logger
 {
-    enum class LogLevel 
+    enum class LogLevel
     {
         Info,       // We'll use Green
         Warning,    // We'll use yellow
@@ -26,31 +44,14 @@ namespace logger
         constexpr std::string_view Cyan = "\033[36m";
         constexpr std::string_view White = "\033[37m";
     }
-
-    // Option for modifying log level
-    #ifdef NDEBUG
-        // uncomment the line beneath to restrict release builds to print only Error logs
-        // inline LogLevel currentLevel = LogLevel::Error;
-        // if you uncomment the line above, then comment the line below
-        inline LogLevel currentLevel = LogLevel::Info;
-    #else
-    // For non-release builds, we'll print Warning and Info logs too
-        inline LogLevel currentLevel = LogLevel::Info;
-    #endif
-
-    inline void setLevel(LogLevel level)
+    struct LogEntry
     {
-        currentLevel = level;
-    }
-
-    inline void forceVerbose()
-    {
-        currentLevel = LogLevel::Info;
-    }
-
+        std::string message;
+        std::source_location location;
+        LogLevel level;
+    };
     // format file path to just the filename instead of printing the absolute path
-    constexpr std::string_view formatPath(std::string_view path)
-    {
+    constexpr std::string_view formatPath(std::string_view path) {
         auto lastSlash = path.find_last_of("/\\");
         if (lastSlash != std::string_view::npos)
         {
@@ -60,59 +61,200 @@ namespace logger
         return path;
     }
 
+    // the detail namespace is for the logger's async worker
+    namespace detail
+    {
+        class LogWorker
+        {
+        public:
+            LogWorker() : logWorker(&LogWorker::processLogs, this) {
+                #if LOG_TO_FILE
+                std::error_code errorCode;
+                std::filesystem::create_directories("logs", errorCode);
+
+                auto now = std::chrono::system_clock::now();
+                auto now_sec = std::chrono::floor<std::chrono::seconds>(now);
+                auto local_time = std::chrono::zoned_time{ std::chrono::current_zone(), now_sec };
+
+                std::string fileName{};
+
+                if (!errorCode)
+                {
+                    fileName = std::format("logs/{:%Y-%m-%d_%H-%M-%S}.log", local_time);
+                }
+                else
+                {
+                    std::println(stderr, "[[ERROR]] Failed to create logs directory: {}",
+                        errorCode.message());
+                    std::println(stderr, "[[ERROR]] Logger will log to file in root directory.");
+
+                    fileName = std::format("{:%Y-%m-%d_%H-%M-%S}.log", local_time);
+                }
+
+            logFile.open(fileName, std::ios::app);
+                #endif
+            }
+            ~LogWorker() {
+                stopFlag = true;
+                logC_V.notify_all();
+                logWorker.join();
+                #if LOG_TO_FILE
+                logFile.flush();
+                logFile.close();
+                #endif
+            }
+
+            void push(LogEntry entry) {
+                if (stopFlag.load(std::memory_order_acquire)) 
+                {
+                    return; 
+                }
+                {
+                    std::scoped_lock lock(logMutex);
+                    logQueue.push(std::move(entry));
+                }
+                logC_V.notify_one();
+            }
+
+        private:
+            void processLogs() {
+                while (true)
+                {
+                    LogEntry entry{};
+                    {
+                        std::unique_lock<std::mutex> lock(logMutex);
+                        logC_V.wait(lock, [this](){ return stopFlag || !logQueue.empty(); });
+                        if (stopFlag && logQueue.empty())
+                        {
+                            break;
+                        }
+                        if (!logQueue.empty())
+                        {
+                            entry = std::move(logQueue.front());
+                            logQueue.pop();
+                        }
+                    }
+
+                    std::string_view colorStr{};
+                    std::string_view levelStr{};
+
+                    switch (entry.level)
+                    {
+                        case LogLevel::Error:
+                            colorStr = Color::Red;
+                            levelStr = "ERROR";
+                            break;
+                        case LogLevel::Warning:
+                            colorStr = Color::Yellow;
+                            levelStr = "WARNING";
+                            break;
+                        case LogLevel::Info:
+                            colorStr = Color::Green;
+                            levelStr = "INFO";
+                            break;
+                        default:
+                            // something went wrong
+                            colorStr = Color::White;
+                            levelStr = "UNKNOWN";
+                            break;
+                    }
+
+                    // Select appropriate stream (stderr for error, stdout for others)
+                    FILE* stream = (entry.level == LogLevel::Error) ? stderr : stdout;
+
+                    // Prepare the format string
+                    constexpr auto fmtString = "[[{}{}{}]] {}({}:{}) --> {}{}{}";
+                    // [[Error]] file: file_name(line:column) 'function_name' --> message
+                    std::println(stream, fmtString,
+                        colorStr,
+                        levelStr,
+                        Color::Reset,
+                        formatPath(entry.location.file_name()),
+                        entry.location.line(),
+                        entry.location.column(),
+                        //loc.function_name(), // too verbose but will leave here for debug
+                        colorStr,
+                        entry.message,
+                        Color::Reset
+                    );
+
+                    #if LOG_TO_FILE
+                    if (logFile.is_open())
+                    {
+                        std::println(logFile, "[[{}]] {}({}:{}) -> {}",
+                            levelStr,
+                            formatPath(entry.location.file_name()),
+                            entry.location.line(),
+                            entry.location.column(),
+                            entry.message);
+
+                        if (entry.level == LogLevel::Error) { logFile.flush(); }
+                    }
+                    #endif
+                }
+
+                #if LOG_TO_FILE
+                logFile.flush();
+                #endif
+            }
+
+        private:
+            std::queue<LogEntry> logQueue;
+            std::atomic<bool> stopFlag{ false };
+            #if LOG_TO_FILE
+                std::ofstream logFile;
+            #endif
+            std::mutex logMutex;
+            std::condition_variable logC_V;
+            std::jthread logWorker;
+        };
+
+        inline LogWorker& getWorker()
+        {
+            static LogWorker worker;
+            return worker;
+        }
+    }
+
+    // Option for modifying log level
+    #ifdef NDEBUG
+        // uncomment the line beneath to restrict release builds to print only Error logs
+        // inline LogLevel currentLevel = LogLevel::Error;
+        // if you uncomment the line above, then comment the line below
+        inline std::atomic<LogLevel> currentLevel = LogLevel::Info;
+    #else
+    // For non-release builds, we'll print Warning and Info logs too
+        inline std::atomic<LogLevel> currentLevel = LogLevel::Info;
+    #endif
+
+    inline void setLevel(LogLevel level)
+    {
+        currentLevel.store(level, std::memory_order_relaxed);
+    }
+
+    inline void forceVerbose()
+    {
+        currentLevel.store(LogLevel::Info, std::memory_order_relaxed);
+    }
+
     inline void Print(LogLevel level, std::string_view message, const std::source_location& loc)
     {
         // Only print current level and above
-        if (level < currentLevel)
+        if (level < currentLevel.load(std::memory_order_relaxed))
         {
             return;
         }
 
-        std::string_view colorStr{};
-        std::string_view levelStr{};
+        LogEntry entry {
+            .message = std::string(message),
+            .location = loc,
+            .level = level
+        };
 
-        if (level == LogLevel::Error)
-        {
-            colorStr = Color::Red;
-            levelStr = "ERROR";
-        }
-        else if (level == LogLevel::Warning)
-        {
-            colorStr = Color::Yellow;
-            levelStr = "WARNING";
-        }
-        else if (level == LogLevel::Info)
-        {
-            colorStr = Color::Green;
-            levelStr = "INFO";
-        }
-        else
-        {
-            //something went wrong
-            return;
-        }
-
-        // Select appropriate stream (stderr for error, stdout for others)
-        FILE* stream = (level == LogLevel::Error) ? stderr : stdout;
-
-        // Prepare the format string
-        constexpr auto fmtString = "[[{}{}{}]] {}({}:{}) --> {}{}{}";
-        // [[Error]] file: file_name(line:column) 'function_name' --> message
-        std::println(stream, fmtString, 
-            colorStr, 
-            levelStr, 
-            Color::Reset, 
-            formatPath(loc.file_name()), 
-            loc.line(), 
-            loc.column(), 
-            //loc.function_name(), // too verbose but will leave here for debug 
-            colorStr, 
-            message,
-            Color::Reset
-        );
+        detail::getWorker().push(std::move(entry));
     }
 
-    inline void Info(std::string_view message, 
+    inline void Info(std::string_view message,
         const std::source_location& loc = std::source_location::current())
     {
         Print(LogLevel::Info, message, loc);
