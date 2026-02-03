@@ -29,8 +29,8 @@ namespace logger
     enum class LogLevel
     {
         Info,       // We'll use Green
-        Warning,    // We'll use yellow
-        Error,      // We'll use red
+        Warning,    // We'll use Yellow
+        Error,      // We'll use Red
         None
     };
     namespace Color
@@ -51,7 +51,8 @@ namespace logger
         LogLevel level;
     };
     // format file path to just the filename instead of printing the absolute path
-    constexpr std::string_view formatPath(std::string_view path) {
+    constexpr std::string_view formatPath(std::string_view path)
+    {
         auto lastSlash = path.find_last_of("/\\");
         if (lastSlash != std::string_view::npos)
         {
@@ -91,7 +92,7 @@ namespace logger
                     fileName = std::format("{:%Y-%m-%d_%H-%M-%S}.log", local_time);
                 }
 
-            logFile.open(fileName, std::ios::app);
+                logFile.open(fileName, std::ios::app);
                 #endif
             }
             ~LogWorker() {
@@ -105,9 +106,9 @@ namespace logger
             }
 
             void push(LogEntry entry) {
-                if (stopFlag.load(std::memory_order_acquire)) 
+                if (stopFlag.load(std::memory_order_acquire))
                 {
-                    return; 
+                    return;
                 }
                 {
                     std::scoped_lock lock(logMutex);
@@ -219,7 +220,7 @@ namespace logger
     // Option for modifying log level
     #ifdef NDEBUG
         // uncomment the line beneath to restrict release builds to print only Error logs
-        // inline LogLevel currentLevel = LogLevel::Error;
+        // inline std::atomic<LogLevel> currentLevel = LogLevel::Error;
         // if you uncomment the line above, then comment the line below
         inline std::atomic<LogLevel> currentLevel = LogLevel::Info;
     #else
