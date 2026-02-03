@@ -10,6 +10,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # ------------------ #
 # Fetch dependencies #
 # ------------------ #
+
 include(FetchContent)
 
 # ----- SFML ----- #
@@ -42,6 +43,11 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(sfml_dependency entt tomlplusplus)
+
+# ------------------ #
+#  Find Packages     #
+# ------------------ #
+find_package(Threads REQUIRED)
 
 # ------------------ #
 # Configure project  #
@@ -110,6 +116,7 @@ target_link_libraries(breakdown PRIVATE
     SFML::Audio
     EnTT::EnTT
     tomlplusplus::tomlplusplus
+    Threads::Threads
 )
 
 # ---------------------- #
@@ -132,6 +139,12 @@ target_precompile_headers(breakdown PRIVATE
     <limits>
     <algorithm>
     <stdexcept> # goal is to get rid of this
+    <atomic>
+    <queue>
+    <mutex>
+    <thread>
+    <condition_variable>
+    <chrono>
 
     # C STD
     <cstdint>
@@ -162,7 +175,7 @@ if(MSVC)
 endif()
 
 # ----- Windows Settings ----- #
-# Default to OFF (No console) for final game. 
+# Default to OFF (No console) for final game.
 # Turn this ON to enable console window on Windows Release builds to see log output
 option(SHOW_CONSOLE "Show console window on Windows Release builds" OFF)
 
@@ -173,10 +186,10 @@ if(WIN32)
     else()
         # 2. GUI MODE
         set_target_properties(breakdown PROPERTIES WIN32_EXECUTABLE ON)
-        
+
         # Link SFML::Main to provide the 'WinMain' entry point required by GUI apps
         target_link_libraries(breakdown PRIVATE SFML::Main)
-        
+
         message(STATUS "Windows Build: Console Window DISABLED (GUI Mode)")
     endif()
 endif()
